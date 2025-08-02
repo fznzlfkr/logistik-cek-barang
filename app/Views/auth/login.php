@@ -131,6 +131,26 @@
             font-size: 12px;
             color: #7a869a;
         }
+
+        .password-wrapper {
+            position: relative;
+        }
+
+        .toggle-password {
+            position: absolute;
+            top: 50%;
+            right: 12px;
+            transform: translateY(-50%);
+            cursor: pointer;
+            width: 20px;
+            height: 20px;
+            fill: #777;
+        }
+
+        .toggle-password svg {
+            width: 20px;
+            height: 20px;
+        }
     </style>
 
 </head>
@@ -150,7 +170,18 @@
 
         <form>
             <input class="form-input" type="email" placeholder="Enter your email" required />
-            <input class="form-input" type="password" placeholder="Enter your password" required />
+
+            <div class="password-wrapper">
+                <input id="passwordInput" class="form-input" type="password" placeholder="Enter your password" required />
+                <span id="togglePassword" class="toggle-password" title="Show password">
+                    <!-- eye icon -->
+                    <svg viewBox="0 0 24 24">
+                        <path d="M12 5c-7 0-10 7-10 7s3 7 10 7 10-7 10-7-3-7-10-7zm0 12c-2.76 0-5-2.24-5-5s2.24-5 
+                        5-5 5 2.24 5 5-2.24 5-5 5zm0-8a3 3 0 100 6 3 3 0 000-6z"/>
+                    </svg>
+                </span>
+            </div>
+
             <div class="form-checkbox">
                 <label><input type="checkbox" /> Remember me</label>
             </div>
@@ -158,7 +189,7 @@
         </form>
 
         <div class="footer-links">
-            <a href="#">Can't log in?</a> • <a href="#">Create an account</a>
+            <a href="<?= base_url('register')?>">Create an account</a>
         </div>
 
         <div class="copyright">
@@ -167,6 +198,7 @@
     </div>
 
     <script>
+        // Background image slider
         const backgrounds = [
             'assets/img/bg1.jpg',
             'assets/img/bg2.jpg',
@@ -187,11 +219,34 @@
                 bg1.style.backgroundImage = `url('${backgrounds[next]}')`;
                 bg2.style.opacity = '0';
                 current = next;
-            }, 1000); // sync with transition
+            }, 1000);
         }
 
         bg1.style.backgroundImage = `url('${backgrounds[0]}')`;
-        setInterval(changeBackground, 5000); // 5 sec interval
+        setInterval(changeBackground, 5000);
+
+        // Toggle show/hide password
+        const togglePassword = document.getElementById('togglePassword');
+        const passwordInput = document.getElementById('passwordInput');
+
+        const eyeIcon = `
+            <svg viewBox="0 0 24 24">
+                <path d="M12 5c-7 0-10 7-10 7s3 7 10 7 10-7 10-7-3-7-10-7zm0 12c-2.76 0-5-2.24-5-5s2.24-5 
+                5-5 5 2.24 5 5-2.24 5-5 5zm0-8a3 3 0 100 6 3 3 0 000-6z"/>
+            </svg>`;
+
+        const eyeOffIcon = `
+            <svg viewBox="0 0 24 24">
+                <path d="M12 6a9.77 9.77 0 018.94 6A9.77 9.77 0 0112 18a9.77 9.77 0 01-8.94-6A9.77 9.77 0 0112 6m0-2C6 4 
+                2 12 2 12s4 8 10 8 10-8 10-8-4-8-10-8zm0 5a3 3 0 100 6 3 3 0 000-6z"/>
+            </svg>`;
+
+        togglePassword.addEventListener('click', function () {
+            const isPassword = passwordInput.type === 'password';
+            passwordInput.type = isPassword ? 'text' : 'password';
+            togglePassword.innerHTML = isPassword ? eyeOffIcon : eyeIcon;
+            togglePassword.title = isPassword ? 'Hide password' : 'Show password';
+        });
     </script>
 </body>
 
