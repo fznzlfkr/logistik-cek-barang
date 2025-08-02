@@ -7,3 +7,19 @@ use CodeIgniter\Router\RouteCollection;
  */
 $routes->get('/', 'AuthController::index');
 $routes->get('/register', 'AuthController::register');
+$routes->post('/loginProcess', 'AuthController::loginProcess');
+$routes->post('/registerProcess', 'AuthController::registerProcess');
+$routes->get('/logout', 'AuthController::logout');
+// File: app/Config/Routes.php
+$routes->group('superadmin', ['filter' => 'auth'], function($routes) {
+    $routes->get('dashboard', 'AdminController::indexSuperAdmin');
+});
+
+$routes->group('admin', ['filter' => 'auth'], function($routes) {
+    $routes->get('dashboard', 'AdminController::index');
+});
+
+
+$routes->group('user', ['filter' => 'auth'], function($routes) {
+    $routes->get('dashboard', 'UserController::index');
+});

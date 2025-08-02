@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Login - CargoWing</title>
+    <title><?= $title ?></title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet" />
     <style>
         * {
@@ -167,12 +167,13 @@
             <img src="../assets/img/logo.jpg" alt="Logo" width="60" />
         </div>
         <h2>Log in to continue</h2>
-
-        <form>
-            <input class="form-input" type="email" placeholder="Enter your email" required />
+        <?= session()->getFlashdata('error') ?>
+        <?= session()->getFlashdata('success') ?>
+        <form action="<?= base_url('loginProcess') ?>" method="post">
+            <input class="form-input" name="email" type="email" placeholder="Enter your email" required />
 
             <div class="password-wrapper">
-                <input id="passwordInput" class="form-input" type="password" placeholder="Enter your password" required />
+                <input id="passwordInput" class="form-input" name="password" type="password" placeholder="Enter your password" required />
                 <span id="togglePassword" class="toggle-password" title="Show password">
                     <!-- eye icon -->
                     <svg viewBox="0 0 24 24">
@@ -183,7 +184,7 @@
             </div>
 
             <div class="form-checkbox">
-                <label><input type="checkbox" /> Remember me</label>
+                <label><input type="checkbox" name="remember" /> Remember me</label>
             </div>
             <button class="btn" type="submit">Continue</button>
         </form>

@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Register - CargoWing</title>
+    <title><?= $title ?></title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet" />
     <style>
         * {
@@ -150,9 +150,9 @@
             <img src="../assets/img/logo.jpg" alt="Logo" width="60">
         </div>
         <h2>Register</h2>
-
-        <form>
-            <input class="form-input" name="name" type="text" placeholder="Enter your name" required />
+        <?= session()->getFlashdata('error') ?>
+        <form action="<?= base_url('registerProcess') ?>" method="post">
+            <input class="form-input" name="nama" type="text" placeholder="Enter your name" required />
             <input class="form-input" name="email" type="email" placeholder="Enter your email" required />
 
             <div class="password-wrapper">
@@ -165,11 +165,10 @@
                     </svg>
                 </span>
             </div>
-
-            <input class="form-input" name="phone_number" type="text" placeholder="Enter your phone number" required />
+            <input class="form-input" name="no_hp" type="text" placeholder="Enter your phone number" required />
 
             <div class="form-checkbox">
-                <label><input type="checkbox" /> Remember me</label>
+                <label><input type="checkbox" name="remember" /> Remember me</label>
             </div>
             <button class="btn" type="submit">Continue</button>
         </form>
