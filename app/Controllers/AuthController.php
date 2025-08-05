@@ -17,17 +17,22 @@ class AuthController extends BaseController
         $this->userModel  = new UserModel();
         $this->adminModel = new AdminModel();
         $this->session    = session();
-        helper(['form']);
     }
 
     public function index()
     {
-        return view('auth/login', ['title' => 'Login - CargoWing']);
+        $data = [
+            'title' => 'Masuk'
+        ];
+        return view('auth/login', $data);
     }
 
     public function register()
     {
-        return view('auth/register', ['title' => 'Register - CargoWing']);
+        $data = [
+            'title' => 'Daftar'
+        ];
+        return view('auth/register', $data);
     }
 
     public function loginProcess()
@@ -70,37 +75,47 @@ class AuthController extends BaseController
             return redirect()->to('user/dashboard');
         }
 
-        return redirect()->back()->withInput()->with('error', '<div style="color:red;">Email atau password salah.</div>');
+        return redirect()->back()->withInput()->with('error', 'Email atau password salah.');
     }
 
     public function registerProcess()
     {
+        $data = $this->request->getPost();
         $validation = \Config\Services::validation();
 
+        // Validasi dasar
         $validation->setRules([
             'nama'     => 'required',
-            'email'    => 'required|valid_email|is_unique[users.email]',
+            'email'    => 'required|valid_email',
             'password' => 'required|min_length[8]',
             'no_hp'    => 'required|numeric|min_length[10]',
-        ], [
-            'email' => [
-                'is_unique' => 'Email sudah terdaftar, sIlahkan login menggunakan akun lain.'
-            ]
         ]);
 
         if (!$validation->withRequest($this->request)->run()) {
-            return redirect()->back()->withInput()->with('errors', $validation->getErrors());
+            return redirect()->back()->withInput()->with('error', 'Data tidak valid. Silakan periksa kembali.');
         }
 
+        // Cek apakah email sudah digunakan
+        if ($this->userModel->where('email', $data['email'])->first()) {
+            return redirect()->back()->withInput()->with('error', 'Email sudah terdaftar! Silakan gunakan email lain.');
+        }
+
+        // Cek apakah nomor HP sudah digunakan
+        if ($this->userModel->where('no_hp', $data['no_hp'])->first()) {
+            return redirect()->back()->withInput()->with('error', 'Nomor HP sudah terdaftar!');
+        }
+
+        // Simpan data jika valid
         $this->userModel->insert([
-            'nama'     => $this->request->getPost('nama'),
-            'email'    => $this->request->getPost('email'),
-            'password' => password_hash($this->request->getPost('password'), PASSWORD_DEFAULT),
-            'no_hp'    => $this->request->getPost('no_hp'),
+            'nama'     => $data['nama'],
+            'email'    => $data['email'],
+            'password' => password_hash($data['password'], PASSWORD_DEFAULT),
+            'no_hp'    => $data['no_hp'],
         ]);
 
-        return redirect()->to('/')->with('success', 'Registrasi berhasil. Silakan login.');
+        return redirect()->to('/')->with('success', 'Registrasi berhasil! Silakan login.');
     }
+
 
 
     public function logout()

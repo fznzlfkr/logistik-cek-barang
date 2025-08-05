@@ -39,8 +39,6 @@ class CreateLaporan extends Migration
             ],
         ]);
         $this->forge->addKey('id_laporan', true);
-        $this->forge->addForeignKey('id_barang', 'barang', 'id_barang', 'CASCADE', 'CASCADE');
-        $this->forge->addForeignKey('id_user', 'users', 'id_user', 'CASCADE', 'CASCADE');
         $this->forge->createTable('laporan');
     }
 
