@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -6,6 +7,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title><?= $title ?></title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
         * {
             box-sizing: border-box;
@@ -138,6 +140,11 @@
             width: 20px;
             height: 20px;
         }
+
+        .fade-out {
+            transition: opacity 0.5s ease;
+            opacity: 0;
+        }
     </style>
 </head>
 
@@ -150,7 +157,23 @@
             <img src="../assets/img/logo.jpg" alt="Logo" width="60">
         </div>
         <h2>Register</h2>
-        <?= session()->getFlashdata('error') ?>
+
+        <!-- Success message -->
+        <?php if(session()->getFlashdata('success')): ?>
+            <div id="successAlert" class="alert alert-success">
+                <?= session()->getFlashdata('success') ?>
+            </div>
+        <?php endif; ?>
+
+        <?php if(session()->getFlashdata('errors')): ?>
+            <div id="errorAlert" class="alert alert-danger">
+                <?php foreach(session()->getFlashdata('errors') as $error): ?>
+                    <div><?= esc($error) ?></div>
+                <?php endforeach; ?>
+            </div>
+        <?php endif; ?>
+
+
         <form action="<?= base_url('registerProcess') ?>" method="post">
             <input class="form-input" name="nama" type="text" placeholder="Enter your name" required />
             <input class="form-input" name="email" type="email" placeholder="Enter your email" required />
@@ -222,6 +245,18 @@
             togglePassword.innerHTML = isPassword ? eyeOffIcon : eyeIcon;
             togglePassword.title = isPassword ? 'Hide password' : 'Show password';
         });
+
+        // Auto-hide alerts after 3 seconds
+        setTimeout(() => {
+            const success = document.getElementById('successAlert');
+            const error = document.getElementById('errorAlert');
+            [success, error].forEach(el => {
+                if (el) {
+                    el.classList.add('fade-out');
+                    setTimeout(() => el.remove(), 500); // Remove from DOM after fade
+                }
+            });
+        }, 3000);
     </script>
 </body>
 

@@ -22,4 +22,7 @@ $routes->group('admin', ['filter' => 'auth'], function($routes) {
 
 $routes->group('user', ['filter' => 'auth'], function($routes) {
     $routes->get('dashboard', 'UserController::index');
+    $routes->get('kelola_barang', 'UserController::kelolaBarang');
+    $routes->get('riwayat', 'UserController::riwayat');
+    $routes->get('profil', 'UserController::profil');
 });

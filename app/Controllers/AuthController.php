@@ -78,10 +78,14 @@ class AuthController extends BaseController
         $validation = \Config\Services::validation();
 
         $validation->setRules([
-            'nama'     => 'required|min_length[4]',
+            'nama'     => 'required',
             'email'    => 'required|valid_email|is_unique[users.email]',
-            'password' => 'required|min_length[6]',
+            'password' => 'required|min_length[8]',
             'no_hp'    => 'required|numeric|min_length[10]',
+        ], [
+            'email' => [
+                'is_unique' => 'Email sudah terdaftar, sIlahkan login menggunakan akun lain.'
+            ]
         ]);
 
         if (!$validation->withRequest($this->request)->run()) {
@@ -97,6 +101,7 @@ class AuthController extends BaseController
 
         return redirect()->to('/')->with('success', 'Registrasi berhasil. Silakan login.');
     }
+
 
     public function logout()
     {

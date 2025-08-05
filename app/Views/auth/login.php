@@ -151,8 +151,29 @@
             width: 20px;
             height: 20px;
         }
-    </style>
 
+        /* Flash message styles */
+        .flash-message {
+            padding: 12px;
+            margin-bottom: 15px;
+            border-radius: 4px;
+            font-size: 14px;
+            font-weight: 500;
+            transition: opacity 0.5s ease;
+        }
+
+        .flash-message.error {
+            background-color: #f8d7da;
+            color: #842029;
+            border: 1px solid #f5c2c7;
+        }
+
+        .flash-message.success {
+            background-color: #d1e7dd;
+            color: #0f5132;
+            border: 1px solid #badbcc;
+        }
+    </style>
 </head>
 
 <body>
@@ -167,15 +188,26 @@
             <img src="../assets/img/logo.jpg" alt="Logo" width="60" />
         </div>
         <h2>Log in to continue</h2>
-        <?= session()->getFlashdata('error') ?>
-        <?= session()->getFlashdata('success') ?>
+
+        <!-- Flash Messages -->
+        <?php if(session()->getFlashdata('error')): ?>
+            <div id="errorAlert" class="flash-message error">
+                <?= session()->getFlashdata('error') ?>
+            </div>
+        <?php endif; ?>
+
+        <?php if(session()->getFlashdata('success')): ?>
+            <div id="successAlert" class="flash-message success">
+                <?= session()->getFlashdata('success') ?>
+            </div>
+        <?php endif; ?>
+
         <form action="<?= base_url('loginProcess') ?>" method="post">
             <input class="form-input" name="email" type="email" placeholder="Enter your email" required />
 
             <div class="password-wrapper">
                 <input id="passwordInput" class="form-input" name="password" type="password" placeholder="Enter your password" required />
                 <span id="togglePassword" class="toggle-password" title="Show password">
-                    <!-- eye icon -->
                     <svg viewBox="0 0 24 24">
                         <path d="M12 5c-7 0-10 7-10 7s3 7 10 7 10-7 10-7-3-7-10-7zm0 12c-2.76 0-5-2.24-5-5s2.24-5 
                         5-5 5 2.24 5 5-2.24 5-5 5zm0-8a3 3 0 100 6 3 3 0 000-6z"/>
@@ -248,6 +280,19 @@
             togglePassword.innerHTML = isPassword ? eyeOffIcon : eyeIcon;
             togglePassword.title = isPassword ? 'Hide password' : 'Show password';
         });
+
+        // Auto-hide flash messages after 3 seconds
+        setTimeout(() => {
+            const errorAlert = document.getElementById('errorAlert');
+            const successAlert = document.getElementById('successAlert');
+
+            [errorAlert, successAlert].forEach(el => {
+                if (el) {
+                    el.style.opacity = '0';
+                    setTimeout(() => el.remove(), 500); // Remove after fade-out
+                }
+            });
+        }, 3000);
     </script>
 </body>
 

@@ -1,211 +1,77 @@
  <?= $this->extend('layout/templateUser'); ?>
 <?= $this->section('content'); ?>
- <div class="main-content">
-        <!-- Header -->
-        <div class="header">
-            <h1><i class="fas fa-chart-dashboard"></i> Dashboard Admin</h1>
-        </div>
-
-        <!-- Stats Cards -->
-        <div class="stats-container">
-            <div class="stat-card blue">
-                <div class="stat-icon">
-                    <i class="fas fa-boxes"></i>
-                </div>
-                <div class="stat-info">
-                    <h3 id="totalBarang">125</h3>
-                    <p>Total Barang</p>
+     <!-- Main -->
+    <main class="px-6 py-6">
+        <!-- Card statistik -->
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+            <div class="bg-white rounded-xl shadow p-4 flex items-center gap-4">
+                <i data-feather="package" class="w-6 h-6 text-gray-600"></i>
+                <div>
+                    <div class="text-sm text-gray-500">Barang Masuk</div>
+                    <div class="text-xl font-bold text-gray-800">666</div>
                 </div>
             </div>
-            
-            <div class="stat-card green">
-                <div class="stat-icon">
-                    <i class="fas fa-check-circle"></i>
-                </div>
-                <div class="stat-info">
-                    <h3 id="barangTersedia">98</h3>
-                    <p>Barang Tersedia</p>
+            <div class="bg-white rounded-xl shadow p-4 flex items-center gap-4">
+                <i data-feather="arrow-down" class="w-6 h-6 text-gray-600"></i>
+                <div>
+                    <div class="text-sm text-gray-500">Barang Dipakai</div>
+                    <div class="text-xl font-bold text-gray-800">666</div>
                 </div>
             </div>
-            
-            <div class="stat-card orange">
-                <div class="stat-icon">
-                    <i class="fas fa-exclamation-triangle"></i>
-                </div>
-                <div class="stat-info">
-                    <h3>15</h3>
-                    <p>Stok Menipis</p>
+            <div class="bg-white rounded-xl shadow p-4 flex items-center gap-4">
+                <i data-feather="box" class="w-6 h-6 text-gray-600"></i>
+                <div>
+                    <div class="text-sm text-gray-500">Total Stok</div>
+                    <div class="text-xl font-bold text-gray-800">666</div>
                 </div>
             </div>
-            
-            <div class="stat-card red">
-                <div class="stat-icon">
-                    <i class="fas fa-times-circle"></i>
-                </div>
-                <div class="stat-info">
-                    <h3>12</h3>
-                    <p>Stok Habis</p>
+            <div class="bg-white rounded-xl shadow p-4 flex items-center gap-4">
+                <i data-feather="alert-triangle" class="w-6 h-6 text-gray-600"></i>
+                <div>
+                    <div class="text-sm text-gray-500">Stok Minimum</div>
+                    <div class="text-xl font-bold text-gray-800">666</div>
                 </div>
             </div>
         </div>
 
-        <!-- Data Table -->
-        <div class="table-container">
-            <div class="table-header">
-                <h2><i class="fas fa-table"></i> Data Barang</h2>
-                <div class="table-actions">
-                    <button class="btn btn-primary" onclick="addNewItem()">
-                        <i class="fas fa-plus"></i> Tambah Barang
-                    </button>
-                    <button class="btn btn-success" onclick="generateAllBarcodes()">
-                        <i class="fas fa-barcode"></i> Generate All Barcodes
-                    </button>
-                </div>
+        <!-- Riwayat table -->
+        <div class="bg-white rounded-xl shadow p-4">
+            <h2 class="text-lg font-semibold mb-4">Riwayat Terakhir</h2>
+            <div class="overflow-x-auto">
+                <table class="min-w-full text-sm text-left">
+                    <thead>
+                        <tr class="border-b text-gray-700 font-semibold">
+                            <th class="px-4 py-2">No</th>
+                            <th class="px-4 py-2">Waktu</th>
+                            <th class="px-4 py-2">Barang</th>
+                            <th class="px-4 py-2">Jenis</th>
+                            <th class="px-4 py-2">Jumlah</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php for ($i = 1; $i <= 4; $i++): ?>
+                        <tr class="border-b hover:bg-gray-50">
+                            <td class="px-4 py-2"><?= $i ?></td>
+                            <td class="px-4 py-2">2025-08-05</td>
+                            <td class="px-4 py-2">Barang <?= $i ?></td>
+                            <td class="px-4 py-2">Masuk</td>
+                            <td class="px-4 py-2">100</td>
+                        </tr>
+                        <?php endfor; ?>
+                    </tbody>
+                </table>
             </div>
 
-            <div class="search-container">
-                <input type="text" class="search-input" placeholder="🔍 Cari barang..." onkeyup="searchTable()">
-                <button class="btn btn-primary">
-                    <i class="fas fa-search"></i> Cari
-                </button>
-            </div>
-
-            <table class="data-table" id="dataTable">
-                <thead>
-                    <tr>
-                        <th><i class="fas fa-hashtag"></i> ID</th>
-                        <th><i class="fas fa-box"></i> Nama Barang</th>
-                        <th><i class="fas fa-barcode"></i> Kode Barang</th>
-                        <th><i class="fas fa-layer-group"></i> Kategori</th>
-                        <th><i class="fas fa-cubes"></i> Stok</th>
-                        <th><i class="fas fa-dollar-sign"></i> Harga</th>
-                        <th><i class="fas fa-cogs"></i> Aksi</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td>001</td>
-                        <td>Laptop Asus ROG</td>
-                        <td>LPT-ASS-001</td>
-                        <td>Elektronik</td>
-                        <td>15</td>
-                        <td>Rp 15.000.000</td>
-                        <td>
-                            <div class="action-buttons">
-                                <button class="action-btn btn-primary" onclick="editItem('001')">
-                                    <i class="fas fa-edit"></i>
-                                </button>
-                                <button class="action-btn btn-success" onclick="generateBarcode('LPT-ASS-001')">
-                                    <i class="fas fa-barcode"></i>
-                                </button>
-                                <button class="action-btn btn-danger" onclick="deleteItem('001')">
-                                    <i class="fas fa-trash"></i>
-                                </button>
-                            </div>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>002</td>
-                        <td>Mouse Logitech MX Master 3</td>
-                        <td>MSE-LGT-002</td>
-                        <td>Aksesoris</td>
-                        <td>25</td>
-                        <td>Rp 1.500.000</td>
-                        <td>
-                            <div class="action-buttons">
-                                <button class="action-btn btn-primary" onclick="editItem('002')">
-                                    <i class="fas fa-edit"></i>
-                                </button>
-                                <button class="action-btn btn-success" onclick="generateBarcode('MSE-LGT-002')">
-                                    <i class="fas fa-barcode"></i>
-                                </button>
-                                <button class="action-btn btn-danger" onclick="deleteItem('002')">
-                                    <i class="fas fa-trash"></i>
-                                </button>
-                            </div>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>003</td>
-                        <td>Keyboard Mechanical RGB</td>
-                        <td>KBD-RGB-003</td>
-                        <td>Aksesoris</td>
-                        <td>8</td>
-                        <td>Rp 2.500.000</td>
-                        <td>
-                            <div class="action-buttons">
-                                <button class="action-btn btn-primary" onclick="editItem('003')">
-                                    <i class="fas fa-edit"></i>
-                                </button>
-                                <button class="action-btn btn-success" onclick="generateBarcode('KBD-RGB-003')">
-                                    <i class="fas fa-barcode"></i>
-                                </button>
-                                <button class="action-btn btn-danger" onclick="deleteItem('003')">
-                                    <i class="fas fa-trash"></i>
-                                </button>
-                            </div>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>004</td>
-                        <td>Monitor Dell UltraSharp 27"</td>
-                        <td>MON-DLL-004</td>
-                        <td>Elektronik</td>
-                        <td>12</td>
-                        <td>Rp 8.500.000</td>
-                        <td>
-                            <div class="action-buttons">
-                                <button class="action-btn btn-primary" onclick="editItem('004')">
-                                    <i class="fas fa-edit"></i>
-                                </button>
-                                <button class="action-btn btn-success" onclick="generateBarcode('MON-DLL-004')">
-                                    <i class="fas fa-barcode"></i>
-                                </button>
-                                <button class="action-btn btn-danger" onclick="deleteItem('004')">
-                                    <i class="fas fa-trash"></i>
-                                </button>
-                            </div>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>005</td>
-                        <td>Headset SteelSeries Arctis 7</td>
-                        <td>HDS-STS-005</td>
-                        <td>Audio</td>
-                        <td>20</td>
-                        <td>Rp 3.200.000</td>
-                        <td>
-                            <div class="action-buttons">
-                                <button class="action-btn btn-primary" onclick="editItem('005')">
-                                    <i class="fas fa-edit"></i>
-                                </button>
-                                <button class="action-btn btn-success" onclick="generateBarcode('HDS-STS-005')">
-                                    <i class="fas fa-barcode"></i>
-                                </button>
-                                <button class="action-btn btn-danger" onclick="deleteItem('005')">
-                                    <i class="fas fa-trash"></i>
-                                </button>
-                            </div>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
-    </div>
-
-    <!-- Barcode Modal -->
-    <div id="barcodeModal" class="modal">
-        <div class="modal-content">
-            <span class="close" onclick="closeBarcodeModal()">&times;</span>
-            <h2 style="margin-bottom: 20px; color: #2d3748;"><i class="fas fa-barcode"></i> Barcode Generator</h2>
-            <div id="barcodeDisplay" style="text-align: center; padding: 30px;">
-                <!-- Barcode will be generated here -->
-            </div>
-            <div style="text-align: center; margin-top: 20px;">
-                <button class="btn btn-primary" onclick="downloadBarcode()">
-                    <i class="fas fa-download"></i> Download Barcode
-                </button>
+            <!-- Pagination -->
+            <div class="mt-4 flex justify-center space-x-1">
+                <?php for ($p = 1; $p <= 5; $p++): ?>
+                    <a href="#" class="px-3 py-1 rounded-full <?= $p == 2 ? 'bg-gray-800 text-white' : 'bg-gray-200 text-gray-700' ?> text-sm">
+                        <?= $p ?>
+                    </a>
+                <?php endfor; ?>
+                <span class="px-3 py-1 text-gray-500">...</span>
+                <a href="#" class="px-3 py-1 rounded-full bg-gray-200 text-gray-700 text-sm">20</a>
             </div>
         </div>
-    </div>
+    </main>
 <?= $this->endSection(); ?>

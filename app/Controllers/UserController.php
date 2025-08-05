@@ -14,4 +14,25 @@ class UserController extends BaseController
         ];
         return view('user/dashboard', $data);
     }
+    public function kelolaBarang()
+    {
+        $data = [
+            'title' => 'Kelola Barang User - CargoWing',
+        ];
+        return view('user/kelola_barang', $data);
+    }
+    public function riwayat()
+    {
+        $data = [
+            'title' => 'Riiwayat - CargoWing',
+        ];
+        return view('user/riwayat', $data);
+    }
+    public function profil()
+    {
+        $data = [
+            'title' => 'profil - CargoWing',
+        ];
+        return view('user/profil', $data);
+    }
 }
