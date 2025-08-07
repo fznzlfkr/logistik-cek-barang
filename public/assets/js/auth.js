@@ -14,9 +14,6 @@ document.addEventListener("DOMContentLoaded", function () {
   setInterval(changeBackground, 4000);
 
   // Password toggle
-  const togglePassword = document.getElementById("togglePassword");
-  const passwordInput = document.getElementById("passwordInput");
-
   const eyeIcon = `
     <svg viewBox="0 0 24 24">
       <path d="M12 5c-7 0-10 7-10 7s3 7 10 7 10-7 10-7-3-7-10-7zm0 12c-2.76 0-5-2.24-5-5s2.24-5 
@@ -29,14 +26,35 @@ document.addEventListener("DOMContentLoaded", function () {
       2 12 2 12s4 8 10 8 10-8 10-8-4-8-10-8zm0 5a3 3 0 100 6 3 3 0 000-6z"/>
     </svg>`;
 
-  if (togglePassword && passwordInput) {
-    togglePassword.addEventListener("click", function () {
-      const isPassword = passwordInput.type === "password";
-      passwordInput.type = isPassword ? "text" : "password";
-      togglePassword.innerHTML = isPassword ? eyeOffIcon : eyeIcon;
-      togglePassword.title = isPassword ? "Hide password" : "Show password";
-    });
+  function setupTogglePassword(toggleId, inputId) {
+    const toggle = document.getElementById(toggleId);
+    const input = document.getElementById(inputId);
+    if (toggle && input) {
+      toggle.addEventListener("click", function () {
+        const isPassword = input.type === "password";
+        input.type = isPassword ? "text" : "password";
+        toggle.title = isPassword ? "Hide password" : "Show password";
+        // Ubah path SVG saja agar event listener tetap aktif
+        const svg = toggle.querySelector("svg");
+        if (svg) {
+          const path = svg.querySelector("path");
+          if (path) {
+            path.setAttribute(
+              "d",
+              isPassword
+                ? "M12 6a9.77 9.77 0 018.94 6A9.77 9.77 0 0112 18a9.77 9.77 0 01-8.94-6A9.77 9.77 0 0112 6m0-2C6 4 2 12 2 12s4 8 10 8 10-8 10-8-4-8-10-8zm0 5a3 3 0 100 6 3 3 0 000-6z"
+                : "M12 5c-7 0-10 7-10 7s3 7 10 7 10-7 10-7-3-7-10-7zm0 12c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8a3 3 0 100 6 3 3 0 000-6z"
+            );
+          }
+        }
+      });
+    }
   }
+
+  // Setup untuk semua kemungkinan toggle password
+  setupTogglePassword("togglePassword", "passwordInput"); // Register
+  setupTogglePassword("toggleConfirmPassword", "confirmPasswordInput"); // Register
+  setupTogglePassword("toggleLoginPassword", "loginPasswordInput"); // Login
 
   // Auto-hide alerts
   setTimeout(() => {
@@ -50,27 +68,14 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   }, 3500);
 
-  // Ambil elemen input jika ada
-  const nama = document.getElementById("nama");
-  const email = document.getElementById("email");
-  const password = document.getElementById("passwordInput");
-  const no_hp = document.getElementById("no_hp");
+  // Ambil elemen form
+  const loginForm = document.getElementById("loginForm");
+  const registerForm = document.getElementById("registerForm");
 
-  const namaError = document.getElementById("namaError");
+  // Ambil elemen input umum
+  const email = document.getElementById("email");
   const emailError = document.getElementById("emailError");
   const passwordError = document.getElementById("passwordError");
-  const nohpError = document.getElementById("nohpError");
-
-  function validateNama() {
-    if (!nama) return;
-    if (nama.value.trim() === "") {
-      namaError.innerText = "Nama wajib diisi.";
-      nama.classList.add("invalid");
-    } else {
-      namaError.innerText = "";
-      nama.classList.remove("invalid");
-    }
-  }
 
   function validateEmail() {
     if (!email) return;
@@ -84,66 +89,151 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   }
 
-  function validatePassword() {
-    if (!password) return;
-    if (password.value.length < 8) {
-      passwordError.innerText = "Password minimal 8 karakter.";
-      password.classList.add("invalid");
-    } else {
-      passwordError.innerText = "";
-      password.classList.remove("invalid");
-    }
-  }
-
-  function validateNoHp() {
-    if (!no_hp) return;
-    const noHpPattern = /^\d{10,}$/;
-    if (!noHpPattern.test(no_hp.value.trim())) {
-      nohpError.innerText = "No HP harus berupa angka minimal 10 digit.";
-      no_hp.classList.add("invalid");
-    } else {
-      nohpError.innerText = "";
-      no_hp.classList.remove("invalid");
-    }
-  }
-
-  // Event listener hanya jika elemen ada
-  if (nama) nama.addEventListener("input", validateNama);
+  // Event listener umum
   if (email) email.addEventListener("input", validateEmail);
-  if (password) password.addEventListener("input", validatePassword);
-  if (no_hp) no_hp.addEventListener("input", validateNoHp);
 
   // Register form
-  const registerForm = document.getElementById("registerForm");
   if (registerForm) {
+    const nama = document.getElementById("nama");
+    const password = document.getElementById("passwordInput");
+    const confirmPassword = document.getElementById("confirmPasswordInput");
+    const no_hp = document.getElementById("no_hp");
+
+    const namaError = document.getElementById("namaError");
+    const confirmPasswordError = document.getElementById(
+      "confirmPasswordError"
+    );
+    const nohpError = document.getElementById("nohpError");
+
+    function validateNama() {
+      if (nama.value.trim() === "") {
+        namaError.innerText = "Nama wajib diisi.";
+        nama.classList.add("invalid");
+      } else {
+        namaError.innerText = "";
+        nama.classList.remove("invalid");
+      }
+    }
+
+    function validatePassword() {
+      if (password.value.length < 8) {
+        passwordError.innerText = "Password minimal 8 karakter.";
+        password.classList.add("invalid");
+      } else {
+        passwordError.innerText = "";
+        password.classList.remove("invalid");
+      }
+    }
+
+    function validateConfirmPassword() {
+      if (confirmPassword.value === "") {
+        confirmPasswordError.innerText = "Konfirmasi password wajib diisi.";
+        confirmPassword.classList.add("invalid");
+      } else if (confirmPassword.value !== password.value) {
+        confirmPasswordError.innerText = "Konfirmasi password tidak sama.";
+        confirmPassword.classList.add("invalid");
+      } else {
+        confirmPasswordError.innerText = "";
+        confirmPassword.classList.remove("invalid");
+      }
+    }
+
+    function validateNoHp() {
+      const noHpPattern = /^\d{10,}$/;
+      if (!noHpPattern.test(no_hp.value.trim())) {
+        nohpError.innerText = "No HP harus berupa angka minimal 10 digit.";
+        no_hp.classList.add("invalid");
+      } else {
+        nohpError.innerText = "";
+        no_hp.classList.remove("invalid");
+      }
+    }
+
+    nama.addEventListener("input", validateNama);
+    password.addEventListener("input", validatePassword);
+    // Pastikan validasi konfirmasi password dipanggil setiap kali password atau konfirmasi password berubah
+    password.addEventListener("input", function () {
+      validatePassword();
+      validateConfirmPassword();
+    });
+    confirmPassword.addEventListener("input", function () {
+      validateConfirmPassword();
+    });
+    no_hp.addEventListener("input", function () {
+      no_hp.value = no_hp.value.replace(/[^0-9]/g, "");
+      validateNoHp();
+    });
+
     registerForm.addEventListener("submit", function (event) {
       validateNama();
       validateEmail();
       validatePassword();
+      validateConfirmPassword();
       validateNoHp();
 
-      if (
-        (nama && nama.classList.contains("invalid")) ||
-        (email && email.classList.contains("invalid")) ||
-        (password && password.classList.contains("invalid")) ||
-        (no_hp && no_hp.classList.contains("invalid"))
-      ) {
+      const fields = [nama, email, password, confirmPassword, no_hp];
+      let hasInvalid = false;
+      fields.forEach((input) => {
+        if (input && input.classList.contains("invalid")) {
+          input.classList.add("shake");
+          hasInvalid = true;
+          setTimeout(() => input.classList.remove("shake"), 400);
+        }
+      });
+
+      if (hasInvalid) {
         event.preventDefault();
       }
     });
   }
 
   // Login form
-  const loginForm = document.getElementById("loginForm");
   if (loginForm) {
+    const loginEmail = document.getElementById("loginEmail");
+    const loginEmailError = document.getElementById("loginEmailError");
+    const loginPassword = document.getElementById("loginPasswordInput");
+    const loginPasswordError = document.getElementById("loginPasswordError");
+
+    function validateLoginEmail() {
+      if (!loginEmail) return;
+      const emailPattern = /^[^ ]+@[^ ]+\.[a-z]{2,}$/i;
+      if (!emailPattern.test(loginEmail.value.trim())) {
+        loginEmailError.innerText = "Email tidak valid.";
+        loginEmail.classList.add("invalid");
+      } else {
+        loginEmailError.innerText = "";
+        loginEmail.classList.remove("invalid");
+      }
+    }
+
+    function validatePassword() {
+      if (loginPassword.value.length < 8) {
+        loginPasswordError.innerText = "Password minimal 8 karakter.";
+        loginPassword.classList.add("invalid");
+      } else {
+        loginPasswordError.innerText = "";
+        loginPassword.classList.remove("invalid");
+      }
+    }
+
+    if (loginEmail) loginEmail.addEventListener("input", validateLoginEmail);
+    loginPassword.addEventListener("input", validatePassword);
+
     loginForm.addEventListener("submit", function (event) {
-      validateEmail();
+      validateLoginEmail();
       validatePassword();
 
-      if (
-        (email && email.classList.contains("invalid")) ||
-        (password && password.classList.contains("invalid"))
-      ) {
+      const fields = [loginEmail, loginPassword];
+      let hasInvalid = false;
+      fields.forEach((input) => {
+        if (input && input.classList.contains("invalid")) {
+          input.classList.add("shake");
+          hasInvalid = true;
+          setTimeout(() => input.classList.remove("shake"), 400);
+        }
+      });
+
+      if (hasInvalid) {
         event.preventDefault();
       }
     });

@@ -40,42 +40,53 @@ class AuthController extends BaseController
         $email    = $this->request->getPost('email');
         $password = $this->request->getPost('password');
 
+        // Validasi input
+        if (empty($email) || empty($password)) {
+            return redirect()->back()->withInput()->with('error', 'Email dan password wajib diisi.');
+        }
+
         // Cek ke tabel admin terlebih dahulu
         $admin = $this->adminModel->where('email', $email)->first();
 
-        if ($admin && password_verify($password, $admin['password'])) {
-            $this->session->set([
-                'id_admin'  => $admin['id_admin'],
-                'nama'      => $admin['nama'],
-                'email'     => $admin['email'],
-                'role'      => $admin['role'],
-                'logged_in' => true
-            ]);
+        if ($admin) {
+            if (password_verify($password, $admin['password'])) {
+                $this->session->set([
+                    'id_admin'  => $admin['id_admin'],
+                    'nama'      => $admin['nama'],
+                    'email'     => $admin['email'],
+                    'role'      => $admin['role'],
+                    'logged_in' => true
+                ]);
 
-            if ($admin['role'] === 'Super Admin') {
-                return redirect()->to('superadmin/dashboard');
+                return $admin['role'] === 'Super Admin'
+                    ? redirect()->to('superadmin/dashboard')
+                    : redirect()->to('admin/dashboard');
             } else {
-                return redirect()->to('admin/dashboard');
+                return redirect()->back()->withInput()->with('error', 'Password salah.');
             }
         }
 
         // Jika tidak ditemukan di admin, cek tabel users
         $user = $this->userModel->where('email', $email)->first();
 
-        if ($user && password_verify($password, $user['password'])) {
-            $this->session->set([
-                'id_user'   => $user['id_user'],
-                'nama'      => $user['nama'],
-                'email'     => $user['email'],
-                'no_hp'     => $user['no_hp'],
-                'logged_in' => true,
-                // 'role'      => 'User' // Tambahan role bantu
-            ]);
+        if ($user) {
+            if (password_verify($password, $user['password'])) {
+                $this->session->set([
+                    'id_user'   => $user['id_user'],
+                    'nama'      => $user['nama'],
+                    'email'     => $user['email'],
+                    'no_hp'     => $user['no_hp'],
+                    'logged_in' => true,
+                ]);
 
-            return redirect()->to('user/dashboard');
+                return redirect()->to('user/dashboard');
+            } else {
+                return redirect()->back()->withInput()->with('error', 'Password salah.');
+            }
         }
 
-        return redirect()->back()->withInput()->with('error', 'Email atau password salah.');
+        // Jika email tidak ditemukan di kedua tabel
+        return redirect()->back()->withInput()->with('error', 'Email tidak terdaftar.');
     }
 
     public function registerProcess()

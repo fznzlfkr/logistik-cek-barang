@@ -67,6 +67,31 @@ h2 {
   font-size: 14px;
 }
 
+.form-input.shake {
+  animation: shake 0.35s;
+}
+
+@keyframes shake {
+  0% {
+    transform: translateX(0);
+  }
+  20% {
+    transform: translateX(-7px);
+  }
+  40% {
+    transform: translateX(7px);
+  }
+  60% {
+    transform: translateX(-7px);
+  }
+  80% {
+    transform: translateX(7px);
+  }
+  100% {
+    transform: translateX(0);
+  }
+}
+
 .form-checkbox {
   text-align: left;
   margin: 10px 0 20px;
@@ -117,18 +142,21 @@ h2 {
 
 .toggle-password {
   position: absolute;
-  top: 50%;
+  top: 0;
+  bottom: 0;
   right: 12px;
-  transform: translateY(-50%);
+  display: flex;
+  align-items: center;
+  height: 100%;
   cursor: pointer;
-  width: 20px;
-  height: 20px;
-  fill: #777;
+  width: 24px;
+  justify-content: center;
 }
 
 .toggle-password svg {
   width: 20px;
   height: 20px;
+  display: block;
 }
 
 .fade-out {
