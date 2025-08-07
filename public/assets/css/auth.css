@@ -155,3 +155,15 @@ h2 {
   margin-bottom: 1rem;
   font-size: 0.875rem;
 }
+.error-text {
+  color: red;
+  margin-top: -8px; /* Lebih dekat ke input di atasnya */
+  margin-bottom: 10px; /* Jarak ke input berikutnya */
+  font-size: 0.85em;
+  display: flex; /* Agar satu baris di bawah input */
+  padding-left: 2px; /* Sedikit rata kiri agar rapi */
+}
+
+.form-input.invalid {
+  border-color: red;
+}
