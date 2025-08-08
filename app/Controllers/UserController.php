@@ -37,7 +37,6 @@ class UserController extends BaseController
             ->orderBy('laporan.tanggal', 'DESC')
             ->limit(10)
             ->findAll();
-
         $data = [
             'title' => 'Dashboard User - CargoWing',
             'totalMasuk' => $totalMasuk,
@@ -56,11 +55,86 @@ class UserController extends BaseController
         $dataUser = session()->get('id_user');
         $user = $this->userModel->find($dataUser);
 
+        // Ambil data barang dari database
+        $barangList = $this->barangModel->findAll();
+
         $data = [
             'title' => 'Kelola Barang User - CargoWing',
-            'user' => $user
+            'user' => $user,
+            'barangList' => $barangList
         ];
         return view('user/kelola_barang', $data);
+    }
+
+    public function tambahBarang()
+    {
+        $dataUser = session()->get('id_user');
+        $user = $this->userModel->find($dataUser);
+
+        $data = [
+            'title' => 'Tambah Barang User - CargoWing',
+            'user' => $user
+        ];
+        return view('user/tambah_barang', $data);
+    }
+    public function simpanBarang()
+    {
+        if ($this->request->getMethod() === 'post') {
+            $data = [
+                'nama_barang'   => $this->request->getPost('nama_barang'),
+                'jumlah'        => $this->request->getPost('jumlah'),
+                'satuan'        => $this->request->getPost('satuan'),
+                'tanggal_masuk' => $this->request->getPost('tanggal_masuk'),
+                'barcode'       => $this->request->getPost('barcode'),
+                'minimum_stok'  => $this->request->getPost('minimum_stok'),
+            ];
+
+            // Validasi sederhana (pastikan semua field terisi)
+            foreach ($data as $key => $value) {
+                if ($value === null || $value === '') {
+                    return redirect()->back()->withInput()->with('error', 'Field ' . $key . ' wajib diisi.');
+                }
+            }
+
+            // Simpan data
+            if ($this->barangModel->insert($data)) {
+                return redirect()->back()->with('success', 'Barang berhasil ditambahkan.');
+            } else {
+                $error = $this->barangModel->errors();
+                return redirect()->back()->withInput()->with('error', 'Gagal menambah barang. ' . json_encode($error));
+            }
+        }
+        return redirect()->back()->with('error', 'Gagal menambah barang.');
+    }
+
+    public function editBarang($id)
+    {
+        if ($this->request->getMethod() === 'post') {
+            $data = [
+                'nama_barang'   => $this->request->getPost('nama_barang'),
+                'jumlah'        => $this->request->getPost('jumlah'),
+                'satuan'        => $this->request->getPost('satuan'),
+                'tanggal_masuk' => $this->request->getPost('tanggal_masuk'),
+                'barcode'       => $this->request->getPost('barcode'),
+                'minimum_stok'  => $this->request->getPost('minimum_stok'),
+            ];
+            $this->barangModel->update($id, $data);
+            return redirect()->back()->with('success', 'Barang berhasil diupdate.');
+        }
+        return redirect()->back()->with('error', 'Gagal update barang.');
+    }
+
+    public function hapusBarang($id)
+    {
+        $this->barangModel->delete($id);
+        return redirect()->back()->with('success', 'Barang berhasil dihapus.');
+    }
+
+    public function downloadBarcode($id)
+    {
+        // Dummy: Anda bisa generate barcode dan download di sini
+        // Sementara redirect saja
+        return redirect()->back()->with('success', 'Barcode berhasil diunduh (dummy).');
     }
 
     public function riwayat()
