@@ -43,7 +43,7 @@
                     <tr class="border-b text-gray-700 font-semibold">
                         <th class="px-4 py-2">No</th>
                         <th class="px-4 py-2">Waktu</th>
-                        <th class="px-4 py-2">Barang</th>
+                        <th class="px-4 py-2">Nama Barang</th>
                         <th class="px-4 py-2">Jenis</th>
                         <th class="px-4 py-2">Jumlah</th>
                     </tr>
@@ -52,7 +52,7 @@
                     <?php foreach ($laporanData as $index => $laporan): ?>
                         <tr class="border-b hover:bg-gray-50">
                             <td class="px-4 py-2"><?= $index + 1 ?></td>
-                            <td class="px-4 py-2"><?= esc($laporan['tanggal']) ?></td>
+                            <td class="px-4 py-2"><?= date('d-m-Y H:i:s', strtotime($laporan['tanggal'] . ' +7 hours')) ?></td>
                             <td class="px-4 py-2"><?= esc($laporan['nama_barang']) ?></td>
                             <td class="px-4 py-2"><?= esc($laporan['jenis']) ?></td>
                             <td class="px-4 py-2"><?= esc($laporan['jumlah']) ?></td>

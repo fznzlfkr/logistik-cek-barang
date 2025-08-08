@@ -4,10 +4,8 @@
 <head>
     <meta charset="UTF-8">
     <title>Dashboard - CargoWing</title>
-    <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter&display=swap" rel="stylesheet">
-    <script src="https://unpkg.com/feather-icons"></script>
-    <link rel="stylesheet" href="<?= base_url('assets/css/user.css') ?>">
+    <script src="https://cdn.tailwindcss.com"></script>
     <style>
         body {
             font-family: 'Inter', sans-serif;
@@ -30,7 +28,7 @@
         </nav>
         <div class="flex items-center gap-3">
             <div class="text-right text-sm">
-                <div class="font-semibold text-gray-800"><?= esc($user['nama']); ?></div>
+                <div class="font-semibold text-gray-800"><?= esc($user['nama']) ?></div>
                 <div class="text-gray-500 text-xs">Staff Gudang</div>
             </div>
             <img src="../assets/img/logo.jpg" alt="User" class="w-8 h-8 rounded-full">
@@ -38,8 +36,10 @@
     </header>
 
     <?= $this->renderSection('content') ?>
-
-
+    <script src="https://unpkg.com/feather-icons"></script>
+    <script>
+        feather.replace();
+    </script>
 </body>
 
 </html>

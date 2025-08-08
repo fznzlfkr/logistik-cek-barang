@@ -66,14 +66,45 @@ class UserController extends BaseController
     public function riwayat()
     {
         $dataUser = session()->get('id_user');
-        $user = $this->userModel->find($dataUser);
+        $user     = $this->userModel->find($dataUser);
+
+        // Ambil jumlah per halaman (default 10)
+        $perPage  = $this->request->getVar('per_page') ?? 10;
+        // Ambil keyword pencarian
+        $keyword  = $this->request->getVar('keyword');
+
+        // Query dasar
+        $riwayatQuery = $this->laporanModel
+            ->select('laporan.tanggal, laporan.jumlah, laporan.jenis, users.nama, barang.nama_barang, laporan.id_laporan')
+            ->join('users', 'users.id_user = laporan.id_user')
+            ->join('barang', 'barang.id_barang = laporan.id_barang');
+
+        // Filter pencarian kalau ada keyword
+        if (!empty($keyword)) {
+            $riwayatQuery->groupStart()
+                ->like('barang.nama_barang', $keyword)
+                ->orLike('users.nama', $keyword)
+                ->orLike('laporan.jenis', $keyword)
+                ->groupEnd();
+        }
+
+        // Ambil data dengan pagination
+        $riwayatData = $riwayatQuery
+            ->orderBy('laporan.tanggal', 'DESC')
+            ->paginate($perPage, 'riwayat');
 
         $data = [
-            'title' => 'Riiwayat - CargoWing',
-            'user' => $user
+            'title'       => 'Riwayat - CargoWing',
+            'user'        => $user,
+            'riwayatData' => $riwayatData,
+            'pager'       => $this->laporanModel->pager,
+            'perPage'     => $perPage,
+            'keyword'     => $keyword
         ];
+
         return view('user/riwayat', $data);
     }
+
 
     public function profil()
     {
