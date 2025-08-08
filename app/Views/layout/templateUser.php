@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <title>Dashboard - CargoWing</title>
@@ -13,6 +14,7 @@
         }
     </style>
 </head>
+
 <body class="bg-gray-100 min-h-screen">
     <!-- Navbar -->
     <header class="bg-white shadow px-6 py-4 flex justify-between items-center">
@@ -28,7 +30,7 @@
         </nav>
         <div class="flex items-center gap-3">
             <div class="text-right text-sm">
-                <div class="font-semibold text-gray-800">Nama User</div>
+                <div class="font-semibold text-gray-800"><?= esc($user['nama']); ?></div>
                 <div class="text-gray-500 text-xs">Staff Gudang</div>
             </div>
             <img src="../assets/img/logo.jpg" alt="User" class="w-8 h-8 rounded-full">
@@ -39,4 +41,5 @@
 
 
 </body>
+
 </html>
