@@ -23,6 +23,9 @@ class UserController extends BaseController
 
     public function index()
     {
+        $dataUser = session()->get('id_user');
+        $user = $this->userModel->find($dataUser);
+
         $totalMasuk = $this->laporanModel->where('jenis', 'Masuk')->countAllResults();
         $totalDipakai = $this->laporanModel->where('jenis', 'Dipakai')->countAllResults();
         $totalBarang = $this->barangModel->selectSum('jumlah')->get()->getRow()->jumlah;
@@ -42,6 +45,7 @@ class UserController extends BaseController
             'totalBarang' => $totalBarang,
             'barangMinimum' => $barangMinimum,
             'laporanData' => $laporanData,
+            'user' => $user
         ];
 
         return view('user/dashboard', $data);
@@ -49,24 +53,36 @@ class UserController extends BaseController
 
     public function kelolaBarang()
     {
+        $dataUser = session()->get('id_user');
+        $user = $this->userModel->find($dataUser);
+
         $data = [
             'title' => 'Kelola Barang User - CargoWing',
+            'user' => $user
         ];
         return view('user/kelola_barang', $data);
     }
 
     public function riwayat()
     {
+        $dataUser = session()->get('id_user');
+        $user = $this->userModel->find($dataUser);
+
         $data = [
             'title' => 'Riiwayat - CargoWing',
+            'user' => $user
         ];
         return view('user/riwayat', $data);
     }
 
     public function profil()
     {
+        $dataUser = session()->get('id_user');
+        $user = $this->userModel->find($dataUser);
+
         $data = [
             'title' => 'profil - CargoWing',
+            'user' => $user
         ];
         return view('user/profil', $data);
     }
