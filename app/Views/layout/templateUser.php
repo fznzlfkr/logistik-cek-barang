@@ -6,6 +6,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/feather-icons"></script>
+    <link rel="stylesheet" href="<?= base_url('assets/css/user.css') ?>">
     <style>
         body {
             font-family: 'Inter', sans-serif;
@@ -36,8 +37,6 @@
 
     <?= $this->renderSection('content') ?>
 
-    <script>
-        feather.replace();
-    </script>
+
 </body>
 </html>

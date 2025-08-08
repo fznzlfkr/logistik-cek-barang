@@ -25,4 +25,7 @@ $routes->group('user', ['filter' => 'auth'], function($routes) {
     $routes->get('kelola_barang', 'UserController::kelolaBarang');
     $routes->get('riwayat', 'UserController::riwayat');
     $routes->get('profil', 'UserController::profil');
+    $routes->post('profil/update', 'UserController::update');
+    $routes->post('profil/ganti-password', 'UserController::gantiPassword');
+    $routes->post('logout', 'UserController::logout');
 });
