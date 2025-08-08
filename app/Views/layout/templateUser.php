@@ -14,6 +14,7 @@
 </head>
 
 <body class="bg-gray-100 min-h-screen">
+
     <!-- Navbar -->
     <header class="bg-white shadow px-6 py-4 flex justify-between items-center">
         <div class="flex items-center gap-2">
@@ -35,6 +36,7 @@
         </div>
     </header>
 
+    <!-- Konten Dinamis -->
     <?= $this->renderSection('content') ?>
     <script src="https://unpkg.com/feather-icons"></script>
     <script>

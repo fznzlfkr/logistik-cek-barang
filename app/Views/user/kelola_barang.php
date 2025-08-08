@@ -1,73 +1,178 @@
 <?= $this->extend('layout/templateUser') ?>
 <?= $this->section('content') ?>
+
 <main class="px-6 py-8">
+
+    <!-- Header -->
     <div class="flex justify-between items-center mb-4">
-      <h1 class="text-xl font-bold">Kelola Barang</h1>
-      <button class="bg-gray-800 text-white px-4 py-2 rounded hover:bg-gray-700 text-sm">Tambah</button>
+        <h1 class="text-xl font-bold">Kelola Barang</h1>
+        <button type="button" onclick="openModal()" class="bg-gray-800 text-white px-4 py-2 rounded hover:bg-gray-700 text-sm">Tambah</button>
     </div>
 
     <!-- Search -->
     <div class="mb-4">
-      <input type="text" placeholder="Search..." class="px-3 py-2 border border-gray-300 rounded w-64 focus:outline-none focus:ring focus:ring-blue-200 text-sm" />
+        <form method="get" action="">
+            <input type="text" name="q" placeholder="Search..." class="px-3 py-2 border border-gray-300 rounded w-64 focus:outline-none focus:ring focus:ring-blue-200 text-sm" value="<?= esc($_GET['q'] ?? '') ?>" />
+        </form>
     </div>
 
     <!-- Table -->
     <div class="overflow-x-auto">
-      <table class="min-w-full text-sm bg-white rounded shadow">
-        <thead class="bg-gray-200 text-gray-700 font-semibold">
-          <tr>
-            <th class="p-3 text-center"><input type="checkbox" /></th>
-            <th class="p-3 text-left">No</th>
-            <th class="p-3 text-left">Nama Barang</th>
-            <th class="p-3 text-left">Jumlah</th>
-            <th class="p-3 text-left">Satuan</th>
-            <th class="p-3 text-left">Tgl Masuk</th>
-            <th class="p-3 text-left">Barcode</th>
-            <th class="p-3 text-left">Min Stok</th>
-            <th class="p-3 text-center">Aksi</th>
-          </tr>
-        </thead>
-        <tbody>
-          <!-- Contoh baris -->
-          <?php for ($i = 1; $i <= 10; $i++): ?>
-          <tr class="border-t hover:bg-gray-50">
-            <td class="p-3 text-center"><input type="checkbox" /></td>
-            <td class="p-3"><?= $i ?></td>
-            <td class="p-3">Barang <?= $i ?></td>
-            <td class="p-3">100</td>
-            <td class="p-3">Box</td>
-            <td class="p-3">2025-08-01</td>
-            <td class="p-3">BRG<?= $i ?>123</td>
-            <td class="p-3">10</td>
-            <td class="p-3 text-center space-x-2">
-              <button title="Edit"><i data-feather="edit" class="w-4 h-4 text-gray-600"></i></button>
-              <button title="Download"><i data-feather="download" class="w-4 h-4 text-gray-600"></i></button>
-              <button title="Lainnya"><i data-feather="more-vertical" class="w-4 h-4 text-gray-600"></i></button>
-            </td>
-          </tr>
-          <?php endfor; ?>
-        </tbody>
-      </table>
+        <table class="min-w-full text-sm bg-white rounded shadow">
+            <thead class="bg-gray-200 text-gray-700 font-semibold">
+                <tr>
+                    <th class="p-3 text-left">No</th>
+                    <th class="p-3 text-left">Nama Barang</th>
+                    <th class="p-3 text-left">Jumlah</th>
+                    <th class="p-3 text-left">Satuan</th>
+                    <th class="p-3 text-left">Tgl Masuk</th>
+                    <th class="p-3 text-left">Barcode</th>
+                    <th class="p-3 text-left">Min Stok</th>
+                    <th class="p-3 text-center">Aksi</th>
+                </tr>
+            </thead>
+            <tbody>
+                <?php if (!empty($barangList)): ?>
+                    <?php $no = 1; foreach ($barangList as $barang): ?>
+                        <tr class="border-t hover:bg-gray-50">
+                            <td class="p-3"><?= $no++ ?></td>
+                            <td class="p-3"><?= esc($barang['nama_barang']) ?></td>
+                            <td class="p-3"><?= esc($barang['jumlah']) ?></td>
+                            <td class="p-3"><?= esc($barang['satuan']) ?></td>
+                            <td class="p-3"><?= esc($barang['tanggal_masuk']) ?></td>
+                            <td class="p-3"><?= esc($barang['barcode']) ?></td>
+                            <td class="p-3"><?= esc($barang['minimum_stok']) ?></td>
+                            <td class="p-3 text-center space-x-2">
+                                <!-- Edit -->
+                                <form action="<?= base_url('user/edit_barang/' . $barang['id_barang']) ?>" method="post" class="inline">
+                                    <?= csrf_field() ?>
+                                    <button title="Edit" class="inline-flex items-center px-2 py-1 bg-blue-500 hover:bg-blue-600 text-white rounded transition">
+                                        <i data-feather="edit" class="w-4 h-4"></i>
+                                    </button>
+                                </form>
+                                <!-- Download -->
+                                <form action="<?= base_url('user/download_barcode/' . $barang['id_barang']) ?>" method="post" class="inline">
+                                    <?= csrf_field() ?>
+                                    <button title="Download" class="inline-flex items-center px-2 py-1 bg-green-500 hover:bg-green-600 text-white rounded transition">
+                                        <i data-feather="download" class="w-4 h-4"></i>
+                                    </button>
+                                </form>
+                                <!-- Hapus -->
+                                <form action="<?= base_url('user/hapus_barang/' . $barang['id_barang']) ?>" method="post" class="inline" onsubmit="return confirm('Yakin hapus barang ini?')">
+                                    <?= csrf_field() ?>
+                                    <button title="Hapus" class="inline-flex items-center px-2 py-1 bg-red-500 hover:bg-red-600 text-white rounded transition">
+                                        <i data-feather="trash" class="w-4 h-4"></i>
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                    <?php endforeach; ?>
+                <?php else: ?>
+                    <tr><td colspan="9" class="text-center py-4">Tidak ada data barang.</td></tr>
+                <?php endif; ?>
+            </tbody>
+        </table>
     </div>
 
-    <!-- Footer Table (Pagination + Rows per page) -->
-    <div class="flex justify-between items-center mt-4 text-sm">
-      <div class="flex items-center gap-2">
-        <span>Rows per page</span>
-        <select class="border border-gray-300 px-2 py-1 rounded">
-          <option>3</option>
-          <option>10</option>
-          <option>25</option>
-        </select>
-      </div>
-      <div class="flex items-center gap-2">
-        <span>1 - 10 of 406</span>
-        <button><i data-feather="chevrons-left" class="w-4 h-4"></i></button>
-        <button><i data-feather="chevron-left" class="w-4 h-4"></i></button>
-        <button><i data-feather="chevron-right" class="w-4 h-4"></i></button>
-        <button><i data-feather="chevrons-right" class="w-4 h-4"></i></button>
-      </div>
+    <!-- Modal -->
+    <div id="modalTambah" class="hidden fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
+        <div class="bg-white rounded-lg shadow-lg w-3/4 p-6 relative">
+            <button type="button" onclick="closeModal()" class="absolute top-3 right-3 text-gray-500 hover:text-gray-700">&times;</button>
+            <h2 class="text-lg font-semibold mb-4">Tambah Barang</h2>
+
+            <form id="formTambahBarang" action="<?= base_url('user/simpan_barang') ?>" method="post" enctype="multipart/form-data" class="grid grid-cols-3 gap-6">
+                <?= csrf_field() ?>
+                <!-- Form Kiri -->
+                <div class="col-span-2 grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm">Nama barang</label>
+                        <input type="text" name="nama_barang" id="inputNamaBarang" placeholder="Masukkan nama barang" class="w-full border rounded px-3 py-2" required>
+                    </div>
+                    <div>
+                        <label class="block text-sm">Jumlah</label>
+                        <input type="number" name="jumlah" id="inputJumlah" placeholder="Masukkan jumlah barang" class="w-full border rounded px-3 py-2" required>
+                    </div>
+                    <div>
+                        <label class="block text-sm">Satuan</label>
+                        <input type="text" name="satuan" id="inputSatuan" placeholder="Masukkan satuan barang" class="w-full border rounded px-3 py-2" required>
+                    </div>
+                    <div>
+                        <label class="block text-sm">Tanggal Masuk</label>
+                        <input type="date" name="tanggal_masuk" id="inputTanggalMasuk" class="w-full border rounded px-3 py-2" required>
+                    </div>
+                    <div>
+                        <label class="block text-sm">Minimum Stok</label>
+                        <input type="number" name="minimum_stok" id="inputMinimumStok" placeholder="Minimum stok" class="w-full border rounded px-3 py-2" required>
+                    </div>
+                </div>
+                <!-- Form Barcode -->
+                <div class="col-span-1 flex flex-col items-center justify-center border rounded p-4">
+                    <label class="block text-sm mb-2">Barcode (QR Code)</label>
+                    <div id="qrcode" class="w-32 h-32 flex items-center justify-center bg-gray-100 border mb-3"></div>
+                    <button type="button" onclick="generateBarcode()" class="bg-gray-800 text-white px-4 py-2 rounded mb-2">Generate</button>
+                    <input type="text" name="barcode" id="barcodeInput" class="w-full border rounded px-3 py-2 text-center" readonly required>
+                </div>
+                <!-- Tombol -->
+                <div class="col-span-3 flex justify-end gap-2 mt-4">
+                    <button type="submit" class="bg-gray-800 text-white px-4 py-2 rounded">Tambah</button>
+                    <button type="button" onclick="closeModal()" class="bg-gray-300 text-black px-4 py-2 rounded">Batal</button>
+                </div>
+            </form>
+            </form>
+        </div>
     </div>
-  </main>
+
+</main>
+
+<!-- SCRIPT -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script>
+function openModal() {
+    document.getElementById('modalTambah').classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
+}
+function closeModal() {
+    document.getElementById('modalTambah').classList.add('hidden');
+    document.body.style.overflow = 'auto';
+    document.getElementById('formTambahBarang').reset();
+    document.getElementById('qrcode').innerHTML = '';
+    document.getElementById('barcodeInput').value = '';
+}
+function generateBarcode() {
+    const nama = document.getElementById('inputNamaBarang').value;
+    if (!nama) {
+        alert('Isi nama barang terlebih dahulu!');
+        return;
+    }
+    const prefix = nama.substring(0, 3).toUpperCase();
+    const rand = Math.floor(Math.random() * 1000000).toString().padStart(6, '0');
+    const barcode = `BC${prefix}${rand}`;
+    document.getElementById('barcodeInput').value = barcode;
+    document.getElementById('qrcode').innerHTML = '';
+    new QRCode(document.getElementById('qrcode'), {
+        text: barcode,
+        width: 120,
+        height: 120,
+        colorDark: "#000000",
+        colorLight: "#ffffff",
+        correctLevel: QRCode.CorrectLevel.H
+    });
+}
+
+// Validasi barcode sebelum submit
+document.getElementById('formTambahBarang').addEventListener('submit', function(e) {
+    const barcode = document.getElementById('barcodeInput').value;
+    if (!barcode) {
+        alert('Silakan generate barcode terlebih dahulu!');
+        e.preventDefault();
+    }
+});
+document.addEventListener('keydown', function(e) {
+    if (!document.getElementById('modalTambah').classList.contains('hidden') && e.key === 'Escape') closeModal();
+});
+document.getElementById('modalTambah').addEventListener('click', function(e) {
+    if (e.target === this) closeModal();
+});
+</script>
 
 <?= $this->endSection() ?>

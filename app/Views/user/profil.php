@@ -22,15 +22,15 @@
         <form action="<?= base_url('user/profil/update') ?>" method="post" enctype="multipart/form-data">
           <div class="mb-3">
             <label class="block text-sm font-medium text-gray-700 mb-1">Nama</label>
-            <input type="text" name="nama" value="<?= session()->get('nama') ?>" class="w-full border border-gray-300 px-3 py-2 rounded text-sm" required />
+            <input type="text" name="nama" value="<?= $user['nama'] ?>" class="w-full border border-gray-300 px-3 py-2 rounded text-sm" required />
           </div>
           <div class="mb-3">
             <label class="block text-sm font-medium text-gray-700 mb-1">Email</label>
-            <input type="email" name="email" value="<?= session()->get('email') ?>" class="w-full border border-gray-300 px-3 py-2 rounded text-sm" required />
+            <input type="email" name="email" value="<?= $user['email'] ?>" class="w-full border border-gray-300 px-3 py-2 rounded text-sm" required />
           </div>
           <div class="mb-3">
             <label class="block text-sm font-medium text-gray-700 mb-1">No HP</label>
-            <input type="text" name="no_hp" value="<?= session()->get('no_hp') ?>" class="w-full border border-gray-300 px-3 py-2 rounded text-sm" required />
+            <input type="text" name="no_hp" value="<?= $user['no_hp'] ?>" class="w-full border border-gray-300 px-3 py-2 rounded text-sm" required />
           </div>
 
           <!-- Upload Foto -->

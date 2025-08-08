@@ -12,28 +12,24 @@ class BarangModel extends Model
     protected $returnType       = 'array';
     protected $useSoftDeletes   = false;
     protected $protectFields    = true;
-    protected $allowedFields    = ['id_barang', 'nama_barang', 'jumlah', 'satuan', 'tanggal_masuk', 'barcode', 'minimum_stok'];
+    protected $allowedFields    = [
+        'nama_barang',
+        'jumlah',
+        'satuan',
+        'tanggal_masuk',
+        'barcode',
+        'minimum_stok'
+    ];
 
-    protected bool $allowEmptyInserts = false;
-    protected bool $updateOnlyChanged = true;
-
-    protected array $casts = [];
-    protected array $castHandlers = [];
-
-    // Dates
+    // Jika tidak menggunakan timestamps, bisa di-nonaktifkan
     protected $useTimestamps = false;
-    protected $dateFormat    = 'datetime';
-    protected $createdField  = 'created_at';
-    protected $updatedField  = 'updated_at';
-    protected $deletedField  = 'deleted_at';
 
-    // Validation
+    // Validation (opsional, bisa diisi jika ingin validasi model)
     protected $validationRules      = [];
     protected $validationMessages   = [];
     protected $skipValidation       = false;
-    protected $cleanValidationRules = true;
 
-    // Callbacks
+    // Callbacks (opsional, jika tidak digunakan bisa dikosongkan)
     protected $allowCallbacks = true;
     protected $beforeInsert   = [];
     protected $afterInsert    = [];

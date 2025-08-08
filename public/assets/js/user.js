@@ -1,3 +1,6 @@
+// feather-icons
+feather.replace();
+
 setTimeout(() => {
   const success = document.getElementById("successAlert");
   const error = document.getElementById("errorAlert");

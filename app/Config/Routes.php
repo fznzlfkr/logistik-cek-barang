@@ -23,6 +23,11 @@ $routes->group('admin', ['filter' => 'auth'], function($routes) {
 $routes->group('user', ['filter' => 'auth'], function($routes) {
     $routes->get('dashboard', 'UserController::index');
     $routes->get('kelola_barang', 'UserController::kelolaBarang');
+    $routes->get('tambah_barang', 'UserController::tambahBarang');
+    $routes->post('simpan_barang', 'UserController::simpanBarang');
+    $routes->post('edit_barang/(:num)', 'UserController::editBarang/$1');
+    $routes->post('hapus_barang/(:num)', 'UserController::hapusBarang/$1');
+    $routes->get('download_barcode/(:num)', 'UserController::downloadBarcode/$1');
     $routes->get('riwayat', 'UserController::riwayat');
     $routes->get('profil', 'UserController::profil');
     $routes->post('profil/update', 'UserController::update');
