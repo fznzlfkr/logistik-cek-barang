@@ -29,13 +29,15 @@
             <a href="<?= base_url('/user/riwayat') ?>" class="text-gray-700 hover:text-blue-600">Riwayat</a>
             <a href="<?= base_url('/user/profil') ?>" class="text-gray-700 hover:text-blue-600">Profil</a>
         </nav>
-        <div class="flex items-center gap-3">
+        <a href="<?= base_url('user/profil') ?>">
+            <div class="flex items-center gap-3">
             <div class="text-right text-sm">
                 <div class="font-semibold text-gray-800"><?= esc($user['nama']) ?></div>
                 <div class="text-gray-500 text-xs">Staff Gudang</div>
             </div>
             <img src="../assets/img/logo.jpg" alt="User" class="w-8 h-8 rounded-full">
         </div>
+        </a>
     </header>
 
     <!-- Konten Dinamis -->
