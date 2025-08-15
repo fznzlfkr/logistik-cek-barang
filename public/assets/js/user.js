@@ -30,7 +30,7 @@ setTimeout(() => {
       setTimeout(() => el.remove(), 500);
     }
   });
-}, 3500);
+}, 3000);
 
 const passwordBaru = document.querySelector('input[name="password_baru"]');
 const konfirmasi = document.querySelector('input[name="konfirmasi_password"]');
@@ -79,3 +79,29 @@ function setTogglePassword(inputId, toggleId) {
 setTogglePassword("passwordLama", "togglePasswordLama");
 setTogglePassword("passwordBaru", "togglePasswordBaru");
 setTogglePassword("konfirmasiPassword", "toggleKonfirmasiPassword");
+
+// SweetAlert untuk konfirmasi hapus
+document.querySelectorAll(".btn-hapus").forEach((button) => {
+  button.addEventListener("click", function () {
+    const id = this.getAttribute("data-id");
+    Swal.fire({
+      title: "Yakin ingin menghapus?",
+      text: "Data yang dihapus tidak dapat dikembalikan!",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#d33",
+      cancelButtonColor: "#3085d6",
+      confirmButtonText: "Ya, hapus!",
+      cancelButtonText: "Batal",
+    }).then((result) => {
+      if (result.isConfirmed) {
+        const form = document.createElement("form");
+        form.method = "POST";
+        form.action = `/user/hapus-riwayat/${id}`;
+        form.innerHTML = `<?= csrf_field() ?>`;
+        document.body.appendChild(form);
+        form.submit();
+      }
+    });
+  });
+});

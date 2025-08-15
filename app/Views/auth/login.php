@@ -14,6 +14,7 @@
 <?php endif; ?>
 
 <form id="loginForm" action="<?= base_url('loginProcess') ?>" method="post">
+    <?= csrf_field() ?>
     <input id="loginEmail" class="form-input" name="email" type="email" placeholder="Masukkan email" />
     <small id="loginEmailError" class="error-text"></small>
 

@@ -11,16 +11,16 @@ $routes->post('/loginProcess', 'AuthController::loginProcess');
 $routes->post('/registerProcess', 'AuthController::registerProcess');
 $routes->get('/logout', 'AuthController::logout');
 // File: app/Config/Routes.php
-$routes->group('superadmin', ['filter' => 'auth'], function($routes) {
+$routes->group('superadmin', ['filter' => 'auth'], function ($routes) {
     $routes->get('dashboard', 'AdminController::indexSuperAdmin');
 });
 
-$routes->group('admin', ['filter' => 'auth'], function($routes) {
+$routes->group('admin', ['filter' => 'auth'], function ($routes) {
     $routes->get('dashboard', 'AdminController::index');
 });
 
 
-$routes->group('user', ['filter' => 'auth'], function($routes) {
+$routes->group('user', ['filter' => 'auth'], function ($routes) {
     $routes->get('dashboard', 'UserController::index');
     $routes->get('kelola_barang', 'UserController::kelolaBarang');
     $routes->get('tambah_barang', 'UserController::tambahBarang');
@@ -36,4 +36,7 @@ $routes->group('user', ['filter' => 'auth'], function($routes) {
     $routes->post('profil/update', 'UserController::update');
     $routes->post('profil/ganti-password', 'UserController::gantiPassword');
     $routes->post('logout', 'UserController::logout');
+    $routes->post('hapus-riwayat/(:num)', 'UserController::hapusRiwayat/$1');
+    $routes->post('edit-riwayat/(:num)', 'UserController::editRiwayat/$1');
+    $routes->post('print-riwayat/(:num)', 'UserController::printRiwayat/$1');
 });

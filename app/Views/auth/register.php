@@ -15,6 +15,7 @@
 <?php endif; ?>
 
 <form id="registerForm" action="<?= base_url('registerProcess') ?>" method="post" novalidate>
+    <?= csrf_field() ?>
     <input class="form-input" name="nama" id="nama" type="text" placeholder="Masukkan nama" required />
     <small id="namaError" class="error-text"></small>
 

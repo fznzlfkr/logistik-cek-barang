@@ -183,6 +183,21 @@ document.addEventListener("DOMContentLoaded", function () {
 
       if (hasInvalid) {
         event.preventDefault();
+      } else {
+        // Konfirmasi dengan SweetAlert sebelum submit
+        event.preventDefault(); // Mencegah pengiriman form default
+        Swal.fire({
+          title: "Konfirmasi Pendaftaran",
+          text: "Apakah Anda yakin dengan data yang dimasukkan?",
+          icon: "question",
+          showCancelButton: true,
+          confirmButtonText: "Ya, Daftar",
+          cancelButtonText: "Batal",
+        }).then((result) => {
+          if (result.isConfirmed) {
+            registerForm.submit(); // Kirim form jika dikonfirmasi
+          }
+        });
       }
     });
   }
