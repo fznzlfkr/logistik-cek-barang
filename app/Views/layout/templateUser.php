@@ -5,6 +5,8 @@
     <meta charset="UTF-8">
     <title>Dashboard - CargoWing</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="<?= base_url('../assets/css/user.css') ?>">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         body {
@@ -18,7 +20,7 @@
     <!-- Navbar -->
     <header class="bg-white shadow px-6 py-4 flex justify-between items-center">
         <div class="flex items-center gap-2">
-            <img src="../assets/img/logo.jpg" alt="Logo" class="w-8 h-8 rounded-full">
+            <img src="../assets/img/logo.jpg" alt="Logo CargoWing" class="w-8 h-8 rounded-full">
             <span class="text-xl font-semibold">CargoWing</span>
         </div>
         <nav class="space-x-6 text-sm font-medium">
@@ -39,6 +41,7 @@
     <!-- Konten Dinamis -->
     <?= $this->renderSection('content') ?>
     <script src="https://unpkg.com/feather-icons"></script>
+    <script src="<?= base_url('../assets/js/user.js') ?>"></script>
     <script>
         feather.replace();
     </script>
