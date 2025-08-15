@@ -3,6 +3,8 @@
 
 <head>
     <meta charset="UTF-8">
+    <meta name="csrf-token" content="<?= csrf_hash() ?>">
+    <meta name="csrf-token-name" content="<?= csrf_token() ?>">
     <title>Dashboard - CargoWing</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="<?= base_url('../assets/css/user.css') ?>">
@@ -29,13 +31,15 @@
             <a href="<?= base_url('/user/riwayat') ?>" class="text-gray-700 hover:text-blue-600">Riwayat</a>
             <a href="<?= base_url('/user/profil') ?>" class="text-gray-700 hover:text-blue-600">Profil</a>
         </nav>
-        <div class="flex items-center gap-3">
-            <div class="text-right text-sm">
-                <div class="font-semibold text-gray-800"><?= esc($user['nama']) ?></div>
-                <div class="text-gray-500 text-xs">Staff Gudang</div>
+        <a href="<?= base_url('user/profil') ?>">
+            <div class="flex items-center gap-3">
+                <div class="text-right text-sm">
+                    <div class="font-semibold text-gray-800"><?= esc($user['nama']) ?></div>
+                    <div class="text-gray-500 text-xs">Staff Gudang</div>
+                </div>
+                <img src="../assets/img/logo.jpg" alt="User" class="w-8 h-8 rounded-full">
             </div>
-            <img src="../assets/img/logo.jpg" alt="User" class="w-8 h-8 rounded-full">
-        </div>
+        </a>
     </header>
 
     <!-- Konten Dinamis -->

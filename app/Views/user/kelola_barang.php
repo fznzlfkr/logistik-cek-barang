@@ -6,8 +6,18 @@
     <!-- Header -->
     <div class="flex justify-between items-center mb-4">
         <h1 class="text-xl font-bold">Kelola Barang</h1>
-        <button type="button" onclick="openModal()" class="bg-gray-800 text-white px-4 py-2 rounded hover:bg-gray-700 text-sm">Tambah</button>
+        <button type="button" onclick="openModalTambah()" class="bg-gray-800 text-white px-4 py-2 rounded hover:bg-gray-700 text-sm">Tambah</button>
     </div>
+    <?php if (session()->getFlashdata('error')): ?>
+        <div id="errorAlert" class="error-message">
+            <?= session()->getFlashdata('error'); ?>
+        </div>
+    <?php endif; ?>
+    <?php if (session()->getFlashdata('success')): ?>
+        <div id="successAlert" class="success-message">
+            <?= session()->getFlashdata('success'); ?>
+        </div>
+    <?php endif; ?>
 
     <!-- Search -->
     <div class="mb-4">
@@ -45,12 +55,9 @@
                             <td class="p-3"><?= esc($barang['minimum_stok']) ?></td>
                             <td class="p-3 text-center space-x-2">
                                 <!-- Edit -->
-                                <form action="<?= base_url('user/edit_barang/' . $barang['id_barang']) ?>" method="post" class="inline">
-                                    <?= csrf_field() ?>
-                                    <button title="Edit" class="inline-flex items-center px-2 py-1 bg-blue-500 hover:bg-blue-600 text-white rounded transition">
-                                        <i data-feather="edit" class="w-4 h-4"></i>
-                                    </button>
-                                </form>
+                                <button type="button" onclick="openModalEdit(<?= htmlspecialchars(json_encode($barang), ENT_QUOTES, 'UTF-8') ?>)" class="inline-flex items-center px-2 py-1 bg-blue-500 hover:bg-blue-600 text-white rounded transition">
+                                    <i data-feather="edit" class="w-4 h-4"></i>
+                                </button>
                                 <!-- Download -->
                                 <form action="<?= base_url('user/download_barcode/' . $barang['id_barang']) ?>" method="post" class="inline">
                                     <?= csrf_field() ?>
@@ -59,9 +66,13 @@
                                     </button>
                                 </form>
                                 <!-- Hapus -->
-                                <form action="<?= base_url('user/hapus_barang/' . $barang['id_barang']) ?>" method="post" class="inline" onsubmit="return confirm('Yakin hapus barang ini?')">
+                                <form action="<?= base_url('user/hapus_barang/' . $barang['id_barang']) ?>"
+                                    method="post"
+                                    class="form-hapus inline">
                                     <?= csrf_field() ?>
-                                    <button title="Hapus" class="inline-flex items-center px-2 py-1 bg-red-500 hover:bg-red-600 text-white rounded transition">
+                                    <button title="Hapus"
+                                        type="submit"
+                                        class="btn-hapus inline-flex items-center px-2 py-1 bg-red-500 hover:bg-red-600 text-white rounded transition">
                                         <i data-feather="trash" class="w-4 h-4"></i>
                                     </button>
                                 </form>
@@ -77,12 +88,11 @@
         </table>
     </div>
 
-    <!-- Modal update -->
+    <!-- Modal Tambah -->
     <div id="modalTambah" class="hidden fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
         <div class="bg-white rounded-lg shadow-lg w-3/4 p-6 relative">
-            <button type="button" onclick="closeModal()" class="absolute top-3 right-3 text-gray-500 hover:text-gray-700">&times;</button>
+            <button type="button" onclick="closeModal('modalTambah')" class="absolute top-3 right-3 text-gray-500 hover:text-gray-700">&times;</button>
             <h2 class="text-lg font-semibold mb-4">Tambah Barang</h2>
-
             <form id="formTambahBarang" action="<?= base_url('user/simpan_barang') ?>" method="post" enctype="multipart/form-data" class="grid grid-cols-3 gap-6">
                 <?= csrf_field() ?>
                 <!-- Form Kiri -->
@@ -118,9 +128,54 @@
                 <!-- Tombol -->
                 <div class="col-span-3 flex justify-end gap-2 mt-4">
                     <button type="submit" class="bg-gray-800 text-white px-4 py-2 rounded">Tambah</button>
-                    <button type="button" onclick="closeModal()" class="bg-gray-300 text-black px-4 py-2 rounded">Batal</button>
+                    <button type="button" onclick="closeModal('modalTambah')" class="bg-gray-300 text-black px-4 py-2 rounded">Batal</button>
                 </div>
             </form>
+        </div>
+    </div>
+
+    <!-- Modal Edit -->
+    <div id="modalEdit" class="hidden fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
+        <div class="bg-white rounded-lg shadow-lg w-3/4 p-6 relative">
+            <button type="button" onclick="closeModal('modalEdit')" class="absolute top-3 right-3 text-gray-500 hover:text-gray-700">&times;</button>
+            <h2 class="text-lg font-semibold mb-4">Edit Barang</h2>
+            <form id="formEditBarang" action="" method="post" enctype="multipart/form-data" class="grid grid-cols-3 gap-6">
+                <?= csrf_field() ?>
+                <input type="hidden" name="id_barang" id="editIdBarang">
+                <!-- Form Kiri -->
+                <div class="col-span-2 grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm">Nama barang</label>
+                        <input type="text" name="nama_barang" id="editNamaBarang" class="w-full border rounded px-3 py-2" required>
+                    </div>
+                    <div>
+                        <label class="block text-sm">Jumlah</label>
+                        <input type="number" name="jumlah" id="editJumlah" class="w-full border rounded px-3 py-2" required>
+                    </div>
+                    <div>
+                        <label class="block text-sm">Satuan</label>
+                        <input type="text" name="satuan" id="editSatuan" class="w-full border rounded px-3 py-2" required>
+                    </div>
+                    <div>
+                        <label class="block text-sm">Tanggal Masuk</label>
+                        <input type="date" name="tanggal_masuk" id="editTanggalMasuk" class="w-full border rounded px-3 py-2" required>
+                    </div>
+                    <div>
+                        <label class="block text-sm">Minimum Stok</label>
+                        <input type="number" name="minimum_stok" id="editMinimumStok" class="w-full border rounded px-3 py-2" required>
+                    </div>
+                </div>
+                <!-- Form Barcode -->
+                <div class="col-span-1 flex flex-col items-center justify-center border rounded p-4">
+                    <label class="block text-sm mb-2">Barcode (QR Code)</label>
+                    <div id="editQrcode" class="w-32 h-32 flex items-center justify-center bg-gray-100 border mb-3"></div>
+                    <input type="text" name="barcode" id="editBarcode" class="w-full border rounded px-3 py-2 text-center" readonly required>
+                </div>
+                <!-- Tombol -->
+                <div class="col-span-3 flex justify-end gap-2 mt-4">
+                    <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded">Update</button>
+                    <button type="button" onclick="closeModal('modalEdit')" class="bg-gray-300 text-black px-4 py-2 rounded">Batal</button>
+                </div>
             </form>
         </div>
     </div>
@@ -130,17 +185,35 @@
 <!-- SCRIPT -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <script>
-    function openModal() {
+    function openModalTambah() {
         document.getElementById('modalTambah').classList.remove('hidden');
         document.body.style.overflow = 'hidden';
     }
 
-    function closeModal() {
-        document.getElementById('modalTambah').classList.add('hidden');
+    function openModalEdit(barang) {
+        document.getElementById('modalEdit').classList.remove('hidden');
+        document.body.style.overflow = 'hidden';
+
+        document.getElementById('formEditBarang').action = "<?= base_url('user/update_barang') ?>/" + barang.id_barang;
+        document.getElementById('editIdBarang').value = barang.id_barang;
+        document.getElementById('editNamaBarang').value = barang.nama_barang;
+        document.getElementById('editJumlah').value = barang.jumlah;
+        document.getElementById('editSatuan').value = barang.satuan;
+        document.getElementById('editTanggalMasuk').value = barang.tanggal_masuk;
+        document.getElementById('editMinimumStok').value = barang.minimum_stok;
+        document.getElementById('editBarcode').value = barang.barcode;
+
+        document.getElementById('editQrcode').innerHTML = '';
+        new QRCode(document.getElementById('editQrcode'), {
+            text: barang.barcode,
+            width: 120,
+            height: 120
+        });
+    }
+
+    function closeModal(id) {
+        document.getElementById(id).classList.add('hidden');
         document.body.style.overflow = 'auto';
-        document.getElementById('formTambahBarang').reset();
-        document.getElementById('qrcode').innerHTML = '';
-        document.getElementById('barcodeInput').value = '';
     }
 
     function generateBarcode() {
@@ -157,27 +230,9 @@
         new QRCode(document.getElementById('qrcode'), {
             text: barcode,
             width: 120,
-            height: 120,
-            colorDark: "#000000",
-            colorLight: "#ffffff",
-            correctLevel: QRCode.CorrectLevel.H
+            height: 120
         });
     }
-
-    // Validasi barcode sebelum submit
-    document.getElementById('formTambahBarang').addEventListener('submit', function(e) {
-        const barcode = document.getElementById('barcodeInput').value;
-        if (!barcode) {
-            alert('Silakan generate barcode terlebih dahulu!');
-            e.preventDefault();
-        }
-    });
-    document.addEventListener('keydown', function(e) {
-        if (!document.getElementById('modalTambah').classList.contains('hidden') && e.key === 'Escape') closeModal();
-    });
-    document.getElementById('modalTambah').addEventListener('click', function(e) {
-        if (e.target === this) closeModal();
-    });
 </script>
 
 <?= $this->endSection() ?>

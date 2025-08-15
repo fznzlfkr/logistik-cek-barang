@@ -1,6 +1,26 @@
 // feather-icons
 feather.replace();
 
+// SweetAlert Logout
+document.getElementById("logoutBtn")?.addEventListener("click", function (e) {
+  e.preventDefault();
+  Swal.fire({
+    title: "Yakin ingin logout?",
+    text: "Anda akan keluar dari akun ini.",
+    icon: "warning",
+    showCancelButton: true,
+    confirmButtonColor: "#2563eb",
+    cancelButtonColor: "#d33",
+    confirmButtonText: "Logout",
+    cancelButtonText: "Batal",
+  }).then((result) => {
+    if (result.isConfirmed) {
+      document.getElementById("logoutForm")?.submit();
+    }
+  });
+});
+
+// Auto-hide alert
 setTimeout(() => {
   const success = document.getElementById("successAlert");
   const error = document.getElementById("errorAlert");
@@ -12,6 +32,7 @@ setTimeout(() => {
   });
 }, 3000);
 
+// Validasi password baru
 const passwordBaru = document.querySelector('input[name="password_baru"]');
 const konfirmasi = document.querySelector('input[name="konfirmasi_password"]');
 const passwordError = document.getElementById("passwordError");
@@ -26,6 +47,7 @@ if (passwordBaru && passwordError) {
     }
   });
 }
+
 if (konfirmasi && confirmPasswordError && passwordBaru) {
   konfirmasi.addEventListener("input", function () {
     if (this.value !== passwordBaru.value) {
@@ -36,6 +58,7 @@ if (konfirmasi && confirmPasswordError && passwordBaru) {
   });
 }
 
+// Toggle show/hide password
 function setTogglePassword(inputId, toggleId) {
   const input = document.getElementById(inputId);
   const toggle = document.getElementById(toggleId);
@@ -60,10 +83,11 @@ setTogglePassword("passwordLama", "togglePasswordLama");
 setTogglePassword("passwordBaru", "togglePasswordBaru");
 setTogglePassword("konfirmasiPassword", "toggleKonfirmasiPassword");
 
-// SweetAlert untuk konfirmasi hapus
-document.querySelectorAll(".btn-hapus").forEach((button) => {
-  button.addEventListener("click", function () {
-    const id = this.getAttribute("data-id");
+// SweetAlert untuk konfirmasi hapus (semua form-hapus)
+document.querySelectorAll(".form-hapus").forEach((form) => {
+  form.addEventListener("submit", function (e) {
+    e.preventDefault(); // tahan dulu
+
     Swal.fire({
       title: "Yakin ingin menghapus?",
       text: "Data yang dihapus tidak dapat dikembalikan!",
@@ -75,12 +99,7 @@ document.querySelectorAll(".btn-hapus").forEach((button) => {
       cancelButtonText: "Batal",
     }).then((result) => {
       if (result.isConfirmed) {
-        const form = document.createElement("form");
-        form.method = "POST";
-        form.action = `/user/hapus-riwayat/${id}`;
-        form.innerHTML = `<?= csrf_field() ?>`;
-        document.body.appendChild(form);
-        form.submit();
+        form.submit(); // submit beneran
       }
     });
   });

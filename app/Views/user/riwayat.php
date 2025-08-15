@@ -69,9 +69,16 @@
                 <button type="button" data-id="<?= $riwayat['id_laporan'] ?>" class="btn-print inline-flex items-center px-2 py-1 bg-green-500 hover:bg-green-600 text-white rounded transition" title="Print">
                   <i data-feather="printer" class="w-4 h-4"></i>
                 </button>
-                <button type="button" data-id="<?= $riwayat['id_laporan'] ?>" class="btn-hapus inline-flex items-center px-2 py-1 bg-red-500 hover:bg-red-600 text-white rounded transition" title="Hapus">
-                  <i data-feather="trash" class="w-4 h-4"></i>
-                </button>
+                <form action="<?= base_url('user/hapus-riwayat/' . $riwayat['id_laporan']) ?>"
+                  method="post"
+                  class="form-hapus inline">
+                  <?= csrf_field() ?>
+                  <button type="submit"
+                    class="btn-hapus inline-flex items-center px-2 py-1 bg-red-500 hover:bg-red-600 text-white rounded transition"
+                    title="Hapus">
+                    <i data-feather="trash" class="w-4 h-4"></i>
+                  </button>
+                </form>
               </td>
             </tr>
           <?php endforeach; ?>
