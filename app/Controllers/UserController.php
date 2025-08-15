@@ -7,6 +7,11 @@ use App\Models\UserModel;
 use App\Models\BarangModel;
 use App\Models\LaporanModel;
 use CodeIgniter\HTTP\ResponseInterface;
+use Endroid\QrCode\QrCode;
+use Dompdf\Dompdf;
+use Dompdf\Options;
+use Endroid\QrCode\Builder\Builder;
+use Endroid\QrCode\Writer\PngWriter;
 
 class UserController extends BaseController
 {
@@ -79,7 +84,7 @@ class UserController extends BaseController
     }
     public function simpanBarang()
     {
-        if ($this->request->getMethod() === 'post') {
+
             $data = [
                 'nama_barang'   => $this->request->getPost('nama_barang'),
                 'jumlah'        => $this->request->getPost('jumlah'),
@@ -103,8 +108,6 @@ class UserController extends BaseController
                 $error = $this->barangModel->errors();
                 return redirect()->back()->withInput()->with('error', 'Gagal menambah barang. ' . json_encode($error));
             }
-        }
-        return redirect()->back()->with('error', 'Gagal menambah barang.');
     }
 
     public function editBarang($id)
@@ -123,6 +126,33 @@ class UserController extends BaseController
         }
         return redirect()->back()->with('error', 'Gagal update barang.');
     }
+    public function updateBarang($id_barang)
+{
+    $data = [
+        'nama_barang'   => $this->request->getPost('nama_barang'),
+        'jumlah'        => $this->request->getPost('jumlah'),
+        'satuan'        => $this->request->getPost('satuan'),
+        'tanggal_masuk' => $this->request->getPost('tanggal_masuk'),
+        'barcode'       => $this->request->getPost('barcode'),
+        'minimum_stok'  => $this->request->getPost('minimum_stok'),
+    ];
+
+    // Validasi sederhana (pastikan semua field terisi)
+    foreach ($data as $key => $value) {
+        if ($value === null || $value === '') {
+            return redirect()->back()->withInput()->with('error', 'Field ' . $key . ' wajib diisi.');
+        }
+    }
+
+    // Update data
+    if ($this->barangModel->update($id_barang, $data)) {
+        return redirect()->back()->with('success', 'Barang berhasil diperbarui.');
+    } else {
+        $error = $this->barangModel->errors();
+        return redirect()->back()->withInput()->with('error', 'Gagal memperbarui barang. ' . json_encode($error));
+    }
+}
+
 
     public function hapusBarang($id)
     {
@@ -130,12 +160,80 @@ class UserController extends BaseController
         return redirect()->back()->with('success', 'Barang berhasil dihapus.');
     }
 
-    public function downloadBarcode($id)
-    {
-        // Dummy: Anda bisa generate barcode dan download di sini
-        // Sementara redirect saja
-        return redirect()->back()->with('success', 'Barcode berhasil diunduh (dummy).');
+public function scanBarcode($barcode)
+{
+    // Ambil data barang berdasarkan barcode
+    $barang = $this->barangModel->where('barcode', $barcode)->first();
+
+    if (!$barang) {
+        return redirect()->back()->with('error', 'Barang tidak ditemukan.');
     }
+
+    // Buat HTML untuk PDF
+    $html = view('barang_pdf', ['barang' => $barang]);
+
+    // Inisialisasi Dompdf
+    $dompdf = new Dompdf();
+    $dompdf->loadHtml($html);
+    $dompdf->setPaper('A4', 'portrait');
+    $dompdf->render();
+
+    // Nama file PDF
+    $fileName = 'barang_' . preg_replace('/[^A-Za-z0-9_\-]/', '_', $barang['nama_barang']) . '.pdf';
+
+    // Outputkan PDF untuk download
+    $dompdf->stream($fileName, ["Attachment" => true]);
+}
+
+public function downloadBarcode($id)
+{
+    $barang = $this->barangModel->find($id);
+    if (!$barang) {
+        return redirect()->back()->with('error', 'Barang tidak ditemukan.');
+    }
+
+    // QR mengarah ke fungsi generate PDF
+    $urlPDF = base_url('barang/pdf/' . $barang['barcode']);
+
+    $fileName = 'barcode_' . preg_replace('/[^A-Za-z0-9_\-]/', '_', $barang['nama_barang']) . '.png';
+
+    $result = Builder::create()
+        ->writer(new PngWriter())
+        ->data($urlPDF)
+        ->size(300)
+        ->margin(10)
+        ->build();
+
+    return $this->response
+        ->setHeader('Content-Type', 'image/png')
+        ->setHeader('Content-Disposition', 'attachment; filename="' . $fileName . '"')
+        ->setBody($result->getString());
+}
+
+public function pdf($barcode)
+{
+    $barang = $this->barangModel->where('barcode', $barcode)->first();
+    if (!$barang) {
+        throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound('Barang tidak ditemukan');
+    }
+
+    // Buat HTML untuk PDF
+    $html = view('barang/pdf_template', ['barang' => $barang]);
+
+    // Setup Dompdf
+    $options = new Options();
+    $options->set('isHtml5ParserEnabled', true);
+    $options->set('isRemoteEnabled', true);
+
+    $dompdf = new Dompdf($options);
+    $dompdf->loadHtml($html);
+    $dompdf->setPaper('A4', 'portrait');
+    $dompdf->render();
+
+    $fileName = 'Detail_' . preg_replace('/[^A-Za-z0-9_\-]/', '_', $barang['nama_barang']) . '.pdf';
+    $dompdf->stream($fileName, ["Attachment" => true]);
+}
+
 
     public function riwayat()
     {

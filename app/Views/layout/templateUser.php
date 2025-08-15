@@ -11,7 +11,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
 
     <!-- Custom CSS -->
-    <link rel="stylesheet" href="<?= base_url('assets/css/user.css') ?>">
+    <link rel="stylesheet" href="<?= base_url('../assets/css/user.css') ?>">
 
     <style>
         body {
@@ -33,13 +33,15 @@
             <a href="<?= base_url('/user/riwayat') ?>" class="text-gray-700 hover:text-blue-600">Riwayat</a>
             <a href="<?= base_url('/user/profil') ?>" class="text-gray-700 hover:text-blue-600">Profil</a>
         </nav>
-        <div class="flex items-center gap-3">
+        <a href="<?= base_url('user/profil') ?>">
+            <div class="flex items-center gap-3">
             <div class="text-right text-sm">
                 <div class="font-semibold text-gray-800"><?= esc($user['nama']); ?></div>
                 <div class="text-gray-500 text-xs">Staff Gudang</div>
             </div>
             <img src="../assets/img/logo.jpg" alt="User" class="w-8 h-8 rounded-full">
         </div>
+        </a>
     </header>
 
     <!-- Konten Dinamis -->
@@ -48,6 +50,8 @@
     <!-- Script di akhir body untuk mempercepat render -->
     <script src="https://unpkg.com/feather-icons"></script>
     <script src="<?= base_url('assets/js/user.js') ?>"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
     <script>
         feather.replace();
     </script>
