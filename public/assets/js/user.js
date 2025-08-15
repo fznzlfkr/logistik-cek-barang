@@ -1,6 +1,26 @@
 // feather-icons
 feather.replace();
 
+// sweetalert
+
+document.getElementById("logoutBtn").addEventListener("click", function (e) {
+  e.preventDefault();
+  Swal.fire({
+    title: "Yakin ingin logout?",
+    text: "Anda akan keluar dari akun ini.",
+    icon: "warning",
+    showCancelButton: true,
+    confirmButtonColor: "#2563eb",
+    cancelButtonColor: "#d33",
+    confirmButtonText: "Logout",
+    cancelButtonText: "Batal",
+  }).then((result) => {
+    if (result.isConfirmed) {
+      document.getElementById("logoutForm").submit();
+    }
+  });
+});
+
 setTimeout(() => {
   const success = document.getElementById("successAlert");
   const error = document.getElementById("errorAlert");

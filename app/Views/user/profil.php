@@ -1,6 +1,8 @@
 <?= $this->extend('layout/templateUser') ?>
 <?= $this->section('content') ?>
 
+
+
 <main class="px-6 py-8">
   <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
     <!-- Informasi Akun -->
@@ -112,10 +114,12 @@
       </form>
 
       <!-- Logout -->
-      <form action="<?= base_url('user/logout') ?>" method="post" class="mt-8 flex justify-center">
-        <button type="submit" class="bg-gray-700 text-white px-6 py-3 rounded text-sm font-semibold">Logout</button>
+      <form id="logoutForm" action="<?= base_url('user/logout') ?>" method="post" class="mt-8 flex justify-center">
+        <button type="submit" id="logoutBtn" class="bg-gray-700 text-white px-6 py-3 rounded text-sm font-semibold">Logout</button>
       </form>
     </div>
   </div>
 </main>
+
+
 <?= $this->endSection() ?>
