@@ -296,7 +296,6 @@
                     text: barcode,
                     width: 120,
                     height: 120
-                    height: 120
                 });
             }
 </script>
