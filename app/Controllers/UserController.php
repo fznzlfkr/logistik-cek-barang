@@ -12,6 +12,11 @@ use Dompdf\Dompdf;
 use Dompdf\Options;
 use Endroid\QrCode\Builder\Builder;
 use Endroid\QrCode\Writer\PngWriter;
+use Endroid\QrCode\QrCode;
+use Dompdf\Dompdf;
+use Dompdf\Options;
+use Endroid\QrCode\Builder\Builder;
+use Endroid\QrCode\Writer\PngWriter;
 
 class UserController extends BaseController
 {
@@ -102,13 +107,15 @@ class UserController extends BaseController
             }
         }
 
-        // Simpan data
-        if ($this->barangModel->insert($data)) {
-            return redirect()->back()->with('success', 'Barang berhasil ditambahkan.');
-        } else {
-            $error = $this->barangModel->errors();
-            return redirect()->back()->withInput()->with('error', 'Gagal menambah barang. ' . json_encode($error));
+            // Simpan data
+            if ($this->barangModel->insert($data)) {
+                return redirect()->back()->with('success', 'Barang berhasil ditambahkan.');
+            } else {
+                $error = $this->barangModel->errors();
+                return redirect()->back()->withInput()->with('error', 'Gagal menambah barang. ' . json_encode($error));
+            }
         }
+        return redirect()->back()->with('error', 'Gagal menambah barang.');
     }
 
     public function editBarang($id)
