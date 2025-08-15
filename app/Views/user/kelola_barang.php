@@ -33,7 +33,8 @@
             </thead>
             <tbody>
                 <?php if (!empty($barangList)): ?>
-                    <?php $no = 1; foreach ($barangList as $barang): ?>
+                    <?php $no = 1;
+                    foreach ($barangList as $barang): ?>
                         <tr class="border-t hover:bg-gray-50">
                             <td class="p-3"><?= $no++ ?></td>
                             <td class="p-3"><?= esc($barang['nama_barang']) ?></td>
@@ -68,13 +69,15 @@
                         </tr>
                     <?php endforeach; ?>
                 <?php else: ?>
-                    <tr><td colspan="9" class="text-center py-4">Tidak ada data barang.</td></tr>
+                    <tr>
+                        <td colspan="9" class="text-center py-4">Tidak ada data barang.</td>
+                    </tr>
                 <?php endif; ?>
             </tbody>
         </table>
     </div>
 
-    <!-- Modal -->
+    <!-- Modal update -->
     <div id="modalTambah" class="hidden fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
         <div class="bg-white rounded-lg shadow-lg w-3/4 p-6 relative">
             <button type="button" onclick="closeModal()" class="absolute top-3 right-3 text-gray-500 hover:text-gray-700">&times;</button>
@@ -127,52 +130,54 @@
 <!-- SCRIPT -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <script>
-function openModal() {
-    document.getElementById('modalTambah').classList.remove('hidden');
-    document.body.style.overflow = 'hidden';
-}
-function closeModal() {
-    document.getElementById('modalTambah').classList.add('hidden');
-    document.body.style.overflow = 'auto';
-    document.getElementById('formTambahBarang').reset();
-    document.getElementById('qrcode').innerHTML = '';
-    document.getElementById('barcodeInput').value = '';
-}
-function generateBarcode() {
-    const nama = document.getElementById('inputNamaBarang').value;
-    if (!nama) {
-        alert('Isi nama barang terlebih dahulu!');
-        return;
+    function openModal() {
+        document.getElementById('modalTambah').classList.remove('hidden');
+        document.body.style.overflow = 'hidden';
     }
-    const prefix = nama.substring(0, 3).toUpperCase();
-    const rand = Math.floor(Math.random() * 1000000).toString().padStart(6, '0');
-    const barcode = `BC${prefix}${rand}`;
-    document.getElementById('barcodeInput').value = barcode;
-    document.getElementById('qrcode').innerHTML = '';
-    new QRCode(document.getElementById('qrcode'), {
-        text: barcode,
-        width: 120,
-        height: 120,
-        colorDark: "#000000",
-        colorLight: "#ffffff",
-        correctLevel: QRCode.CorrectLevel.H
-    });
-}
 
-// Validasi barcode sebelum submit
-document.getElementById('formTambahBarang').addEventListener('submit', function(e) {
-    const barcode = document.getElementById('barcodeInput').value;
-    if (!barcode) {
-        alert('Silakan generate barcode terlebih dahulu!');
-        e.preventDefault();
+    function closeModal() {
+        document.getElementById('modalTambah').classList.add('hidden');
+        document.body.style.overflow = 'auto';
+        document.getElementById('formTambahBarang').reset();
+        document.getElementById('qrcode').innerHTML = '';
+        document.getElementById('barcodeInput').value = '';
     }
-});
-document.addEventListener('keydown', function(e) {
-    if (!document.getElementById('modalTambah').classList.contains('hidden') && e.key === 'Escape') closeModal();
-});
-document.getElementById('modalTambah').addEventListener('click', function(e) {
-    if (e.target === this) closeModal();
-});
+
+    function generateBarcode() {
+        const nama = document.getElementById('inputNamaBarang').value;
+        if (!nama) {
+            alert('Isi nama barang terlebih dahulu!');
+            return;
+        }
+        const prefix = nama.substring(0, 3).toUpperCase();
+        const rand = Math.floor(Math.random() * 1000000).toString().padStart(6, '0');
+        const barcode = `BC${prefix}${rand}`;
+        document.getElementById('barcodeInput').value = barcode;
+        document.getElementById('qrcode').innerHTML = '';
+        new QRCode(document.getElementById('qrcode'), {
+            text: barcode,
+            width: 120,
+            height: 120,
+            colorDark: "#000000",
+            colorLight: "#ffffff",
+            correctLevel: QRCode.CorrectLevel.H
+        });
+    }
+
+    // Validasi barcode sebelum submit
+    document.getElementById('formTambahBarang').addEventListener('submit', function(e) {
+        const barcode = document.getElementById('barcodeInput').value;
+        if (!barcode) {
+            alert('Silakan generate barcode terlebih dahulu!');
+            e.preventDefault();
+        }
+    });
+    document.addEventListener('keydown', function(e) {
+        if (!document.getElementById('modalTambah').classList.contains('hidden') && e.key === 'Escape') closeModal();
+    });
+    document.getElementById('modalTambah').addEventListener('click', function(e) {
+        if (e.target === this) closeModal();
+    });
 </script>
 
 <?= $this->endSection() ?>
