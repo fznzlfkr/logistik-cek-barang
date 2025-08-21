@@ -21,6 +21,8 @@ class AuthController extends BaseController
 
     public function index()
     {
+        $this->session->destroy();
+
         $data = [
             'title' => 'Masuk'
         ];
@@ -86,7 +88,7 @@ class AuthController extends BaseController
         }
 
         // Jika email tidak ditemukan di kedua tabel
-        return redirect()->back()->withInput()->with('error', 'Email tidak terdaftar.');
+        return redirect()->back()->withInput()->with('error', 'Email tidak terdaftar, Silakan lakukan pedaftaran akun terlebih dahulu.');
     }
 
     public function registerProcess()
@@ -127,11 +129,8 @@ class AuthController extends BaseController
         return redirect()->to('/')->with('success', 'Registrasi berhasil! Silakan login.');
     }
 
-
-
     public function logout()
     {
-        $this->session->destroy();
-        return redirect()->to('/');
+        return redirect()->to('/')->with('success', 'Log out berhasil!');
     }
 }
