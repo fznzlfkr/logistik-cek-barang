@@ -1,6 +1,8 @@
 <?= $this->extend('layout/templateUser') ?>
 <?= $this->section('content') ?>
 
+
+
 <main class="px-6 py-8">
   <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
     <!-- Informasi Akun -->
@@ -74,7 +76,7 @@
           </span>
         </div>
 
-        <div class="mb-5 relative">
+        <div class="mb-3 relative">
           <label class="block text-sm font-medium text-gray-700 mb-1">Password Baru</label>
           <input type="password" name="password_baru" id="passwordBaru" placeholder="Masukkan password baru" class="w-full border border-gray-300 px-3 py-2 rounded text-sm" required />
           <span class="toggle-password" id="togglePasswordBaru" style="position:absolute;top:38px;right:12px;cursor:pointer;">

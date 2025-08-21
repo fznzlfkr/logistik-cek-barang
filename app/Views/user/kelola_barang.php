@@ -44,6 +44,7 @@
             <tbody>
                 <?php if (!empty($barangList)): ?>
                     <?php $no = 1;
+
                     foreach ($barangList as $barang): ?>
                         <tr class="border-t hover:bg-gray-50">
                             <td class="p-3"><?= $no++ ?></td>
@@ -81,7 +82,9 @@
                     <?php endforeach; ?>
                 <?php else: ?>
                     <tr>
+
                         <td colspan="9" class="text-center py-4">Tidak ada data barang.</td>
+
                     </tr>
                 <?php endif; ?>
             </tbody>

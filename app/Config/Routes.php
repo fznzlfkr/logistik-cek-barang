@@ -27,6 +27,7 @@ $routes->group('user', ['filter' => 'auth'], function ($routes) {
     $routes->post('simpan_barang', 'UserController::simpanBarang');
     $routes->post('edit_barang/(:num)', 'UserController::editBarang/$1');
     $routes->post('update_barang/(:num)', 'UserController::updateBarang/$1');
+    $routes->post('update_barang/(:num)', 'UserController::updateBarang/$1');
     $routes->post('hapus_barang/(:num)', 'UserController::hapusBarang/$1');
     $routes->post('download_barcode/(:num)', 'UserController::downloadBarcode/$1');
     $routes->get('barang/pdf/(:any)', 'UserController::pdf/$1');

@@ -10,6 +10,10 @@
     <link rel="stylesheet" href="<?= base_url('../assets/css/user.css') ?>">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="<?= base_url('../assets/css/user.css') ?>">
+
     <style>
         body {
             font-family: 'Inter', sans-serif;
