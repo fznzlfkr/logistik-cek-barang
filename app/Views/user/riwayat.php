@@ -54,7 +54,7 @@
           <?php foreach ($riwayatData as $index => $riwayat): ?>
             <tr class="border-t hover:bg-gray-50">
               <td class="p-3"><?= $index + 1 ?></td>
-              <td class="p-3"><?= date('d-m-Y H:i:s', strtotime($riwayat['tanggal'] . ' +7 hours')) ?></td>
+              <td class="p-3"><?= date('d-m-Y H:i:s', strtotime($riwayat['tanggal'])) ?></td>
               <td class="p-3"><?= $riwayat['nama_barang'] ?></td>
               <td class="p-3"><?= $riwayat['jumlah'] ?></td>
               <td class="p-3"><?= $riwayat['jenis'] ?></td>

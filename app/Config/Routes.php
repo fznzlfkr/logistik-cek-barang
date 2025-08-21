@@ -32,6 +32,10 @@ $routes->group('user', ['filter' => 'auth'], function ($routes) {
     $routes->post('download_barcode/(:num)', 'UserController::downloadBarcode/$1');
     $routes->get('barang/pdf/(:any)', 'UserController::pdf/$1');
     $routes->get('riwayat', 'UserController::riwayat');
+    $routes->get('barang_masuk', 'UserController::barangMasuk');
+    $routes->post('barang_masuk/save', 'UserController::simpanBarangMasuk');
+    $routes->get('barang_keluar', 'UserController::barangKeluar');
+    $routes->post('barang_keluar/save', 'UserController::saveBarangKeluar');
     $routes->get('profil', 'UserController::profil');
     $routes->post('profil/update', 'UserController::update');
     $routes->post('profil/ganti-password', 'UserController::gantiPassword');
