@@ -55,50 +55,44 @@ class UserController extends BaseController
         return view('user/dashboard', $data);
     }
 
-public function kelolaBarang()
-{
-    $dataUser = session()->get('id_user');
-    $user     = $this->userModel->find($dataUser);
+    public function kelolaBarang()
+    {
+        $dataUser = session()->get('id_user');
+        $user     = $this->userModel->find($dataUser);
 
-    // Ambil jumlah per halaman (default 10)
-    $perPage  = $this->request->getVar('per_page') ?? 10;
-    // Ambil keyword pencarian
-    $keyword  = $this->request->getVar('keyword');
+        // Ambil jumlah per halaman (default 10)
+        $perPage  = $this->request->getVar('per_page') ?? 10;
+        // Ambil keyword pencarian
+        $keyword  = $this->request->getVar('keyword');
 
-    // Query ke tabel barang
-    $barangQuery = $this->barangModel;
+        // Query ke tabel barang
+        $barangQuery = $this->barangModel;
 
-    if (!empty($keyword)) {
-        $barangQuery = $barangQuery->groupStart()
-            ->like('nama_barang', $keyword)
-            ->orLike('jumlah', $keyword)
-            ->orLike('satuan', $keyword)
-            ->orLike('barcode', $keyword)
-            ->groupEnd();
+        if (!empty($keyword)) {
+            $barangQuery = $barangQuery->groupStart()
+                ->like('nama_barang', $keyword)
+                ->orLike('jumlah', $keyword)
+                ->orLike('satuan', $keyword)
+                ->orLike('barcode', $keyword)
+                ->groupEnd();
+        }
+
+        // Ambil data barang dengan pagination
+        $barangList = $barangQuery
+            ->orderBy('barang.nama_barang', 'ASC')
+            ->paginate($perPage, 'number');
+
+        $data = [
+            'title'      => 'Kelola Barang User - CargoWing',
+            'user'       => $user,
+            'keyword'    => $keyword,
+            'perPage'    => $perPage,
+            'barangList' => $barangList,
+            'pager'      => $this->barangModel->pager // Pastikan pager diambil dari model
+        ];
+
+        return view('user/kelola_barang', $data);
     }
-
-    // Ambil data barang dengan pagination
-    $barangList = $barangQuery
-        ->orderBy('nama_barang', 'ASC')
-        ->paginate($perPage, 'barang');
-
-
-    // Ambil data riwayat dengan pagination
-        $barangData = $barangQuery
-            ->orderBy('nama_barang', 'ASC')
-            ->paginate($perPage, 'barang');
-    $data = [
-        'title'      => 'Kelola Barang User - CargoWing',
-        'user'       => $user,
-        'keyword'    => $keyword,
-        'perPage'    => $perPage,
-        'barangData' => $barangData,
-        'barangList' => $barangList,
-        'pager'      => $this->barangModel->pager
-    ];
-
-    return view('user/kelola_barang', $data);
-}
 
 
     public function tambahBarang()
@@ -294,7 +288,7 @@ public function kelolaBarang()
         // Ambil data riwayat dengan pagination
         $riwayatData = $riwayatQuery
             ->orderBy('laporan.tanggal', 'ASC')
-            ->paginate($perPage, 'riwayat');
+            ->paginate($perPage, 'number');
 
         // Ambil semua nama barang unik langsung dari tabel barang
         $uniqueBarang = $this->barangModel
@@ -316,190 +310,181 @@ public function kelolaBarang()
         return view('user/riwayat', $data);
     }
 
-// Menampilkan riwayat barang masuk
-public function barangMasuk()
-{
-    $dataUser = session()->get('id_user');
-    $user     = $this->userModel->find($dataUser);
+    // Menampilkan riwayat barang masuk
+    public function barangMasuk()
+    {
+        $dataUser = session()->get('id_user');
+        $user     = $this->userModel->find($dataUser);
 
-    $perPage  = $this->request->getVar('per_page') ?? 10;
-    $keyword  = $this->request->getVar('keyword');
+        $perPage  = $this->request->getVar('per_page') ?? 10;
+        $keyword  = $this->request->getVar('keyword');
 
-    $riwayatQuery = $this->laporanModel
-        ->select('laporan.tanggal, laporan.jumlah, laporan.jenis, users.nama, barang.nama_barang, laporan.id_laporan')
-        ->join('users', 'users.id_user = laporan.id_user')
-        ->join('barang', 'barang.id_barang = laporan.id_barang')
-        ->where('laporan.jenis', 'Masuk');
+        $riwayatQuery = $this->laporanModel
+            ->select('laporan.tanggal, laporan.jumlah, laporan.jenis, users.nama, barang.nama_barang, laporan.id_laporan')
+            ->join('users', 'users.id_user = laporan.id_user')
+            ->join('barang', 'barang.id_barang = laporan.id_barang')
+            ->where('laporan.jenis', 'Masuk');
 
-    if (!empty($keyword)) {
-        $riwayatQuery->groupStart()
-            ->like('barang.nama_barang', $keyword)
-            ->orLike('users.nama', $keyword)
-            ->groupEnd();
+        if (!empty($keyword)) {
+            $riwayatQuery->groupStart()
+                ->like('barang.nama_barang', $keyword)
+                ->orLike('users.nama', $keyword)
+                ->groupEnd();
+        }
+
+        $riwayatData = $riwayatQuery
+            ->orderBy('laporan.tanggal', 'DESC')
+            ->paginate($perPage, 'riwayatMasuk');
+
+        $barangList = $this->barangModel->findAll();
+
+        $data = [
+            'title'       => 'Riwayat Barang Masuk - CargoWing',
+            'user'        => $user,
+            'riwayatData' => $riwayatData,
+            'pager'       => $this->laporanModel->pager,
+            'perPage'     => $perPage,
+            'keyword'     => $keyword,
+            'barangList'  => $barangList,
+        ];
+
+        return view('user/riwayat', $data);
     }
 
-    $riwayatData = $riwayatQuery
-        ->orderBy('laporan.tanggal', 'DESC')
-        ->paginate($perPage, 'riwayatMasuk');
+    // Proses input barang masuk
+    public function simpanBarangMasuk()
+    { {
+            $dataUser = session()->get('id_user');
 
-    $barangList = $this->barangModel->findAll();
 
-    $data = [
-        'title'       => 'Riwayat Barang Masuk - CargoWing',
-        'user'        => $user,
-        'riwayatData' => $riwayatData,
-        'pager'       => $this->laporanModel->pager,
-        'perPage'     => $perPage,
-        'keyword'     => $keyword,
-        'barangList'  => $barangList,
-    ];
+            $namaBarang = $this->request->getPost('nama_barang');
+            $jumlah     = (int) $this->request->getPost('jumlah');
+            $satuan     = $this->request->getPost('satuan');
+            $minimum    = $this->request->getPost('minimum_stok');
+            $barcode    = $this->request->getPost('barcode');
+            $tanggal    = $this->request->getPost('tanggal_masuk');
 
-    return view('user/riwayat', $data);
-}
+            if (!$namaBarang || $jumlah <= 0) {
+                return redirect()->back()->with('error', 'Data tidak valid.');
+            }
 
-// Proses input barang masuk
-public function simpanBarangMasuk()
-{
-   {
-    $dataUser = session()->get('id_user');
- 
+            // ✅ Insert barang baru
+            $idBarang = $this->barangModel->insert([
+                'nama_barang'   => $namaBarang,
+                'jumlah'          => $jumlah,
+                'satuan'        => $satuan,
+                'minimum_stok'  => $minimum,
+                'barcode'       => $barcode,
+                'tanggal_masuk' => $tanggal,
 
-    $namaBarang = $this->request->getPost('nama_barang');
-    $jumlah     = (int) $this->request->getPost('jumlah');
-    $satuan     = $this->request->getPost('satuan');
-    $minimum    = $this->request->getPost('minimum_stok');
-    $barcode    = $this->request->getPost('barcode');
-    $tanggal    = $this->request->getPost('tanggal_masuk');
+            ], true); // true supaya return insertID
 
-    if (!$namaBarang || $jumlah <= 0) {
-        return redirect()->back()->with('error', 'Data tidak valid.');
+            // ✅ Insert ke laporan (riwayat)
+            $now = new \DateTime('now', new \DateTimeZone('Asia/Jakarta'));
+            $this->laporanModel->insert([
+                'id_user'   => $dataUser,
+                'id_barang' => $idBarang,
+                'jumlah'    => $jumlah,
+                'jenis'     => 'Masuk',
+                'tanggal'   => $tanggal . ' ' . $now->format('H:i:s')
+            ]);
+
+            return redirect()->to('/user/kelola_barang')->with('success', 'Barang baru berhasil ditambahkan & dicatat di riwayat.');
+        }
     }
 
-    // ✅ Insert barang baru
-    $idBarang = $this->barangModel->insert([
-        'nama_barang'   => $namaBarang,
-        'jumlah'          => $jumlah,
-        'satuan'        => $satuan,
-        'minimum_stok'  => $minimum,
-        'barcode'       => $barcode,
-        'tanggal_masuk' => $tanggal,
+    public function barangKeluar()
+    {
+        $dataUser = session()->get('id_user');
+        $user     = $this->userModel->find($dataUser);
 
-    ], true); // true supaya return insertID
+        $perPage  = $this->request->getVar('per_page') ?? 10;
+        $keyword  = $this->request->getVar('keyword');
 
-    // ✅ Insert ke laporan (riwayat)
-    $now = new \DateTime('now', new \DateTimeZone('Asia/Jakarta'));
-    $this->laporanModel->insert([
-        'id_user'   => $dataUser,
-        'id_barang' => $idBarang,
-        'jumlah'    => $jumlah,
-        'jenis'     => 'Masuk',
-        'tanggal'   => $tanggal . ' ' . $now->format('H:i:s')
-    ]);
+        // Query hanya untuk barang keluar
+        $riwayatQuery = $this->laporanModel
+            ->select('laporan.tanggal, laporan.jumlah, laporan.jenis, users.nama, barang.nama_barang, laporan.id_laporan')
+            ->join('users', 'users.id_user = laporan.id_user')
+            ->join('barang', 'barang.id_barang = laporan.id_barang')
+            ->where('laporan.jenis', 'Dipakai');
 
-    return redirect()->to('/user/kelola_barang')->with('success', 'Barang baru berhasil ditambahkan & dicatat di riwayat.');
-}
-}   
+        // Filter pencarian
+        if (!empty($keyword)) {
+            $riwayatQuery->groupStart()
+                ->like('barang.nama_barang', $keyword)
+                ->orLike('users.nama', $keyword)
+                ->groupEnd();
+        }
 
+        $riwayatData = $riwayatQuery
+            ->orderBy('laporan.tanggal', 'DESC')
+            ->paginate($perPage, 'riwayatKeluar');
 
+        // Ambil semua barang untuk form (bukan hanya nama, tapi id juga)
+        $uniqueBarang = $this->barangModel
+            ->select('id_barang, nama_barang')
+            ->orderBy('nama_barang', 'ASC')
+            ->findAll();
 
+        $data = [
+            'title'        => 'Riwayat Barang Keluar - CargoWing',
+            'user'         => $user,
+            'riwayatData'  => $riwayatData,
+            'pager'        => $this->laporanModel->pager,
+            'perPage'      => $perPage,
+            'keyword'      => $keyword,
+            'uniqueBarang' => $uniqueBarang,
+        ];
 
-public function barangKeluar()
-{
-    $dataUser = session()->get('id_user');
-    $user     = $this->userModel->find($dataUser);
-
-    $perPage  = $this->request->getVar('per_page') ?? 10;
-    $keyword  = $this->request->getVar('keyword');
-
-    // Query hanya untuk barang keluar
-    $riwayatQuery = $this->laporanModel
-        ->select('laporan.tanggal, laporan.jumlah, laporan.jenis, users.nama, barang.nama_barang, laporan.id_laporan')
-        ->join('users', 'users.id_user = laporan.id_user')
-        ->join('barang', 'barang.id_barang = laporan.id_barang')
-        ->where('laporan.jenis', 'Dipakai');
-
-    // Filter pencarian
-    if (!empty($keyword)) {
-        $riwayatQuery->groupStart()
-            ->like('barang.nama_barang', $keyword)
-            ->orLike('users.nama', $keyword)
-            ->groupEnd();
+        return view('user/riwayat', $data);
     }
 
-    $riwayatData = $riwayatQuery
-        ->orderBy('laporan.tanggal', 'DESC')
-        ->paginate($perPage, 'riwayatKeluar');
 
-    // Ambil semua barang untuk form (bukan hanya nama, tapi id juga)
-    $uniqueBarang = $this->barangModel
-        ->select('id_barang, nama_barang')
-        ->orderBy('nama_barang', 'ASC')
-        ->findAll();
+    public function saveBarangKeluar()
+    {
+        $dataUser = session()->get('id_user');
+        $idBarang = $this->request->getPost('id_barang');
+        $jumlah   = (int) $this->request->getPost('jumlah');
+        $tanggal  = $this->request->getPost('tanggal');
+        $ket      = $this->request->getPost('keterangan');
 
-    $data = [
-        'title'        => 'Riwayat Barang Keluar - CargoWing',
-        'user'         => $user,
-        'riwayatData'  => $riwayatData,
-        'pager'        => $this->laporanModel->pager,
-        'perPage'      => $perPage,
-        'keyword'      => $keyword,
-        'uniqueBarang' => $uniqueBarang,
-    ];
+        // Ambil waktu sekarang (Jakarta)
+        $now = new \DateTime('now', new \DateTimeZone('Asia/Jakarta'));
+        $jam = $now->format('H:i:s');
 
-    return view('user/riwayat', $data);
-}
+        // Gabungkan jadi datetime
+        $tanggalKeluar = $tanggal . ' ' . $jam; // contoh: 2025-08-21 14:32:10
 
+        // Ambil stok barang dulu
+        $barang = $this->barangModel->find($idBarang);
 
-public function saveBarangKeluar()
-{
-    $dataUser = session()->get('id_user');
-    $idBarang = $this->request->getPost('id_barang');
-    $jumlah   = (int) $this->request->getPost('jumlah');
-    $tanggal  = $this->request->getPost('tanggal');
-    $ket      = $this->request->getPost('keterangan');
+        if (!$barang) {
+            return redirect()->back()->with('error', 'Barang tidak ditemukan!');
+        }
 
-// Ambil waktu sekarang (Jakarta)
-$now = new \DateTime('now', new \DateTimeZone('Asia/Jakarta'));
-$jam = $now->format('H:i:s');
+        // Cek apakah stok cukup
+        if ($barang['jumlah'] < $jumlah) {
+            return redirect()->back()->with('error', 'Stok tidak mencukupi!');
+        }
 
-// Gabungkan jadi datetime
-$tanggalKeluar = $tanggal . ' ' . $jam; // contoh: 2025-08-21 14:32:10
+        // Simpan ke tabel laporan
+        $this->laporanModel->save([
+            'id_barang'  => $idBarang,
+            'jumlah'     => $jumlah,
+            'jenis'      => 'Dipakai',
+            'tanggal'    => $tanggalKeluar,
+            'id_user'    => $dataUser,
+            'keterangan' => $ket,
+        ]);
 
-    // Ambil stok barang dulu
-    $barang = $this->barangModel->find($idBarang);
+        // Update stok barang (dikurangi)
+        $this->barangModel->update($idBarang, [
+            'jumlah' => $barang['jumlah'] - $jumlah
+        ]);
 
-    if (!$barang) {
-        return redirect()->back()->with('error', 'Barang tidak ditemukan!');
+        return redirect()->to('/user/barang_keluar')
+            ->with('success', 'Barang keluar berhasil dicatat & stok terupdate!');
     }
-
-    // Cek apakah stok cukup
-    if ($barang['jumlah'] < $jumlah) {
-        return redirect()->back()->with('error', 'Stok tidak mencukupi!');
-    }
-
-    // Simpan ke tabel laporan
-    $this->laporanModel->save([
-        'id_barang'  => $idBarang,
-        'jumlah'     => $jumlah,
-        'jenis'      => 'Dipakai',
-        'tanggal'    => $tanggalKeluar,
-        'id_user'    => $dataUser,
-        'keterangan' => $ket,
-    ]);
-
-    // Update stok barang (dikurangi)
-    $this->barangModel->update($idBarang, [
-        'jumlah' => $barang['jumlah'] - $jumlah
-    ]);
-
-    return redirect()->to('/user/barang_keluar')
-        ->with('success', 'Barang keluar berhasil dicatat & stok terupdate!');
-}
-
-
-
-
-
 
     public function hapusRiwayat($idLaporan)
     {

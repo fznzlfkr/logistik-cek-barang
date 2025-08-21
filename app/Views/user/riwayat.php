@@ -108,7 +108,7 @@
     <div class="flex items-center justify-center gap-2 mt-4">
       <?php if ($pager): ?>
         <div class="flex items-center space-x-1">
-          <?= $pager->simpleLinks('riwayat', 'tailwind_pagination') ?>
+          <?= $pager->simpleLinks('number', 'tailwind_pagination') ?>
         </div>
       <?php endif; ?>
     </div>

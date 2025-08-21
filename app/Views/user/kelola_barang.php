@@ -25,27 +25,27 @@
     <?php endif; ?>
 
     <!-- Search -->
-  <div class="mb-4 flex items-center gap-2">
-    <form method="get" class="flex items-center gap-2">
-      <input type="text" name="keyword" value="<?= esc(service('request')->getVar('keyword')) ?>"
-        placeholder="Search..."
-        class="px-3 py-2 border border-gray-300 rounded w-64 focus:outline-none focus:ring focus:ring-blue-200 text-sm" />
+    <div class="mb-4 flex items-center gap-2">
+        <form method="get" class="flex items-center gap-2">
+            <input type="text" name="keyword" value="<?= esc(service('request')->getVar('keyword')) ?>"
+                placeholder="Search..."
+                class="px-3 py-2 border border-gray-300 rounded w-64 focus:outline-none focus:ring focus:ring-blue-200 text-sm" />
 
-      <button type="submit"
-        class="px-3 py-2 bg-blue-500 text-white text-sm rounded hover:bg-blue-600 transition">
-        Cari
-      </button>
+            <button type="submit"
+                class="px-3 py-2 bg-blue-500 text-white text-sm rounded hover:bg-blue-600 transition">
+                Cari
+            </button>
 
-      <?php if (service('request')->getVar('keyword') || service('request')->getVar('per_page')): ?>
-        <a href="<?= current_url() ?>"
-          class="px-3 py-2 bg-gray-300 text-sm rounded hover:bg-gray-400 transition">
-          Reset
-        </a>
-      <?php endif; ?>
-    </form>
-  </div>
+            <?php if (service('request')->getVar('keyword') || service('request')->getVar('per_page')): ?>
+                <a href="<?= current_url() ?>"
+                    class="px-3 py-2 bg-gray-300 text-sm rounded hover:bg-gray-400 transition">
+                    Reset
+                </a>
+            <?php endif; ?>
+        </form>
+    </div>
 
-  
+
     <!-- Table -->
     <div class="overflow-x-auto">
         <table class="min-w-full text-sm bg-white rounded shadow">
@@ -63,7 +63,8 @@
             </thead>
             <tbody>
                 <?php if (!empty($barangList)): ?>
-                    <?php $no = 1; foreach ($barangList as $barang): ?>
+                    <?php $no = 1;
+                    foreach ($barangList as $barang): ?>
                         <tr class="border-t hover:bg-gray-50">
                             <td class="p-3"><?= $no++ ?></td>
                             <td class="p-3"><?= esc($barang['nama_barang']) ?></td>
@@ -102,30 +103,30 @@
             </tbody>
         </table>
     </div>
-  <!-- Footer Pagination -->
-  <div class="flex justify-between items-center mt-4 text-sm">
-    <div class="flex items-center gap-2">
-      <span>Rows per page</span>
-      <form method="get">
-        <input type="hidden" name="keyword" value="<?= esc($keyword) ?>" />
-        <select name="per_page" onchange="this.form.submit()" class="border border-gray-300 px-2 py-1 rounded">
-          <option value="5" <?= ($perPage == 5) ? 'selected' : '' ?>>5</option>
-          <option value="10" <?= ($perPage == 10) ? 'selected' : '' ?>>10</option>
-          <option value="25" <?= ($perPage == 25) ? 'selected' : '' ?>>25</option>
-        </select>
-      </form>
-    </div>
-
-    <div class="flex items-center justify-center gap-2 mt-4">
-      <?php if ($pager): ?>
-        <div class="flex items-center space-x-1">
-          <?= $pager->simpleLinks('barang', 'tailwind_pagination') ?>
+    <!-- Footer Pagination -->
+    <div class="flex justify-between items-center mt-4 text-sm">
+        <div class="flex items-center gap-2">
+            <span>Rows per page</span>
+            <form method="get">
+                <input type="hidden" name="keyword" value="<?= esc($keyword) ?>" />
+                <select name="per_page" onchange="this.form.submit()" class="border border-gray-300 px-2 py-1 rounded">
+                    <option value="5" <?= ($perPage == 5) ? 'selected' : '' ?>>5</option>
+                    <option value="10" <?= ($perPage == 10) ? 'selected' : '' ?>>10</option>
+                    <option value="25" <?= ($perPage == 25) ? 'selected' : '' ?>>25</option>
+                </select>
+            </form>
         </div>
-      <?php endif; ?>
+
+        <div class="flex items-center justify-center gap-2 mt-4">
+            <?php if ($pager): ?>
+                <div class="flex items-center space-x-1">
+                    <?= $pager->simpleLinks('number', 'tailwind_pagination') ?>
+                </div>
+            <?php endif; ?>
+        </div>
     </div>
-  </div>
-</main> 
-    <!-- Modal Tambah (Barang Masuk) -->
+</main>
+
 <!-- Modal Tambah (Barang Masuk) -->
 <div id="modalTambah" class="hidden fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
     <div class="bg-white rounded-lg shadow-lg w-3/4 p-6 relative">
@@ -178,13 +179,13 @@
 </div>
 
 
-    <!-- Modal Barang Keluar -->
+<!-- Modal Barang Keluar -->
 <!-- Modal Barang Keluar -->
 <div id="modalKeluar" class="hidden fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
     <div class="bg-white rounded-lg shadow-lg w-3/4 p-6 relative">
         <button type="button" onclick="closeModal('modalKeluar')" class="absolute top-3 right-3 text-gray-500 hover:text-gray-700">&times;</button>
-        <h2 class="text-lg font-semibold mb-4">Barang Dipakai   </h2>
-        
+        <h2 class="text-lg font-semibold mb-4">Barang Dipakai </h2>
+
         <form id="formBarangKeluar" action="<?= base_url('user/barang_keluar/save') ?>" method="post" class="grid grid-cols-2 gap-6">
             <?= csrf_field() ?>
 
@@ -204,27 +205,25 @@
             <!-- Jumlah Keluar -->
             <div>
                 <label for="jumlah" class="block text-sm font-medium">Jumlah Dipakai</label>
-                <input 
-                    type="number" 
-                    name="jumlah" 
-                    id="jumlah" 
-                    placeholder="Masukkan jumlah Dipakai" 
-                    class="w-full border rounded px-3 py-2" 
-                    min="1" 
-                    required
-                >
+                <input
+                    type="number"
+                    name="jumlah"
+                    id="jumlah"
+                    placeholder="Masukkan jumlah Dipakai"
+                    class="w-full border rounded px-3 py-2"
+                    min="1"
+                    required>
             </div>
 
             <!-- Tanggal Keluar -->
             <div>
                 <label for="tanggal" class="block text-sm font-medium">Tanggal Dipakai</label>
-                <input 
-                    type="date" 
-                    name="tanggal" 
-                    id="tanggal" 
-                    class="w-full border rounded px-3 py-2" 
-                    required
-                >
+                <input
+                    type="date"
+                    name="tanggal"
+                    id="tanggal"
+                    class="w-full border rounded px-3 py-2"
+                    required>
             </div>
 
 

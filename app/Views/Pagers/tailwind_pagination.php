@@ -8,7 +8,7 @@ $query = $_GET;
     <ul class="inline-flex items-center space-x-1">
         <?php if ($pager->hasPrevious()) : ?>
             <?php
-            $query['page_riwayat'] = $pager->getPreviousPageNumber();
+            $query['page_number'] = $pager->getPreviousPageNumber();
             $prevUrl = current_url() . '?' . http_build_query($query);
             ?>
             <li>
@@ -21,7 +21,7 @@ $query = $_GET;
 
         <?php foreach ($pager->links() as $link): ?>
             <?php
-            $query['page_riwayat'] = $link['title'];
+            $query['page_number'] = $link['title'];
             $url = current_url() . '?' . http_build_query($query);
             ?>
             <li>
@@ -37,7 +37,7 @@ $query = $_GET;
 
         <?php if ($pager->hasNext()) : ?>
             <?php
-            $query['page_riwayat'] = $pager->getNextPageNumber();
+            $query['page_number'] = $pager->getNextPageNumber();
             $nextUrl = current_url() . '?' . http_build_query($query);
             ?>
             <li>
