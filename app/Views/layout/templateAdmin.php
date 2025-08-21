@@ -27,19 +27,15 @@
       </a>
 
       <a href="<?= base_url('admin/penyewa') ?>" class="nav-link <?= ($currentPage === 'penyewa') ? 'active' : '' ?>">
-        <i class="fas fa-user-friends"></i> Penyewa
+        <i class="fas fa-boxes"></i> Data Barang
       </a>
 
       <a href="<?= base_url('admin/kamar') ?>" class="nav-link <?= ($currentPage === 'kamar') ? 'active' : '' ?>">
-        <i class="fas fa-door-open"></i> Kamar
+        <i class="fas fa-file-alt"></i> Laporan Barang
       </a>
 
       <a href="<?= base_url('admin/pembayaran') ?>" class="nav-link <?= ($currentPage === 'pembayaran') ? 'active' : '' ?>">
-        <i class="fas fa-money-check-alt"></i> Pembayaran
-      </a>
-
-      <a href="<?= base_url('admin/laporan-keuangan') ?>" class="nav-link <?= ($currentPage === 'laporan') ? 'active' : '' ?>">
-        <i class="fas fa-file-invoice-dollar"></i> Laporan Keuangan
+        <i class="fas fa-user-friends"></i> Kelola Staff
       </a>
 
       <div class="menu-section">System</div>
