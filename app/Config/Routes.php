@@ -16,7 +16,7 @@ $routes->group('superadmin', ['filter' => 'auth'], function ($routes) {
 });
 
 $routes->group('admin', ['filter' => 'auth'], function ($routes) {
-    $routes->get('dashboard', 'AdminController::index');
+    $routes->get('dashboard', 'AdminController::dashAdmin');
 });
 
 
