@@ -11,8 +11,9 @@ $routes->post('/loginProcess', 'AuthController::loginProcess');
 $routes->post('/registerProcess', 'AuthController::registerProcess');
 $routes->get('/logout', 'AuthController::logout');
 // File: app/Config/Routes.php
+
 $routes->group('superadmin', ['filter' => 'auth'], function ($routes) {
-    $routes->get('dashboard', 'AdminController::indexSuperAdmin');
+    $routes->get('dashboard', 'SuperAdminController::dashSuperAdmin');
 });
 
 $routes->group('admin', ['filter' => 'auth'], function ($routes) {
