@@ -15,15 +15,28 @@
           <i class="fas fa-search"></i>
           <input type="text" placeholder="Cari...">
         </div>
-        <div class="user-profile">
-          <div class="user-avatar">JD</div>
-          <a href="<?= base_url('admin/pengaturan-akun') ?>" class="a-info">
-            <div class="user-info">
-              <h6> <?= esc($admin['nama']) ?></h6>
-              <p>Administrator</p>
+        <?php
+          $nama = trim($admin['nama']);
+          $parts = explode(" ", $nama);
+          if (count($parts) >= 2) {
+              // ambil huruf pertama kata 1 dan kata 2
+              $avatar = strtoupper(substr($parts[0], 0, 1) . substr($parts[1], 0, 1));
+          } else {
+              // kalau cuma 1 kata → ambil 2 huruf awal
+              $avatar = strtoupper(substr($nama, 0, 2));
+          }
+          ?>
+          <div class="user-profile">
+            <div class="user-avatar">
+              <?= $avatar ?>
             </div>
-          </a>
-        </div>
+            <a href="<?= base_url('admin/pengaturan-akun') ?>" class="a-info">
+              <div class="user-info">
+                <h6><?= esc($admin['nama']) ?></h6>
+                <p><?= esc($admin['role']) ?></p>
+              </div>
+            </a>
+          </div>
       </div>
     </div>
   </div>

@@ -503,13 +503,12 @@ body {
 }
 
 .error-message {
-  background-color: #f8d7da;
-  border: 1px solid #f5c6cb;
-  color: #721c24;
-  padding: 10px 15px;
-  border-radius: 10px;
-  margin-bottom: 1rem;
-  font-size: 0.875rem;
+  color: #e53e3e;
+  font-size: 0.85rem;
+  margin-top: 2px;
+  margin-bottom: 0;
+  background: none !important;
+  display: block;
 }
 
 .success-message {

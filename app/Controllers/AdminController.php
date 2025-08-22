@@ -3,7 +3,6 @@
 namespace App\Controllers;
 
 use App\Controllers\BaseController;
-use CodeIgniter\HTTP\ResponseInterface;
 use App\Models\AdminModel;
 use App\Models\UserModel;
 use App\Models\BarangModel;
@@ -12,18 +11,20 @@ use App\Models\LaporanModel;
 class AdminController extends BaseController
 {
     protected $adminModel,
-        $userModel,
-        $barangModel,
-        $laporanModel;
+              $userModel,
+              $barangModel,
+              $laporanModel;
 
     public function __construct()
     {
-        $this->adminModel = new AdminModel;
-        $this->userModel = new userModel;
-        $this->barangModel = new BarangModel;
-        $this->laporanModel = new LaporanModel;
+        $this->adminModel  = new AdminModel();
+        $this->userModel   = new UserModel();
+        $this->barangModel = new BarangModel();
+        $this->laporanModel = new LaporanModel();
+        helper(['form', 'url']);
     }
 
+    // ✅ Dashboard Admin
     public function dashAdmin()
     {
         $dataAdmin = session()->get('id_admin');
@@ -57,17 +58,104 @@ class AdminController extends BaseController
             'totalStaff'        => $totalStaff,
             'totalBarang'       => $totalBarang,
             'barangHampirHabis' => $barangHampirHabis,
-            'laporan'           => $laporan, // parsing ke view
+            'laporan'           => $laporan,
         ];
 
         return view('admin/dashboard', $data);
     }
 
+    // ✅ Dashboard Super Admin
     public function indexSuperAdmin()
     {
         $data = [
             'title' => 'Dashboard Super Admin - CargoWing',
         ];
         return view('superadmin/dashboard', $data);
+    }
+
+    // ✅ Tampilkan profil admin
+    public function profil()
+    {
+        $dataAdmin = session()->get('id_admin');
+        $admin = $this->adminModel->find($dataAdmin);
+
+        $data = [
+            'title'       => 'Profil Admin - CargoWing',
+            'currentPage' => 'profil',
+            'admin'       => $admin,
+        ];
+
+        return view('admin/profil', $data);
+    }
+
+    // ✅ Update data profil (nama, email, foto)
+    public function updateProfil()
+    {
+        $adminId = session()->get('id_admin');
+        $admin   = $this->adminModel->find($adminId);
+
+        if (!$admin) {
+            return redirect()->back()->with('error', 'Data admin tidak ditemukan!');
+        }
+
+        $nama  = $this->request->getPost('nama');
+        $email = $this->request->getPost('email');
+
+        $dataUpdate = [
+            'nama'  => $nama,
+            'email' => $email,
+        ];
+
+        // Upload foto baru (jika ada)
+        $foto = $this->request->getFile('foto');
+        if ($foto && $foto->isValid() && !$foto->hasMoved()) {
+            $newName = $foto->getRandomName();
+            $foto->move(FCPATH . 'uploads', $newName);
+
+            // hapus foto lama kalau ada
+            if (!empty($admin['foto']) && file_exists(FCPATH . 'uploads/' . $admin['foto'])) {
+                unlink(FCPATH . 'uploads/' . $admin['foto']);
+            }
+
+            $dataUpdate['foto'] = $newName;
+        }
+
+        $this->adminModel->update($adminId, $dataUpdate);
+
+        return redirect()->back()->with('success', 'Profil berhasil diperbarui!');
+    }
+
+    // ✅ Ganti password
+    public function gantiPassword()
+    {
+        $adminId = session()->get('id_admin');
+        $admin   = $this->adminModel->find($adminId);
+
+        if (!$admin) {
+            return redirect()->back()->with('errorp', 'Data admin tidak ditemukan!');
+        }
+
+        $passwordLama = $this->request->getPost('password_lama');
+        $passwordBaru = $this->request->getPost('password_baru');
+        $konfirmasi   = $this->request->getPost('konfirmasi_password');
+
+        if (!password_verify($passwordLama, $admin['password'])) {
+            return redirect()->back()->with('errorp', 'Password lama salah!');
+        }
+
+        if ($passwordBaru !== $konfirmasi) {
+            return redirect()->back()->with('errorp', 'Konfirmasi password tidak cocok!');
+        }
+
+        $this->adminModel->update($adminId, [
+            'password' => password_hash($passwordBaru, PASSWORD_DEFAULT)
+        ]);
+
+        return redirect()->back()->with('successp', 'Password berhasil diubah!');
+    }
+    public function logout()
+    {
+        session()->destroy();
+        return redirect()->to(base_url('/'))->with('success', 'Anda telah berhasil logout.');
     }
 }

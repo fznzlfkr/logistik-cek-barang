@@ -17,6 +17,9 @@ $routes->group('superadmin', ['filter' => 'auth'], function ($routes) {
 
 $routes->group('admin', ['filter' => 'auth'], function ($routes) {
     $routes->get('dashboard', 'AdminController::dashAdmin');
+    $routes->get('pengaturan-akun', 'AdminController::profil');
+    $routes->post('profil/update', 'AdminController::updateProfil');
+    $routes->post('profil/ganti-password', 'AdminController::gantiPassword');
 });
 
 $routes->group('user', ['filter' => 'auth'], function ($routes) {
