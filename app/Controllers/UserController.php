@@ -79,8 +79,13 @@ class UserController extends BaseController
 
         // Ambil data barang dengan pagination
         $barangList = $barangQuery
-            ->orderBy('barang.nama_barang', 'ASC')
+            ->orderBy('barang.id_barang', 'ASC')->orderBy('nama_barang', 'ASC')
             ->paginate($perPage, 'number');
+
+        $uniqueBarang = $this->barangModel
+            ->select('id_barang, nama_barang, jumlah')
+            ->orderBy('nama_barang', 'ASC')
+            ->findAll();
 
         $data = [
             'title'      => 'Kelola Barang User - CargoWing',
@@ -88,6 +93,7 @@ class UserController extends BaseController
             'keyword'    => $keyword,
             'perPage'    => $perPage,
             'barangList' => $barangList,
+            'uniqueBarang' => $uniqueBarang,
             'pager'      => $this->barangModel->pager // Pastikan pager diambil dari model
         ];
 
@@ -109,7 +115,6 @@ class UserController extends BaseController
 
     public function simpanBarang()
     {
-
         $data = [
             'nama_barang'   => $this->request->getPost('nama_barang'),
             'jumlah'        => $this->request->getPost('jumlah'),
@@ -119,21 +124,29 @@ class UserController extends BaseController
             'minimum_stok'  => $this->request->getPost('minimum_stok'),
         ];
 
-        // Validasi sederhana (pastikan semua field terisi)
+        // Validasi sederhana (semua field wajib diisi)
         foreach ($data as $key => $value) {
             if ($value === null || $value === '') {
-                return redirect()->back()->withInput()->with('error', 'Field ' . $key . ' wajib diisi.');
+                return redirect()->back()->withInput()
+                    ->with('error', 'Field ' . $key . ' wajib diisi.');
             }
         }
 
-        // Simpan data
-        if ($this->barangModel->insert($data)) {
-            return redirect()->back()->with('success', 'Barang berhasil ditambahkan.');
+        // ✅ Cek apakah nama_barang sudah ada
+        $cekNama = $this->barangModel->where('nama_barang', $data['nama_barang'])->first();
 
-            logAktivitas("Menambah barang: " . $this->request->getPost('nama_barang'));
+        if ($cekNama) {
+            // Kalau nama_barang sudah ada
+            return redirect()->back()->withInput()
+                ->with('error', 'Barang sudah ada.');
         } else {
-            $error = $this->barangModel->errors();
-            return redirect()->back()->withInput()->with('error', 'Gagal menambah barang. ' . json_encode($error));
+            // Kalau aman → insert
+            if ($this->barangModel->insert($data)) {
+                return redirect()->back()->with('success', 'Barang berhasil ditambahkan.');
+            } else {
+                return redirect()->back()->withInput()
+                    ->with('error', 'Gagal menambah barang.');
+            }
         }
     }
 
@@ -348,6 +361,7 @@ class UserController extends BaseController
             'perPage'     => $perPage,
             'keyword'     => $keyword,
             'barangList'  => $barangList,
+
         ];
 
         return view('user/riwayat', $data);
@@ -424,7 +438,7 @@ class UserController extends BaseController
 
         // Ambil semua barang untuk form (bukan hanya nama, tapi id juga)
         $uniqueBarang = $this->barangModel
-            ->select('id_barang, nama_barang')
+            ->select('id_barang, nama_barang, jumlah')
             ->orderBy('nama_barang', 'ASC')
             ->findAll();
 

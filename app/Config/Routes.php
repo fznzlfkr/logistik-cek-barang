@@ -18,8 +18,10 @@ $routes->group('superadmin', ['filter' => 'auth'], function ($routes) {
 
 $routes->group('admin', ['filter' => 'auth'], function ($routes) {
     $routes->get('dashboard', 'AdminController::dashAdmin');
+    $routes->get('pengaturan-akun', 'AdminController::profil');
+    $routes->post('profil/update', 'AdminController::updateProfil');
+    $routes->post('profil/ganti-password', 'AdminController::gantiPassword');
 });
-
 
 $routes->group('user', ['filter' => 'auth'], function ($routes) {
     $routes->get('dashboard', 'UserController::index');
@@ -27,7 +29,6 @@ $routes->group('user', ['filter' => 'auth'], function ($routes) {
     $routes->get('tambah_barang', 'UserController::tambahBarang');
     $routes->post('simpan_barang', 'UserController::simpanBarang');
     $routes->post('edit_barang/(:num)', 'UserController::editBarang/$1');
-    $routes->post('update_barang/(:num)', 'UserController::updateBarang/$1');
     $routes->post('update_barang/(:num)', 'UserController::updateBarang/$1');
     $routes->post('hapus_barang/(:num)', 'UserController::hapusBarang/$1');
     $routes->post('download_barcode/(:num)', 'UserController::downloadBarcode/$1');
