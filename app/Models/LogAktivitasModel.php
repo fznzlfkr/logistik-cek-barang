@@ -4,11 +4,15 @@ namespace App\Models;
 
 use CodeIgniter\Model;
 
-class AdminModel extends Model
+class LogAktivitasModel extends Model
 {
-    protected $table            = 'admin';
-    protected $primaryKey       = 'id_admin';
-    protected $allowedFields    = ['nama', 'email', 'password', 'role', 'aktif'];
+    protected $table            = 'log_aktivitas';
+    protected $primaryKey       = 'id_log';
+    protected $useAutoIncrement = true;
+    protected $returnType       = 'array';
+    protected $useSoftDeletes   = false;
+    protected $protectFields    = true;
+    protected $allowedFields    = ['id_user', 'role', 'aktivitas', 'ip_address', 'user_agent'];
 
     protected bool $allowEmptyInserts = false;
     protected bool $updateOnlyChanged = true;
@@ -17,7 +21,7 @@ class AdminModel extends Model
     protected array $castHandlers = [];
 
     // Dates
-    protected $useTimestamps = false;
+    protected $useTimestamps = true;
     protected $dateFormat    = 'datetime';
     protected $createdField  = 'created_at';
     protected $updatedField  = 'updated_at';

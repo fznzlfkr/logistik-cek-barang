@@ -21,6 +21,12 @@ class AuthController extends BaseController
 
     public function index()
     {
+        // kalau yang logout itu admin
+        if (session()->get('id_admin')) {
+            $this->adminModel->update(session()->get('id_admin'), ['aktif' => false]);
+        }
+
+        // hancurkan sesi
         $this->session->destroy();
 
         $data = [
@@ -52,6 +58,8 @@ class AuthController extends BaseController
 
         if ($admin) {
             if (password_verify($password, $admin['password'])) {
+
+                // Set session
                 $this->session->set([
                     'id_admin'  => $admin['id_admin'],
                     'nama'      => $admin['nama'],
@@ -59,6 +67,9 @@ class AuthController extends BaseController
                     'role'      => $admin['role'],
                     'logged_in' => true
                 ]);
+
+                // Update status aktif di DB
+                $this->adminModel->update($admin['id_admin'], ['aktif' => true]);
 
                 return $admin['role'] === 'Super Admin'
                     ? redirect()->to('superadmin/dashboard')
@@ -78,6 +89,7 @@ class AuthController extends BaseController
                     'nama'      => $user['nama'],
                     'email'     => $user['email'],
                     'no_hp'     => $user['no_hp'],
+                    'role'      => 'user',
                     'logged_in' => true,
                 ]);
 
@@ -88,7 +100,7 @@ class AuthController extends BaseController
         }
 
         // Jika email tidak ditemukan di kedua tabel
-        return redirect()->back()->withInput()->with('error', 'Email tidak terdaftar, Silakan lakukan pedaftaran akun terlebih dahulu.');
+        return redirect()->back()->withInput()->with('error', 'Email tidak terdaftar, Silakan lakukan pendaftaran akun terlebih dahulu.');
     }
 
     public function registerProcess()

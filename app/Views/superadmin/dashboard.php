@@ -42,7 +42,7 @@
             <i class="fas fa-user-shield"></i>
           </div>
         </div>
-        <h2 class="stat-value"><?= esc($superAdmin ? 1 : 0) ?></h2>
+        <h2 class="stat-value"><?= esc($totalAdmin) ?></h2>
       </div>
 
       <!-- Barang Hampir Habis -->
@@ -53,7 +53,7 @@
             <i class="fas fa-user-check"></i>
           </div>
         </div>
-        <h2 class="stat-value"></h2>
+        <h2 class="stat-value"><?= esc($totalAdminAktif) ?></h2>
       </div>
 
       <!-- Barang di Gudang -->

@@ -129,6 +129,8 @@ class UserController extends BaseController
         // Simpan data
         if ($this->barangModel->insert($data)) {
             return redirect()->back()->with('success', 'Barang berhasil ditambahkan.');
+
+            logAktivitas("Menambah barang: " . $this->request->getPost('nama_barang'));
         } else {
             $error = $this->barangModel->errors();
             return redirect()->back()->withInput()->with('error', 'Gagal menambah barang. ' . json_encode($error));
@@ -482,7 +484,7 @@ class UserController extends BaseController
             'jumlah' => $barang['jumlah'] - $jumlah
         ]);
 
-        return redirect()->to('/user/barang_keluar')
+        return redirect()->to('/user/riwayat')
             ->with('success', 'Barang keluar berhasil dicatat & stok terupdate!');
     }
 
@@ -527,7 +529,8 @@ class UserController extends BaseController
 
         // Data baru yang akan diupdate
         $newData = [
-            'tanggal'   => $this->request->getPost('tanggal') ?? date('Y-m-d H:i:s'),
+            'tanggal'   => $this->request->getPost('tanggal')
+                ?? date('Y-m-d H:i:s', strtotime('+7 hours')),
             'jumlah'    => $this->request->getPost('jumlah'),
             'jenis'     => $this->request->getPost('jenis'),
             'id_barang' => $barang['id_barang'],
@@ -542,6 +545,9 @@ class UserController extends BaseController
 
         // Update data laporan
         $this->laporanModel->update($idLaporan, $newData);
+
+        // ✅ Tambahkan log aktivitas
+        logAktivitas("Mengedit laporan ID: {$idLaporan}, Barang: {$namaBarang}, Jumlah: {$newData['jumlah']}, Jenis: {$newData['jenis']}");
 
         return redirect()->to(base_url('user/riwayat'))
             ->with('success', 'Data riwayat berhasil diperbarui.');

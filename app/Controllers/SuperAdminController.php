@@ -29,6 +29,15 @@ class SuperAdminController extends BaseController
         $dataSuperAdmin = session()->get('id_admin');
         $superAdmin = $this->adminModel->find($dataSuperAdmin);
 
+        $totalAdmin = $this->adminModel
+            ->where('role', 'Admin')
+            ->countAllResults();
+
+        $totalAdminAktif = $this->adminModel
+            ->where('role', 'Admin')
+            ->where('aktif', true)
+            ->countAllResults();
+
         $totalBarang = $this->barangModel
             ->select('COUNT(DISTINCT nama_barang) as total')
             ->first()['total'] ?? 0;
@@ -39,6 +48,8 @@ class SuperAdminController extends BaseController
             'title'             => 'Dashboard Admin - CargoWing',
             'currentPage'       => 'dashboard',
             'superAdmin'        => $superAdmin,
+            'totalAdmin'        => $totalAdmin,
+            'totalAdminAktif'   => $totalAdminAktif,
             'totalStaff'        => $totalStaff,
             'totalBarang'       => $totalBarang,
         ];
