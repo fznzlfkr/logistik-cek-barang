@@ -79,8 +79,13 @@ class UserController extends BaseController
 
         // Ambil data barang dengan pagination
         $barangList = $barangQuery
-            ->orderBy('barang.nama_barang', 'ASC')
+            ->orderBy('barang.id_barang', 'ASC')->orderBy('nama_barang', 'ASC')
             ->paginate($perPage, 'number');
+
+        $uniqueBarang = $this->barangModel
+            ->select('id_barang, nama_barang, jumlah')
+            ->orderBy('nama_barang', 'ASC')
+            ->findAll();
 
         $data = [
             'title'      => 'Kelola Barang User - CargoWing',
@@ -88,6 +93,7 @@ class UserController extends BaseController
             'keyword'    => $keyword,
             'perPage'    => $perPage,
             'barangList' => $barangList,
+            'uniqueBarang' => $uniqueBarang,
             'pager'      => $this->barangModel->pager // Pastikan pager diambil dari model
         ];
 
@@ -107,33 +113,43 @@ class UserController extends BaseController
         return view('user/tambah_barang', $data);
     }
 
-    public function simpanBarang()
-    {
+public function simpanBarang()
+{
+    $data = [
+        'nama_barang'   => $this->request->getPost('nama_barang'),
+        'jumlah'        => $this->request->getPost('jumlah'),
+        'satuan'        => $this->request->getPost('satuan'),
+        'tanggal_masuk' => $this->request->getPost('tanggal_masuk'),
+        'barcode'       => $this->request->getPost('barcode'),
+        'minimum_stok'  => $this->request->getPost('minimum_stok'),
+    ];
 
-        $data = [
-            'nama_barang'   => $this->request->getPost('nama_barang'),
-            'jumlah'        => $this->request->getPost('jumlah'),
-            'satuan'        => $this->request->getPost('satuan'),
-            'tanggal_masuk' => $this->request->getPost('tanggal_masuk'),
-            'barcode'       => $this->request->getPost('barcode'),
-            'minimum_stok'  => $this->request->getPost('minimum_stok'),
-        ];
-
-        // Validasi sederhana (pastikan semua field terisi)
-        foreach ($data as $key => $value) {
-            if ($value === null || $value === '') {
-                return redirect()->back()->withInput()->with('error', 'Field ' . $key . ' wajib diisi.');
-            }
-        }
-
-        // Simpan data
-        if ($this->barangModel->insert($data)) {
-            return redirect()->back()->with('success', 'Barang berhasil ditambahkan.');
-        } else {
-            $error = $this->barangModel->errors();
-            return redirect()->back()->withInput()->with('error', 'Gagal menambah barang. ' . json_encode($error));
+    // Validasi sederhana (semua field wajib diisi)
+    foreach ($data as $key => $value) {
+        if ($value === null || $value === '') {
+            return redirect()->back()->withInput()
+                ->with('error', 'Field ' . $key . ' wajib diisi.');
         }
     }
+
+    // ✅ Cek apakah nama_barang sudah ada
+    $cekNama = $this->barangModel->where('nama_barang', $data['nama_barang'])->first();
+
+    if ($cekNama) {
+        // Kalau nama_barang sudah ada
+        return redirect()->back()->withInput()
+            ->with('error', 'Barang sudah ada.');
+    } else {
+        // Kalau aman → insert
+        if ($this->barangModel->insert($data)) {
+            return redirect()->back()
+                ->with('success', 'Barang berhasil ditambahkan.');
+        } else {
+            return redirect()->back()->withInput()
+                ->with('error', 'Gagal menambah barang.');
+        }
+    }
+}
 
     public function editBarang($id)
     {
@@ -346,6 +362,7 @@ class UserController extends BaseController
             'perPage'     => $perPage,
             'keyword'     => $keyword,
             'barangList'  => $barangList,
+            
         ];
 
         return view('user/riwayat', $data);
@@ -422,7 +439,7 @@ class UserController extends BaseController
 
         // Ambil semua barang untuk form (bukan hanya nama, tapi id juga)
         $uniqueBarang = $this->barangModel
-            ->select('id_barang, nama_barang')
+            ->select('id_barang, nama_barang, jumlah')
             ->orderBy('nama_barang', 'ASC')
             ->findAll();
 
