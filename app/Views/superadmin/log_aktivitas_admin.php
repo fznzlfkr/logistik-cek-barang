@@ -26,63 +26,64 @@
                 </div>
             </div>
         </div>
+    </div>
 
 
-        <!-- Content Area -->
-        <div class="content-area">
 
-            <!-- Content Grid -->
-            <div class="content-grid">
+    <!-- Content Area -->
+    <div class="content-area">
 
-                <!-- Recent Activity -->
-                <div class="content-card">
-                    <div class="card-header">
-                        <h3 class="card-title">Aktivitas Admin Terbaru</h3>
-                        <a href="#" class="card-action">View All</a>
-                    </div>
+        <!-- Content Grid -->
+        <div class="content-grid">
 
-                    <ul class="activity-list">
-                        <!-- Dummy Data -->
-                        <li class="activity-item">
-                            <div class="activity-avatar">FA</div>
-                            <div class="activity-content">
-                                <h6>Faiz</h6>
-                                <p>Login berhasil sebagai Admin</p>
-                            </div>
-                            <div class="activity-time">2 menit lalu</div>
-                        </li>
-
-                        <li class="activity-item">
-                            <div class="activity-avatar">AD</div>
-                            <div class="activity-content">
-                                <h6>Andi</h6>
-                                <p>Menambahkan data barang baru (Laptop ASUS)</p>
-                            </div>
-                            <div class="activity-time">10 menit lalu</div>
-                        </li>
-
-                        <li class="activity-item">
-                            <div class="activity-avatar">RS</div>
-                            <div class="activity-content">
-                                <h6>Rosa</h6>
-                                <p>Menghapus data staff #7</p>
-                            </div>
-                            <div class="activity-time">1 jam lalu</div>
-                        </li>
-
-                        <li class="activity-item">
-                            <div class="activity-avatar">MI</div>
-                            <div class="activity-content">
-                                <h6>Mira</h6>
-                                <p>Logout dari sistem</p>
-                            </div>
-                            <div class="activity-time">2 jam lalu</div>
-                        </li>
-                    </ul>
-
+            <!-- Recent Activity -->
+            <div class="content-card">
+                <div class="card-header">
+                    <h3 class="card-title">Aktivitas Admin Terbaru</h3>
+                    <a href="#" class="card-action">View All</a>
                 </div>
-            </div>
 
+                <ul class="activity-list">
+                    <!-- Dummy Data -->
+                    <li class="activity-item">
+                        <div class="activity-avatar">FA</div>
+                        <div class="activity-content">
+                            <h6>Faiz</h6>
+                            <p>Login berhasil sebagai Admin</p>
+                        </div>
+                        <div class="activity-time">2 menit lalu</div>
+                    </li>
+
+                    <li class="activity-item">
+                        <div class="activity-avatar">AD</div>
+                        <div class="activity-content">
+                            <h6>Andi</h6>
+                            <p>Menambahkan data barang baru (Laptop ASUS)</p>
+                        </div>
+                        <div class="activity-time">10 menit lalu</div>
+                    </li>
+
+                    <li class="activity-item">
+                        <div class="activity-avatar">RS</div>
+                        <div class="activity-content">
+                            <h6>Rosa</h6>
+                            <p>Menghapus data staff #7</p>
+                        </div>
+                        <div class="activity-time">1 jam lalu</div>
+                    </li>
+
+                    <li class="activity-item">
+                        <div class="activity-avatar">MI</div>
+                        <div class="activity-content">
+                            <h6>Mira</h6>
+                            <p>Logout dari sistem</p>
+                        </div>
+                        <div class="activity-time">2 jam lalu</div>
+                    </li>
+                </ul>
+
+            </div>
         </div>
+
     </div>
     <?= $this->endSection() ?>
