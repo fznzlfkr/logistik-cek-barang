@@ -21,6 +21,7 @@ $routes->group('superadmin', ['filter' => 'auth:Super Admin'], function ($routes
 
 $routes->group('admin', ['filter' => 'auth:Admin'], function ($routes) {
     $routes->get('dashboard', 'AdminController::dashAdmin');
+    $routes->get('kelola-barang', 'AdminController::kelolaBarang');
     $routes->get('pengaturan-akun', 'AdminController::profil');
     $routes->post('profil/update', 'AdminController::updateProfil');
     $routes->post('profil/ganti-password', 'AdminController::gantiPassword');

@@ -27,7 +27,7 @@
         <i class="fas fa-home"></i> Dashboard
       </a>
 
-      <a href="<?= base_url('admin/penyewa') ?>" class="nav-link <?= ($currentPage === 'penyewa') ? 'active' : '' ?>">
+      <a href="<?= base_url('admin/kelola-barang') ?>" class="nav-link <?= ($currentPage === 'penyewa') ? 'active' : '' ?>">
         <i class="fas fa-boxes"></i> Data Barang
       </a>
 
@@ -55,6 +55,10 @@
   <?= $this->renderSection('content') ?>
 
   <script src="<?= base_url('/assets/js/admin.js') ?>"></script>
+  <script src="https://unpkg.com/feather-icons"></script>
+  <script>
+    feather.replace();
+  </script>
   <script>
     document.addEventListener('DOMContentLoaded', function() {
       const logoutBtn = document.getElementById('logoutBtn');
