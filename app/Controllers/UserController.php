@@ -113,43 +113,6 @@ class UserController extends BaseController
         return view('user/tambah_barang', $data);
     }
 
-    public function simpanBarang()
-    {
-        $data = [
-            'nama_barang'   => $this->request->getPost('nama_barang'),
-            'jumlah'        => $this->request->getPost('jumlah'),
-            'satuan'        => $this->request->getPost('satuan'),
-            'tanggal_masuk' => $this->request->getPost('tanggal_masuk'),
-            'barcode'       => $this->request->getPost('barcode'),
-            'minimum_stok'  => $this->request->getPost('minimum_stok'),
-        ];
-
-        // Validasi sederhana (semua field wajib diisi)
-        foreach ($data as $key => $value) {
-            if ($value === null || $value === '') {
-                return redirect()->back()->withInput()
-                    ->with('error', 'Field ' . $key . ' wajib diisi.');
-            }
-        }
-
-        // ✅ Cek apakah nama_barang sudah ada
-        $cekNama = $this->barangModel->where('nama_barang', $data['nama_barang'])->first();
-
-        if ($cekNama) {
-            // Kalau nama_barang sudah ada
-            return redirect()->back()->withInput()
-                ->with('error', 'Barang sudah ada.');
-        } else {
-            // Kalau aman → insert
-            if ($this->barangModel->insert($data)) {
-                return redirect()->back()->with('success', 'Barang berhasil ditambahkan.');
-            } else {
-                return redirect()->back()->withInput()
-                    ->with('error', 'Gagal menambah barang.');
-            }
-        }
-    }
-
     public function editBarang($id)
     {
         if ($this->request->getMethod() === 'post') {
@@ -325,136 +288,37 @@ class UserController extends BaseController
         return view('user/riwayat', $data);
     }
 
-    // Menampilkan riwayat barang masuk
-    public function barangMasuk()
-    {
-        $dataUser = session()->get('id_user');
-        $user     = $this->userModel->find($dataUser);
-
-        $perPage  = $this->request->getVar('per_page') ?? 10;
-        $keyword  = $this->request->getVar('keyword');
-
-        $riwayatQuery = $this->laporanModel
-            ->select('laporan.tanggal, laporan.jumlah, laporan.jenis, users.nama, barang.nama_barang, laporan.id_laporan')
-            ->join('users', 'users.id_user = laporan.id_user')
-            ->join('barang', 'barang.id_barang = laporan.id_barang')
-            ->where('laporan.jenis', 'Masuk');
-
-        if (!empty($keyword)) {
-            $riwayatQuery->groupStart()
-                ->like('barang.nama_barang', $keyword)
-                ->orLike('users.nama', $keyword)
-                ->groupEnd();
-        }
-
-        $riwayatData = $riwayatQuery
-            ->orderBy('laporan.tanggal', 'DESC')
-            ->paginate($perPage, 'riwayatMasuk');
-
-        $barangList = $this->barangModel->findAll();
-
-        $data = [
-            'title'       => 'Riwayat Barang Masuk - CargoWing',
-            'user'        => $user,
-            'riwayatData' => $riwayatData,
-            'pager'       => $this->laporanModel->pager,
-            'perPage'     => $perPage,
-            'keyword'     => $keyword,
-            'barangList'  => $barangList,
-
-        ];
-
-        return view('user/riwayat', $data);
-    }
-
     // Proses input barang masuk
     public function simpanBarangMasuk()
-    { {
-            $dataUser = session()->get('id_user');
-
-
-            $namaBarang = $this->request->getPost('nama_barang');
-            $jumlah     = (int) $this->request->getPost('jumlah');
-            $satuan     = $this->request->getPost('satuan');
-            $minimum    = $this->request->getPost('minimum_stok');
-            $barcode    = $this->request->getPost('barcode');
-            $tanggal    = $this->request->getPost('tanggal_masuk');
-
-            if (!$namaBarang || $jumlah <= 0) {
-                return redirect()->back()->with('error', 'Data tidak valid.');
-            }
-
-            // ✅ Insert barang baru
-            $idBarang = $this->barangModel->insert([
-                'nama_barang'   => $namaBarang,
-                'jumlah'          => $jumlah,
-                'satuan'        => $satuan,
-                'minimum_stok'  => $minimum,
-                'barcode'       => $barcode,
-                'tanggal_masuk' => $tanggal,
-
-            ], true); // true supaya return insertID
-
-            // ✅ Insert ke laporan (riwayat)
-            $now = new \DateTime('now', new \DateTimeZone('Asia/Jakarta'));
-            $this->laporanModel->insert([
-                'id_user'   => $dataUser,
-                'id_barang' => $idBarang,
-                'jumlah'    => $jumlah,
-                'jenis'     => 'Masuk',
-                'tanggal'   => $tanggal . ' ' . $now->format('H:i:s')
-            ]);
-
-            return redirect()->to('/user/kelola_barang')->with('success', 'Barang baru berhasil ditambahkan & dicatat di riwayat.');
-        }
-    }
-
-    public function barangKeluar()
     {
-        $dataUser = session()->get('id_user');
-        $user     = $this->userModel->find($dataUser);
-
-        $perPage  = $this->request->getVar('per_page') ?? 10;
-        $keyword  = $this->request->getVar('keyword');
-
-        // Query hanya untuk barang keluar
-        $riwayatQuery = $this->laporanModel
-            ->select('laporan.tanggal, laporan.jumlah, laporan.jenis, users.nama, barang.nama_barang, laporan.id_laporan')
-            ->join('users', 'users.id_user = laporan.id_user')
-            ->join('barang', 'barang.id_barang = laporan.id_barang')
-            ->where('laporan.jenis', 'Dipakai');
-
-        // Filter pencarian
-        if (!empty($keyword)) {
-            $riwayatQuery->groupStart()
-                ->like('barang.nama_barang', $keyword)
-                ->orLike('users.nama', $keyword)
-                ->groupEnd();
-        }
-
-        $riwayatData = $riwayatQuery
-            ->orderBy('laporan.tanggal', 'DESC')
-            ->paginate($perPage, 'riwayatKeluar');
-
-        // Ambil semua barang untuk form (bukan hanya nama, tapi id juga)
-        $uniqueBarang = $this->barangModel
-            ->select('id_barang, nama_barang, jumlah')
-            ->orderBy('nama_barang', 'ASC')
-            ->findAll();
-
+        // Ambil data dari form
         $data = [
-            'title'        => 'Riwayat Barang Keluar - CargoWing',
-            'user'         => $user,
-            'riwayatData'  => $riwayatData,
-            'pager'        => $this->laporanModel->pager,
-            'perPage'      => $perPage,
-            'keyword'      => $keyword,
-            'uniqueBarang' => $uniqueBarang,
+            'nama_barang'   => $this->request->getPost('nama_barang'),
+            'jumlah'        => $this->request->getPost('jumlah'),
+            'satuan'        => $this->request->getPost('satuan'),
+            'tanggal_masuk' => $this->request->getPost('tanggal_masuk'),
+            'barcode'       => $this->request->getPost('barcode'),
+            'minimum_stok'  => $this->request->getPost('minimum_stok'),
         ];
 
-        return view('user/riwayat', $data);
-    }
+        // --- Validasi field kosong ---
+        foreach ($data as $key => $value) {
+            if (empty($value)) {
+                return redirect()->back()->with('error', ucfirst(str_replace('_', ' ', $key)) . ' wajib diisi');
+            }
+        }
 
+        // --- Cek duplikasi nama_barang ---
+        $cekBarang = $this->barangModel->where('nama_barang', $data['nama_barang'])->first();
+        if ($cekBarang) {
+            return redirect()->back()->with('error', 'Barang sudah terdaftar');
+        }
+
+        // --- Simpan data ---
+        $this->barangModel->insert($data);
+
+        return redirect()->to('user/kelola_barang')->with('success', 'Barang berhasil disimpan');
+    }
 
     public function saveBarangKeluar()
     {
