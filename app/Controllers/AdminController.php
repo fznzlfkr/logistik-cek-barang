@@ -121,6 +121,52 @@ class AdminController extends BaseController
         return redirect()->back()->with('success', 'Profil berhasil diperbarui!');
     }
 
+    public function kelolaBarang()
+    {
+         $dataAdmin = session()->get('id_admin');
+        $admin     = $this->adminModel->find($dataAdmin);
+
+        // Ambil jumlah per halaman (default 10)
+        $perPage  = $this->request->getVar('per_page') ?? 10;
+        // Ambil keyword pencarian
+        $keyword  = $this->request->getVar('keyword');
+
+        // Query ke tabel barang
+        $barangQuery = $this->barangModel;
+
+        if (!empty($keyword)) {
+            $barangQuery = $barangQuery->groupStart()
+                ->like('nama_barang', $keyword)
+                ->orLike('jumlah', $keyword)
+                ->orLike('satuan', $keyword)
+                ->orLike('barcode', $keyword)
+                ->groupEnd();
+        }
+
+        // Ambil data barang dengan pagination
+        $barangList = $barangQuery
+            ->orderBy('barang.id_barang', 'ASC')->orderBy('nama_barang', 'ASC')
+            ->paginate($perPage, 'number');
+
+        $uniqueBarang = $this->barangModel
+            ->select('id_barang, nama_barang, jumlah')
+            ->orderBy('nama_barang', 'ASC')
+            ->findAll();
+
+        $data = [
+            'title'      => 'Kelola Barang Admin - CargoWing',
+            'currentPage' => 'kelolaBarang',
+            'admin'       => $admin,
+            'keyword'    => $keyword,
+            'perPage'    => $perPage,
+            'barangList' => $barangList,
+            'uniqueBarang' => $uniqueBarang,
+            'pager'      => $this->barangModel->pager // Pastikan pager diambil dari model
+        ];
+
+        return view('admin/kelola_barang', $data);
+    }
+
     public function gantiPassword()
     {
         $adminId = session()->get('id_admin');
