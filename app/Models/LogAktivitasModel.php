@@ -43,4 +43,24 @@ class LogAktivitasModel extends Model
     protected $afterFind      = [];
     protected $beforeDelete   = [];
     protected $afterDelete    = [];
+
+    public function getLogsByAdmin($limit = 10)
+    {
+        return $this->select('log_aktivitas.*, admin.nama as nama_admin')
+            ->join('admin', 'admin.id_admin = log_aktivitas.id_admin', 'left')
+            ->where('log_aktivitas.role', 'Admin')
+            ->orderBy('log_aktivitas.created_at', 'DESC')
+            ->limit($limit)
+            ->findAll();
+    }
+
+    public function getLogsByUser($limit = 10)
+    {
+        return $this->select('log_aktivitas.*, user.nama as nama_user')
+            ->join('user', 'user.id_user = log_aktivitas.id_user', 'left')
+            ->where('log_aktivitas.role', 'User')
+            ->orderBy('log_aktivitas.created_at', 'DESC')
+            ->limit($limit)
+            ->findAll();
+    }
 }

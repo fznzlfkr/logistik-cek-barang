@@ -91,8 +91,8 @@
         </div>
 
         <ul class="activity-list">
-          <?php if (!empty($logs)): ?>
-            <?php foreach ($logs as $log): ?>
+          <?php if (!empty($logsAdmin)): ?>
+            <?php foreach ($logsAdmin as $log): ?>
               <li class="activity-item">
                 <div class="activity-avatar">
                   <?= strtoupper(substr($log['nama_admin'] ?? 'NA', 0, 2)); ?>

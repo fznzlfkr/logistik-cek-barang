@@ -26,6 +26,8 @@ class AuthController extends BaseController
             $this->adminModel->update(session()->get('id_admin'), ['aktif' => false]);
         }
 
+        logAktivitas("Logout berhasil");
+
         // hancurkan sesi
         $this->session->destroy();
 
@@ -71,7 +73,10 @@ class AuthController extends BaseController
                 // Update status aktif di DB
                 $this->adminModel->update($admin['id_admin'], ['aktif' => true]);
 
-                logAktivitas("Login berhasil: " . $admin['nama'] . " sebagai " . $admin['role']);
+                // Simpan log hanya jika role = Admin
+                if ($admin['role'] === 'Admin') {
+                    logAktivitas("Login berhasil: " . $admin['nama'] . " sebagai " . $admin['role']);
+                }
 
                 return $admin['role'] === 'Super Admin'
                     ? redirect()->to('superadmin/dashboard')

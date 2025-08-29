@@ -8,13 +8,15 @@ use App\Models\UserModel;
 use App\Models\AdminModel;
 use App\Models\BarangModel;
 use App\Models\LaporanModel;
+use App\Models\LogAktivitasModel;
 
 class SuperAdminController extends BaseController
 {
     protected $adminModel,
         $userModel,
         $barangModel,
-        $laporanModel;
+        $laporanModel,
+        $logAktivitasModel;
 
     public function __construct()
     {
@@ -22,6 +24,7 @@ class SuperAdminController extends BaseController
         $this->userModel = new userModel;
         $this->barangModel = new BarangModel;
         $this->laporanModel = new LaporanModel;
+        $this->logAktivitasModel = new LogAktivitasModel;
     }
 
     public function dashSuperAdmin()
@@ -45,19 +48,9 @@ class SuperAdminController extends BaseController
 
         $totalStaff = $this->userModel->countAllResults();
 
-        // ================================
-        // Ambil log aktivitas terbaru
-        // ================================
-        $db = \Config\Database::connect();
-        $builder = $db->table('log_aktivitas');
-        $builder->select('log_aktivitas.*, admin.nama as nama_admin');
-        $builder->join('admin', 'admin.id_admin = log_aktivitas.id_admin', 'left');
-        $builder->orderBy('log_aktivitas.created_at', 'DESC');
-        $builder->limit(10); // ambil 10 terbaru
-        $logs = $builder->get()->getResultArray();
+        $logsAdmin = $this->logAktivitasModel->getLogsByAdmin();
 
-        // Tambahkan field "waktu_ago"
-        foreach ($logs as &$log) {
+        foreach ($logsAdmin as &$log) {
             $log['waktu_ago'] = $this->timeAgo($log['created_at']);
         }
 
@@ -69,7 +62,7 @@ class SuperAdminController extends BaseController
             'totalAdminAktif'   => $totalAdminAktif,
             'totalStaff'        => $totalStaff,
             'totalBarang'       => $totalBarang,
-            'logs'              => $logs, // parsing ke view
+            'logsAdmin'         => $logsAdmin, // parsing ke view
         ];
 
         return view('superAdmin/dashboard', $data);

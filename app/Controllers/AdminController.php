@@ -102,20 +102,18 @@ class AdminController extends BaseController
             'email' => $email,
         ];
 
-        // Upload foto baru (jika ada)
-        $foto = $this->request->getFile('foto');
-        if ($foto && $foto->isValid() && !$foto->hasMoved()) {
-            $newName = $foto->getRandomName();
-            $foto->move(FCPATH . 'uploads', $newName);
+        // Cek perubahan (pakai data lama dari DB sebagai identitas pelaku)
+        $pelaku = $admin['nama'];
 
-            // hapus foto lama kalau ada
-            if (!empty($admin['foto']) && file_exists(FCPATH . 'uploads/' . $admin['foto'])) {
-                unlink(FCPATH . 'uploads/' . $admin['foto']);
-            }
-
-            $dataUpdate['foto'] = $newName;
+        if ($admin['nama'] !== $nama && $admin['email'] === $email) {
+            logAktivitas("$pelaku mengganti nama dari '{$admin['nama']}' menjadi '{$nama}'");
+        } elseif ($admin['nama'] === $nama && $admin['email'] !== $email) {
+            logAktivitas("$pelaku mengganti email dari '{$admin['email']}' menjadi '{$email}'");
+        } elseif ($admin['nama'] !== $nama && $admin['email'] !== $email) {
+            logAktivitas("$pelaku mengganti nama dari '{$admin['nama']}' menjadi '{$nama}', dan mengganti email dari '{$admin['email']}' menjadi '{$email}'");
         }
 
+        // Update data
         $this->adminModel->update($adminId, $dataUpdate);
 
         return redirect()->back()->with('success', 'Profil berhasil diperbarui!');
