@@ -11,9 +11,9 @@ use App\Models\LaporanModel;
 class AdminController extends BaseController
 {
     protected $adminModel,
-              $userModel,
-              $barangModel,
-              $laporanModel;
+        $userModel,
+        $barangModel,
+        $laporanModel;
 
     public function __construct()
     {
@@ -24,7 +24,6 @@ class AdminController extends BaseController
         helper(['form', 'url']);
     }
 
-    // ✅ Dashboard Admin
     public function dashAdmin()
     {
         $dataAdmin = session()->get('id_admin');
@@ -64,7 +63,6 @@ class AdminController extends BaseController
         return view('admin/dashboard', $data);
     }
 
-    // ✅ Dashboard Super Admin
     public function indexSuperAdmin()
     {
         $data = [
@@ -73,7 +71,6 @@ class AdminController extends BaseController
         return view('superadmin/dashboard', $data);
     }
 
-    // ✅ Tampilkan profil admin
     public function profil()
     {
         $dataAdmin = session()->get('id_admin');
@@ -88,7 +85,6 @@ class AdminController extends BaseController
         return view('admin/profil', $data);
     }
 
-    // ✅ Update data profil (nama, email, foto)
     public function updateProfil()
     {
         $adminId = session()->get('id_admin');
@@ -125,7 +121,6 @@ class AdminController extends BaseController
         return redirect()->back()->with('success', 'Profil berhasil diperbarui!');
     }
 
-    // ✅ Ganti password
     public function gantiPassword()
     {
         $adminId = session()->get('id_admin');
@@ -153,6 +148,7 @@ class AdminController extends BaseController
 
         return redirect()->back()->with('successp', 'Password berhasil diubah!');
     }
+
     public function logout()
     {
         session()->destroy();

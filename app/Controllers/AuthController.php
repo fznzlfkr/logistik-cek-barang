@@ -71,6 +71,8 @@ class AuthController extends BaseController
                 // Update status aktif di DB
                 $this->adminModel->update($admin['id_admin'], ['aktif' => true]);
 
+                logAktivitas("Login berhasil: " . $admin['nama'] . " sebagai " . $admin['role']);
+
                 return $admin['role'] === 'Super Admin'
                     ? redirect()->to('superadmin/dashboard')
                     : redirect()->to('admin/dashboard');
@@ -89,9 +91,11 @@ class AuthController extends BaseController
                     'nama'      => $user['nama'],
                     'email'     => $user['email'],
                     'no_hp'     => $user['no_hp'],
-                    'role'      => 'user',
+                    'role'      => 'User',
                     'logged_in' => true,
                 ]);
+
+                logAktivitas("Login berhasil: " . $user['nama'] . " sebagai User");
 
                 return redirect()->to('user/dashboard');
             } else {

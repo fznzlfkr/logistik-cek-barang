@@ -11,17 +11,25 @@ if (!function_exists('logAktivitas')) {
      */
     function logAktivitas(string $aktivitas)
     {
-        $db = Database::connect();
+        $db      = Database::connect();
         $request = Services::request();
+        $session = session();
 
+        // Data dasar
         $data = [
-            'id_user'   => session()->get('id_user'),
-            'role'      => session()->get('role'),
-            'aktivitas' => $aktivitas,
+            'role'       => $session->get('role') ?: 'tidak terdaftar',
+            'aktivitas'  => $aktivitas,
             'ip_address' => $request->getIPAddress(),
             'user_agent' => $request->getUserAgent()->getAgentString(),
             'created_at' => date('Y-m-d H:i:s'),
         ];
+
+        // Bedakan kolom id tergantung role
+        if ($session->get('role') === 'user') {
+            $data['id_user'] = $session->get('id_user');
+        } else {
+            $data['id_admin'] = $session->get('id_admin');
+        }
 
         $db->table('log_aktivitas')->insert($data);
     }

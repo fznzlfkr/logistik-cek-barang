@@ -12,18 +12,18 @@ $routes->post('/registerProcess', 'AuthController::registerProcess');
 $routes->get('/logout', 'AuthController::logout');
 // File: app/Config/Routes.php
 
-$routes->group('superadmin', ['filter' => 'auth'], function ($routes) {
+$routes->group('superadmin', ['filter' => 'auth:Super Admin'], function ($routes) {
     $routes->get('dashboard', 'SuperAdminController::dashSuperAdmin');
 });
 
-$routes->group('admin', ['filter' => 'auth'], function ($routes) {
+$routes->group('admin', ['filter' => 'auth:Admin'], function ($routes) {
     $routes->get('dashboard', 'AdminController::dashAdmin');
     $routes->get('pengaturan-akun', 'AdminController::profil');
     $routes->post('profil/update', 'AdminController::updateProfil');
     $routes->post('profil/ganti-password', 'AdminController::gantiPassword');
 });
 
-$routes->group('user', ['filter' => 'auth'], function ($routes) {
+$routes->group('user', ['filter' => 'auth:User'], function ($routes) {
     $routes->get('dashboard', 'UserController::index');
     $routes->get('kelola_barang', 'UserController::kelolaBarang');
     $routes->get('tambah_barang', 'UserController::tambahBarang');

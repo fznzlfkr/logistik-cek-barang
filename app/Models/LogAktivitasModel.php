@@ -12,7 +12,7 @@ class LogAktivitasModel extends Model
     protected $returnType       = 'array';
     protected $useSoftDeletes   = false;
     protected $protectFields    = true;
-    protected $allowedFields    = ['id_user', 'role', 'aktivitas', 'ip_address', 'user_agent'];
+    protected $allowedFields    = ['id_user', 'id_admin', 'role', 'aktivitas', 'ip_address', 'user_agent'];
 
     protected bool $allowEmptyInserts = false;
     protected bool $updateOnlyChanged = true;
