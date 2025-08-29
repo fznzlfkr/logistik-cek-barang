@@ -113,22 +113,6 @@ class UserController extends BaseController
         return view('user/tambah_barang', $data);
     }
 
-    public function editBarang($id)
-    {
-        if ($this->request->getMethod() === 'post') {
-            $data = [
-                'nama_barang'   => $this->request->getPost('nama_barang'),
-                'jumlah'        => $this->request->getPost('jumlah'),
-                'satuan'        => $this->request->getPost('satuan'),
-                'tanggal_masuk' => $this->request->getPost('tanggal_masuk'),
-                'barcode'       => $this->request->getPost('barcode'),
-                'minimum_stok'  => $this->request->getPost('minimum_stok'),
-            ];
-            $this->barangModel->update($id, $data);
-            return redirect()->back()->with('success', 'Barang berhasil diupdate.');
-        }
-        return redirect()->back()->with('error', 'Gagal update barang.');
-    }
     public function updateBarang($id_barang)
     {
         $data = [
@@ -147,6 +131,25 @@ class UserController extends BaseController
             }
         }
 
+        // Ambil data lama dari DB
+        $barangLama = $this->barangModel->find($id_barang);
+        if (!$barangLama) {
+            return redirect()->back()->with('error', 'Barang tidak ditemukan.');
+        }
+
+        // Cek apakah ada perubahan
+        $tidakBerubah = true;
+        foreach ($data as $key => $value) {
+            if ($barangLama[$key] != $value) {
+                $tidakBerubah = false;
+                break;
+            }
+        }
+
+        if ($tidakBerubah) {
+            return redirect()->back()->with('error', 'Tidak ada perubahan data.');
+        }
+
         // Update data
         if ($this->barangModel->update($id_barang, $data)) {
             return redirect()->back()->with('success', 'Barang berhasil diperbarui.');
@@ -155,7 +158,6 @@ class UserController extends BaseController
             return redirect()->back()->withInput()->with('error', 'Gagal memperbarui barang. ' . json_encode($error));
         }
     }
-
 
     public function hapusBarang($id)
     {

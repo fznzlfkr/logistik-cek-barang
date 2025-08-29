@@ -27,7 +27,6 @@ $routes->group('user', ['filter' => 'auth:User'], function ($routes) {
     $routes->get('dashboard', 'UserController::index');
     $routes->get('kelola_barang', 'UserController::kelolaBarang');
     $routes->get('tambah_barang', 'UserController::tambahBarang');
-    $routes->post('edit_barang/(:num)', 'UserController::editBarang/$1');
     $routes->post('update_barang/(:num)', 'UserController::updateBarang/$1');
     $routes->post('hapus_barang/(:num)', 'UserController::hapusBarang/$1');
     $routes->post('download_barcode/(:num)', 'UserController::downloadBarcode/$1');
