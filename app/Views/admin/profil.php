@@ -15,27 +15,27 @@
       </div>
       <div class="header-actions">
         <?php
-          $nama = trim($admin['nama']);
-          $parts = explode(" ", $nama);
-          if (count($parts) >= 2) {
-              // ambil huruf pertama kata 1 dan kata 2
-              $avatar = strtoupper(substr($parts[0], 0, 1) . substr($parts[1], 0, 1));
-          } else {
-              // kalau cuma 1 kata → ambil 2 huruf awal
-              $avatar = strtoupper(substr($nama, 0, 2));
-          }
-          ?>
-          <div class="user-profile">
-            <div class="user-avatar">
-              <?= $avatar ?>
-            </div>
-            <a href="<?= base_url('admin/pengaturan-akun') ?>" class="a-info">
-              <div class="user-info">
-                <h6><?= esc($admin['nama']) ?></h6>
-                <p><?= esc($admin['role']) ?></p>
-              </div>
-            </a>
+        $nama = trim($admin['nama']);
+        $parts = explode(" ", $nama);
+        if (count($parts) >= 2) {
+          // ambil huruf pertama kata 1 dan kata 2
+          $avatar = strtoupper(substr($parts[0], 0, 1) . substr($parts[1], 0, 1));
+        } else {
+          // kalau cuma 1 kata → ambil 2 huruf awal
+          $avatar = strtoupper(substr($nama, 0, 2));
+        }
+        ?>
+        <div class="user-profile">
+          <div class="user-avatar">
+            <?= $avatar ?>
           </div>
+          <a href="<?= base_url('admin/pengaturan-akun') ?>" class="a-info">
+            <div class="user-info">
+              <h6><?= esc($admin['nama']) ?></h6>
+              <p><?= esc($admin['role']) ?></p>
+            </div>
+          </a>
+        </div>
 
       </div>
     </div>
@@ -77,14 +77,6 @@
             <input type="email" name="email" value="<?= esc($admin['email']) ?>" class="w-full border border-gray-300 px-3 py-2 rounded text-sm" required>
             <?php if (session()->getFlashdata('error_email')): ?>
               <small class="text-red-600"><?= session()->getFlashdata('error_email'); ?></small>
-            <?php endif; ?>
-          </div>
-
-          <!-- Upload Foto -->
-          <div class="mt-4 flex items-center gap-4">
-            <input type="file" name="foto" accept="image/*" class="text-sm">
-            <?php if (session()->getFlashdata('error_foto')): ?>
-              <small class="text-red-600"><?= session()->getFlashdata('error_foto'); ?></small>
             <?php endif; ?>
           </div>
 
@@ -152,7 +144,7 @@
           </div>
         </form>
 
-        </div>
+      </div>
     </div>
   </div>
 </div>
@@ -160,55 +152,55 @@
 
 <!-- Script Toggle Password -->
 <script>
-document.addEventListener("DOMContentLoaded", function() {
-  // Toggle show/hide password
-  document.querySelectorAll(".toggle-password").forEach(function(toggle) {
-    toggle.addEventListener("click", function() {
-      const input = this.previousElementSibling;
-      const icon = this.querySelector("i");
+  document.addEventListener("DOMContentLoaded", function() {
+    // Toggle show/hide password
+    document.querySelectorAll(".toggle-password").forEach(function(toggle) {
+      toggle.addEventListener("click", function() {
+        const input = this.previousElementSibling;
+        const icon = this.querySelector("i");
 
-      if (input.type === "password") {
-        input.type = "text";
-        icon.classList.remove("fa-eye");
-        icon.classList.add("fa-eye-slash");
+        if (input.type === "password") {
+          input.type = "text";
+          icon.classList.remove("fa-eye");
+          icon.classList.add("fa-eye-slash");
+        } else {
+          input.type = "password";
+          icon.classList.remove("fa-eye-slash");
+          icon.classList.add("fa-eye");
+        }
+      });
+    });
+
+    // Validasi password baru
+    const passwordBaru = document.getElementById("passwordBaru");
+    const konfirmasiPassword = document.getElementById("konfirmasiPassword");
+    const confirmPasswordError = document.getElementById("confirmPasswordError");
+    const passwordError = document.getElementById("passwordError");
+    const formGantiPassword = document.getElementById("formGantiPassword");
+
+    function validatePasswordMatch() {
+      if (konfirmasiPassword.value !== passwordBaru.value) {
+        confirmPasswordError.textContent = "Konfirmasi password tidak sama!";
+        return false;
       } else {
-        input.type = "password";
-        icon.classList.remove("fa-eye-slash");
-        icon.classList.add("fa-eye");
+        confirmPasswordError.textContent = "";
+        return true;
       }
+    }
+    konfirmasiPassword.addEventListener("input", validatePasswordMatch);
+
+    formGantiPassword.addEventListener("submit", function(e) {
+      let valid = true;
+      if (passwordBaru.value.length < 6) {
+        passwordError.textContent = "Password minimal 6 karakter!";
+        valid = false;
+      } else {
+        passwordError.textContent = "";
+      }
+      if (!validatePasswordMatch()) valid = false;
+      if (!valid) e.preventDefault();
     });
   });
-
-  // Validasi password baru
-  const passwordBaru = document.getElementById("passwordBaru");
-  const konfirmasiPassword = document.getElementById("konfirmasiPassword");
-  const confirmPasswordError = document.getElementById("confirmPasswordError");
-  const passwordError = document.getElementById("passwordError");
-  const formGantiPassword = document.getElementById("formGantiPassword");
-
-  function validatePasswordMatch() {
-    if (konfirmasiPassword.value !== passwordBaru.value) {
-      confirmPasswordError.textContent = "Konfirmasi password tidak sama!";
-      return false;
-    } else {
-      confirmPasswordError.textContent = "";
-      return true;
-    }
-  }
-  konfirmasiPassword.addEventListener("input", validatePasswordMatch);
-
-  formGantiPassword.addEventListener("submit", function(e) {
-    let valid = true;
-    if (passwordBaru.value.length < 6) {
-      passwordError.textContent = "Password minimal 6 karakter!";
-      valid = false;
-    } else {
-      passwordError.textContent = "";
-    }
-    if (!validatePasswordMatch()) valid = false;
-    if (!valid) e.preventDefault();
-  });
-});
 
 
   // ✅ Konfirmasi Update Profil
@@ -230,8 +222,6 @@ document.addEventListener("DOMContentLoaded", function() {
       }
     });
   });
-
-  
 </script>
 
 <?= $this->endSection() ?>
