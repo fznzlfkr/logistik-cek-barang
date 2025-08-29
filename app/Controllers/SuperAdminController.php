@@ -86,4 +86,39 @@ class SuperAdminController extends BaseController
             return floor($diff / 86400) . ' hari yang lalu';
         }
     }
+
+    public function kelolaAdmin()
+    {
+        // $data = [
+        //     'title'         => 'Log Aktivitas Admin',
+        //     'currentPage'   => 'log-aktivitas-admin'
+        // ];
+        // return view('superadmin/', $data);
+
+        echo "progress kelola";
+    }
+
+    public function logAktivitasAdmin()
+    {
+        $dataSuperAdmin = session()->get('id_admin');
+        $superAdmin = $this->adminModel->find($dataSuperAdmin);
+
+        $data = [
+            'title'         => 'Log Aktivitas Admin',
+            'currentPage'   => 'log-aktivitas-admin',
+            'superAdmin'    => $superAdmin
+        ];
+        return view('superadmin/log_aktivitas_admin', $data);
+    }
+
+    public function pengaturanAkun()
+    {
+        // $data = [
+        //     'title'         => 'Log Aktivitas Admin',
+        //     'currentPage'   => 'log-aktivitas-admin'
+        // ];
+        // return view('superadmin/', $data);
+
+        echo "progress pengaturan";
+    }
 }
