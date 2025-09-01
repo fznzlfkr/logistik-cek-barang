@@ -8,11 +8,53 @@
   <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-  <link rel="stylesheet" href=" <?= base_url('/assets/css/admin.css') ?>">
+  <link rel="stylesheet" href="<?= base_url('/assets/css/admin.css') ?>">
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
 
 <body>
+  <div class="header">
+    <div class="header-content ml-72">
+      <div class="header-title">
+        <h1><?= $currentPage ?></h1>
+        <p>Selamat datang kembali, <?= esc($admin['nama']) ?>! Berikut aktivitas hari ini.</p>
+      </div>
+
+      <div class="header-actions">
+        <?php if (strtolower($currentPage) === 'dashboard'): ?>
+          <!-- Searchbox hanya tampil di Dashboard -->
+          <div class="search-box">
+            <i class="fas fa-search"></i>
+            <input type="text" placeholder="Cari...">
+          </div>
+        <?php endif; ?>
+
+        <?php
+          $nama = trim($admin['nama']);
+          $parts = explode(" ", $nama);
+          if (count($parts) >= 2) {
+              // ambil huruf pertama kata 1 dan kata 2
+              $avatar = strtoupper(substr($parts[0], 0, 1) . substr($parts[1], 0, 1));
+          } else {
+              // kalau cuma 1 kata → ambil 2 huruf awal
+              $avatar = strtoupper(substr($nama, 0, 2));
+          }
+        ?>
+        <div class="user-profile">
+          <div class="user-avatar">
+            <?= $avatar ?>
+          </div>
+          <a href="<?= base_url('admin/pengaturan-akun') ?>" class="a-info">
+            <div class="user-info">
+              <h6><?= esc($admin['nama']) ?></h6>
+              <p><?= esc($admin['role']) ?></p>
+            </div>
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- Sidebar -->
   <div class="sidebar">
     <div class="sidebar-header">
@@ -31,11 +73,11 @@
         <i class="fas fa-boxes"></i> Data Barang
       </a>
 
-      <a href="<?= base_url('admin/kamar') ?>" class="nav-link <?= ($currentPage === 'kamar') ? 'active' : '' ?>">
+      <a href="<?= base_url('admin/laporan-barang') ?>" class="nav-link <?= ($currentPage === 'kamar') ? 'active' : '' ?>">
         <i class="fas fa-file-alt"></i> Laporan Barang
       </a>
 
-      <a href="<?= base_url('admin/pembayaran') ?>" class="nav-link <?= ($currentPage === 'pembayaran') ? 'active' : '' ?>">
+      <a href="<?= base_url('admin/kelola-staff') ?>" class="nav-link <?= ($currentPage === 'pembayaran') ? 'active' : '' ?>">
         <i class="fas fa-user-friends"></i> Kelola Staff
       </a>
 
@@ -49,7 +91,6 @@
         <i class="fas fa-sign-out-alt"></i> Logout
       </a>
     </nav>
-
   </div>
 
   <?= $this->renderSection('content') ?>
