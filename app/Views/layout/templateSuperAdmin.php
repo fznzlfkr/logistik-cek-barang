@@ -22,17 +22,21 @@
         <nav class="sidebar-menu">
             <div class="menu-section">Main</div>
 
-            <a href="<?= base_url('admin/dashboard') ?>" class="nav-link <?= ($currentPage === 'dashboard') ? 'active' : '' ?>">
+            <a href="<?= base_url('superadmin/dashboard') ?>" class="nav-link <?= ($currentPage === 'dashboard') ? 'active' : '' ?>">
                 <i class="fas fa-home"></i> Dashboard
             </a>
 
-            <a href="<?= base_url('admin/pembayaran') ?>" class="nav-link <?= ($currentPage === 'pembayaran') ? 'active' : '' ?>">
+            <a href="<?= base_url('superadmin/kelola-admin') ?>" class="nav-link <?= ($currentPage === 'kelola-admin') ? 'active' : '' ?>">
                 <i class="fas fa-user-friends"></i> Kelola Admin
+            </a>
+
+            <a href="<?= base_url('superadmin/log-aktivitas-admin') ?>" class="nav-link <?= ($currentPage === 'log-aktivitas-admin') ? 'active' : '' ?>">
+                <i class="fas fa-clipboard-list"></i> Log Aktivitas Admin
             </a>
 
             <div class="menu-section">System</div>
 
-            <a href="<?= base_url('admin/pengaturan-akun') ?>" class="nav-link <?= ($currentPage === 'pengaturan') ? 'active' : '' ?>">
+            <a href="<?= base_url('superadmin/pengaturan-akun') ?>" class="nav-link <?= ($currentPage === 'pengaturan-akun') ? 'active' : '' ?>">
                 <i class="fas fa-user-cog"></i> Pengaturan Akun
             </a>
 
