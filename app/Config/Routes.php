@@ -17,6 +17,8 @@ $routes->group('superadmin', ['filter' => 'auth:Super Admin'], function ($routes
     $routes->get('kelola-admin', 'SuperAdminController::kelolaAdmin');
     $routes->get('log-aktivitas-admin', 'SuperAdminController::logAktivitasAdmin');
     $routes->get('pengaturan-akun', 'SuperAdminController::pengaturanAkun');
+    $routes->post('profil/update', 'SuperAdminController::updateProfil');
+    $routes->post('profil/ganti-password', 'SuperAdminController::gantiPassword');
 });
 
 $routes->group('admin', ['filter' => 'auth:Admin'], function ($routes) {
