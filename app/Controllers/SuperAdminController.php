@@ -113,12 +113,14 @@ class SuperAdminController extends BaseController
 
     public function pengaturanAkun()
     {
-        // $data = [
-        //     'title'         => 'Log Aktivitas Admin',
-        //     'currentPage'   => 'log-aktivitas-admin'
-        // ];
-        // return view('superadmin/', $data);
+        $dataSuperAdmin = session()->get('id_admin');
+        $superAdmin = $this->adminModel->find($dataSuperAdmin);
 
-        echo "progress pengaturan";
+        $data = [
+            'title'         => 'Pengaturan Akun',
+            'currentPage'   => 'pengaturan-akun',
+            'superAdmin'    => $superAdmin
+        ];
+        return view('superadmin/pengaturan_akun', $data);
     }
 }

@@ -28,8 +28,6 @@
         </div>
     </div>
 
-
-
     <!-- Content Area -->
     <div class="content-area">
 
@@ -81,9 +79,9 @@
                         <div class="activity-time">2 jam lalu</div>
                     </li>
                 </ul>
-
             </div>
         </div>
-
     </div>
-    <?= $this->endSection() ?>
+</div>
+
+<?= $this->endSection() ?>
