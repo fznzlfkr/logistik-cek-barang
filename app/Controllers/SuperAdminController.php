@@ -113,12 +113,65 @@ class SuperAdminController extends BaseController
 
     public function pengaturanAkun()
     {
-        // $data = [
-        //     'title'         => 'Log Aktivitas Admin',
-        //     'currentPage'   => 'log-aktivitas-admin'
-        // ];
-        // return view('superadmin/', $data);
+        $dataSuperAdmin = session()->get('id_admin');
+        $superAdmin = $this->adminModel->find($dataSuperAdmin);
 
-        echo "progress pengaturan";
+        $data = [
+            'title'         => 'Pengaturan Akun',
+            'currentPage'   => 'pengaturan-akun',
+            'superAdmin'    => $superAdmin
+        ];
+        return view('superadmin/pengaturan_akun', $data);
+    }
+
+    public function updateProfil()
+    {
+        $adminId = session()->get('id_admin');
+        $admin   = $this->adminModel->find($adminId);
+
+        if (!$admin) {
+            return redirect()->back()->with('error', 'Data admin tidak ditemukan!');
+        }
+
+        $nama  = $this->request->getPost('nama');
+        $email = $this->request->getPost('email');
+
+        $dataUpdate = [
+            'nama'  => $nama,
+            'email' => $email,
+        ];
+
+        // Update data
+        $this->adminModel->update($adminId, $dataUpdate);
+
+        return redirect()->back()->with('success', 'Profil berhasil diperbarui!');
+    }
+
+    public function gantiPassword()
+    {
+        $adminId = session()->get('id_admin');
+        $admin   = $this->adminModel->find($adminId);
+
+        if (!$admin) {
+            return redirect()->back()->with('errorp', 'Data admin tidak ditemukan!');
+        }
+
+        $passwordLama = $this->request->getPost('password_lama');
+        $passwordBaru = $this->request->getPost('password_baru');
+        $konfirmasi   = $this->request->getPost('konfirmasi_password');
+
+        if (!password_verify($passwordLama, $admin['password'])) {
+            return redirect()->back()->with('errorp', 'Password lama salah!');
+        }
+
+        if ($passwordBaru !== $konfirmasi) {
+            return redirect()->back()->with('errorp', 'Konfirmasi password tidak cocok!');
+        }
+
+        $this->adminModel->update($adminId, [
+            'password' => password_hash($passwordBaru, PASSWORD_DEFAULT)
+        ]);
+
+        return redirect()->back()->with('successp', 'Password berhasil diubah!');
     }
 }

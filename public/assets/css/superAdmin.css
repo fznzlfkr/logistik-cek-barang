@@ -298,7 +298,6 @@ body {
 /* Content Cards */
 .content-grid {
   display: grid;
-  grid-template-columns: 2fr 1fr;
   gap: 30px;
   margin-bottom: 30px;
 }
@@ -306,9 +305,9 @@ body {
 .content-card {
   background: white;
   border-radius: 15px;
-  width: 1179px;
   padding: 25px;
   box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+  width: 100%;
 }
 
 .card-header {

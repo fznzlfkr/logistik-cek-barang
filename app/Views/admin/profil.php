@@ -1,8 +1,6 @@
 <?= $this->extend('layout/templateAdmin') ?>
-<?= $this->section('content') ?>
 
-<!-- Tambahin Font Awesome biar icon tampil -->
-<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
+<?= $this->section('content') ?>
 
 <!-- Main Content -->
 <div class="main-content">
