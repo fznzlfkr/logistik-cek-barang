@@ -3,43 +3,7 @@
 <?= $this->section('content') ?>
 <!-- Main Content -->
 <div class="main-content">
-  <!-- Header -->
-  <div class="header">
-    <div class="header-content">
-      <div class="header-title">
-        <h1>Dashboard</h1>
-        <p>Selamat datang kembali, <?= esc($admin['nama']) ?>! Berikut aktivitas hari ini.</p>
-      </div>
-      <div class="header-actions">
-        <div class="search-box">
-          <i class="fas fa-search"></i>
-          <input type="text" placeholder="Cari...">
-        </div>
-        <?php
-          $nama = trim($admin['nama']);
-          $parts = explode(" ", $nama);
-          if (count($parts) >= 2) {
-              // ambil huruf pertama kata 1 dan kata 2
-              $avatar = strtoupper(substr($parts[0], 0, 1) . substr($parts[1], 0, 1));
-          } else {
-              // kalau cuma 1 kata → ambil 2 huruf awal
-              $avatar = strtoupper(substr($nama, 0, 2));
-          }
-          ?>
-          <div class="user-profile">
-            <div class="user-avatar">
-              <?= $avatar ?>
-            </div>
-            <a href="<?= base_url('admin/pengaturan-akun') ?>" class="a-info">
-              <div class="user-info">
-                <h6><?= esc($admin['nama']) ?></h6>
-                <p><?= esc($admin['role']) ?></p>
-              </div>
-            </a>
-          </div>
-      </div>
-    </div>
-  </div>
+
 
   <!-- Content Area -->
   <div class="content-area">

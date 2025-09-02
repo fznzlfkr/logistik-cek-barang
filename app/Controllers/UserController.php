@@ -100,18 +100,20 @@ class UserController extends BaseController
         return view('user/kelola_barang', $data);
     }
 
-
-    public function tambahBarang()
-    {
-        $dataUser = session()->get('id_user');
-        $user = $this->userModel->find($dataUser);
-
+    public function simpanBarang(){
         $data = [
-            'title' => 'Tambah Barang User - CargoWing',
-            'user' => $user
+            'nama_barang'   => $this->request->getPost('nama_barang'),
+            'jumlah'        => $this->request->getPost('jumlah'),
+            'satuan'        => $this->request->getPost('satuan'),
+            'tanggal_masuk' => $this->request->getPost('tanggal_masuk'),
+            'barcode'       => $this->request->getPost('barcode'),
+            'minimum_stok'  => $this->request->getPost('minimum_stok'),
         ];
-        return view('user/tambah_barang', $data);
+
+        $this->barangModel->insert($data);
+        return redirect()->back()->with('success', 'Barang berhasil disimpan!');
     }
+ 
 
     public function updateBarang($id_barang)
     {
@@ -293,7 +295,8 @@ class UserController extends BaseController
     // Proses input barang masuk
     public function simpanBarangMasuk()
     {
-        // Ambil data dari form
+        $db = \Config\Database::connect();
+
         $data = [
             'nama_barang'   => $this->request->getPost('nama_barang'),
             'jumlah'        => $this->request->getPost('jumlah'),
@@ -303,23 +306,50 @@ class UserController extends BaseController
             'minimum_stok'  => $this->request->getPost('minimum_stok'),
         ];
 
-        // --- Validasi field kosong ---
+        // Validasi field kosong
         foreach ($data as $key => $value) {
             if (empty($value)) {
                 return redirect()->back()->with('error', ucfirst(str_replace('_', ' ', $key)) . ' wajib diisi');
             }
         }
 
-        // --- Cek duplikasi nama_barang ---
+        // Cek duplikasi nama_barang (atau barcode jika diperlukan)
         $cekBarang = $this->barangModel->where('nama_barang', $data['nama_barang'])->first();
         if ($cekBarang) {
             return redirect()->back()->with('error', 'Barang sudah terdaftar');
         }
 
-        // --- Simpan data ---
-        $this->barangModel->insert($data);
+        // Simpan barang + catat riwayat dalam transaction
+        $db->transStart();
 
-        return redirect()->to('user/kelola_barang')->with('success', 'Barang berhasil disimpan');
+        $insertId = $this->barangModel->insert($data);
+        if (!$insertId) {
+            $db->transRollback();
+            return redirect()->back()->with('error', 'Gagal menyimpan barang.');
+        }
+
+        // Siapkan data riwayat (laporan)
+        $nowTime = date('H:i:s');
+        $tanggalFull = $data['tanggal_masuk'] . ' ' . $nowTime;
+
+        $riwayat = [
+            'id_barang'  => $insertId,
+            'jumlah'     => $data['jumlah'],
+            'jenis'      => 'Masuk',
+            'tanggal'    => $tanggalFull,
+            'id_user'    => session()->get('id_user') ?? null,
+            'keterangan' => 'Barang masuk (penambahan awal)'
+        ];
+
+        $this->laporanModel->insert($riwayat);
+
+        $db->transComplete();
+
+        if ($db->transStatus() === false) {
+            return redirect()->back()->with('error', 'Gagal menyimpan transaksi. Coba lagi.');
+        }
+
+        return redirect()->to('user/kelola_barang')->with('success', 'Barang berhasil disimpan dan dicatat di riwayat');
     }
 
     public function saveBarangKeluar()
