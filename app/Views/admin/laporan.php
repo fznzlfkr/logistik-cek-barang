@@ -22,12 +22,12 @@
       <?php endif; ?>
     </form>
 
-    <!-- Tombol Cetak PDF (di kanan, warna biru) -->
-    <a href="<?= base_url('admin/laporan/pdf') ?>?keyword=<?= urlencode($keyword ?? '') ?>&per_page=<?= urlencode($perPage ?? '') ?>"
-       target="_blank"
-       class="ml-auto px-3 py-2 bg-blue-600 text-white text-sm rounded hover:bg-blue-700 transition">
-       Cetak PDF
-    </a>
+    <!-- Tombol Cetak Laporan (buka modal) -->
+    <button type="button" 
+            onclick="openPrintModal()" 
+            class="ml-auto px-3 py-2 bg-blue-600 text-white text-sm rounded hover:bg-blue-700 transition">
+      Cetak Laporan
+    </button>
   </div>
 
   <!-- Table -->
@@ -66,17 +66,114 @@
 
   <!-- Footer Pagination -->
   <div class="flex justify-between items-center mt-4 text-sm">
-    <div class="flex items-center gap-2">
-      <span>Rows per page</span>
-      <form method="get">
-        <input type="hidden" name="keyword" value="<?= esc($keyword) ?>" />
-        <select name="per_page" onchange="this.form.submit()" class="border border-gray-300 px-2 py-1 rounded">
-          <option value="5" <?= ($perPage == 5) ? 'selected' : '' ?>>5</option>
-          <option value="10" <?= ($perPage == 10) ? 'selected' : '' ?>>10</option>
-          <option value="25" <?= ($perPage == 25) ? 'selected' : '' ?>>25</option>
-        </select>
-      </form>
-    </div>
+            <div class="flex items-center gap-2">
+                <span>Rows per page</span>
+                <form method="get">
+                    <input type="hidden" name="keyword" value="<?= esc($keyword) ?>" />
+                    <select name="per_page" onchange="this.form.submit()" class="border border-gray-300 px-2 py-1 rounded">
+                        <option value="5" <?= ($perPage == 5) ? 'selected' : '' ?>>5</option>
+                        <option value="10" <?= ($perPage == 10) ? 'selected' : '' ?>>10</option>
+                        <option value="25" <?= ($perPage == 25) ? 'selected' : '' ?>>25</option>
+                    </select>
+                </form>
+            </div>
+            <div class="flex items-center justify-center gap-2 mt-4">
+                <?php if ($pager): ?>
+                    <div class="flex items-center space-x-1">
+                        <?= $pager->simpleLinks('number', 'tailwind_pagination') ?>
+                    </div>
+                <?php endif; ?>
+            </div>
+        </div>
+</div>
+
+
+<!-- Modal Memilih Format Cetak -->
+<div id="printModal" class="hidden fixed inset-0 bg-gray-800 bg-opacity-50 flex items-center justify-center z-50">
+  <div class="bg-white rounded-lg shadow-lg p-6 w-96">
+    <h2 class="text-lg font-bold mb-4">Pilih Format Print</h2>
+    <form id="printForm" method="get" action="" class="space-y-4">
+      <?= csrf_field() ?>
+      <input type="hidden" name="keyword" value="<?= esc($keyword) ?>">
+      <input type="hidden" name="per_page" value="<?= esc($perPage) ?>">
+
+      <div>
+        <label class="block text-sm font-medium mb-2">Pilih format</label>
+        <div class="grid grid-cols-2 gap-4">
+          <label class="format-card cursor-pointer border rounded-lg p-4 flex flex-col items-center justify-center transition hover:border-green-500">
+            <input type="radio" name="format" value="excel" class="hidden formatOption">
+            <img src="../assets/img/excel.png" alt="Excel" class="mb-2 opacity-70">
+            <span class="text-sm font-medium">Excel</span>
+          </label>
+          <label class="format-card cursor-pointer border rounded-lg p-4 flex flex-col items-center justify-center transition hover:border-green-500">
+            <input type="radio" name="format" value="pdf" class="hidden formatOption">
+            <img src="../assets/img/pdf.png" alt="PDF" class="mb-2 opacity-70">
+            <span class="text-sm font-medium">PDF</span>
+          </label>
+        </div>
+      </div>
+
+      <div class="flex justify-end gap-2 pt-2">
+        <button type="button" id="closePrintModal"
+          class="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400">Batal</button>
+        <button type="submit" id="btnPrint" disabled
+          class="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600 disabled:opacity-50 disabled:cursor-not-allowed">
+          Print
+        </button>
+      </div>
+    </form>
   </div>
+</div>
+
+<style>
+  /* Efek highlight saat dipilih */
+  .format-card input:checked+img,
+  .format-card input:checked+img+span {
+    opacity: 1;
+  }
+
+  .format-card input:checked+img {
+    filter: drop-shadow(0 0 5px #22c55e);
+  }
+
+  .format-card:has(input:checked) {
+    border-color: #22c55e;
+    background-color: #f0fdf4;
+  }
+</style>
+
+<!-- Script Modal -->
+<script>
+  function openPrintModal() {
+    document.getElementById("printModal").classList.remove("hidden");
+  }
+
+  document.addEventListener("DOMContentLoaded", function () {
+    const printModal = document.getElementById("printModal");
+    const closePrintModal = document.getElementById("closePrintModal");
+    const formatOptions = document.querySelectorAll(".formatOption");
+    const btnPrint = document.getElementById("btnPrint");
+    const printForm = document.getElementById("printForm");
+
+    // Tutup modal
+    closePrintModal.addEventListener("click", () => {
+      printModal.classList.add("hidden");
+      formatOptions.forEach(opt => opt.checked = false);
+      btnPrint.disabled = true;
+    });
+
+    // Ubah action sesuai pilihan format
+    formatOptions.forEach(option => {
+      option.addEventListener("change", () => {
+        if (option.value === "excel") {
+          printForm.action = "<?= base_url('admin/laporan/excel') ?>";
+        } else if (option.value === "pdf") {
+          printForm.action = "<?= base_url('admin/laporan/pdf') ?>";
+        }
+        btnPrint.disabled = false;
+      });
+    });
+  });
+</script>
 
 <?= $this->endSection() ?>

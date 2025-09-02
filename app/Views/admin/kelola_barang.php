@@ -4,12 +4,6 @@
 
 <!-- Main Content -->
 <main class="main-content p-6 md:p-8 lg:p-10"> 
-    <!-- Kelola Barang -->
-    <div class="flex justify-between items-center mb-4">
-        <h1 class="text-xl font-bold">Data Barang</h1>
-
-    </div>
-
     <!-- Flash Message -->
     <?php if (session()->getFlashdata('error')): ?>
         <div id="errorAlert" class="error-message">

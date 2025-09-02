@@ -34,9 +34,8 @@ $routes->group('admin', ['filter' => 'auth:Admin'], function ($routes) {
     $routes->get('pengaturan-akun', 'AdminController::profil');
     $routes->post('profil/update', 'AdminController::updateProfil');
     $routes->post('profil/ganti-password', 'AdminController::gantiPassword');
-
-    // route baru untuk cetak laporan PDF
-    $routes->get('laporan/pdf', 'AdminController::cetakLaporan');
+    $routes->get('laporan/pdf', 'AdminController::cetakLaporanPDF');
+    $routes->get('laporan/excel', 'AdminController::cetakLaporanExcel');
 });
 
 $routes->group('user', ['filter' => 'auth:User'], function ($routes) {

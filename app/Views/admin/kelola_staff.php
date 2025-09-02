@@ -175,7 +175,7 @@ function closeModal(id) {
 }
 function openModalEdit(data) {
     document.getElementById('modalEdit').classList.remove('hidden');
-    document.getElementById('formEdit').action = "<?= base_url('admin/update_staff/') ?>" + data.id_user;
+    document.getElementById('formEdit').action = "<?= base_url('admin/edit-staff/') ?>" + data.id_user;
     document.getElementById('edit_id_user').value = data.id_user;
     document.getElementById('edit_nama').value = data.nama;
     document.getElementById('edit_email').value = data.email;
