@@ -11,13 +11,17 @@ use Endroid\QrCode\Builder\Builder;
 use Endroid\QrCode\Writer\PngWriter;
 use Dompdf\Dompdf;
 use Dompdf\Options;
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
+use App\Models\LogAktivitasModel;
 
 class AdminController extends BaseController
 {
     protected $adminModel,
         $userModel,
         $barangModel,
-        $laporanModel;
+        $laporanModel,
+        $LogAktivitasModel;
 
     public function __construct()
     {
@@ -25,7 +29,24 @@ class AdminController extends BaseController
         $this->userModel   = new UserModel();
         $this->barangModel = new BarangModel();
         $this->laporanModel = new LaporanModel();
+        $this->LogAktivitasModel = new LogAktivitasModel();
         helper(['form', 'url']);
+    }
+
+    private function timeAgo($datetime)
+    {
+        $timestamp = strtotime($datetime);
+        $diff = time() - $timestamp;
+
+        if ($diff < 60) {
+            return $diff . ' detik yang lalu';
+        } elseif ($diff < 3600) {
+            return floor($diff / 60) . ' menit yang lalu';
+        } elseif ($diff < 86400) {
+            return floor($diff / 3600) . ' jam yang lalu';
+        } else {
+            return floor($diff / 86400) . ' hari yang lalu';
+        }
     }
 
     public function dashAdmin()
@@ -54,14 +75,23 @@ class AdminController extends BaseController
             ->orderBy('laporan.tanggal', 'DESC')
             ->findAll(10);
 
+        $logsUser = $this->LogAktivitasModel->getLogsByUser();
+
+        foreach ($logsUser as &$log) {
+            $log['waktu_ago'] = $this->timeAgo($log['created_at']);
+        }
+
         $data = [
             'title'             => 'Dashboard Admin - CargoWing',
-            'currentPage'       => 'Dashboard',
+            'currentPage'       => 'dashboard',
+            'judul'             => 'Dashboard',
+            'subJudul'          => 'Selamat datang di dashboard',
             'admin'             => $admin,
             'totalStaff'        => $totalStaff,
             'totalBarang'       => $totalBarang,
             'barangHampirHabis' => $barangHampirHabis,
             'laporan'           => $laporan,
+            'logsUser'         => $logsUser, // parsing ke view
         ];
 
         return view('admin/dashboard', $data);
@@ -82,7 +112,9 @@ class AdminController extends BaseController
 
         $data = [
             'title'       => 'Profil Admin - CargoWing',
-            'currentPage' => 'Profil',
+            'currentPage' => 'profil',
+            'judul'       => 'Profil',
+            'subJudul'    => 'Pengaturan Akun',
             'admin'       => $admin,
         ];
 
@@ -157,7 +189,9 @@ class AdminController extends BaseController
 
         $data = [
             'title'      => 'Kelola Barang Admin - CargoWing',
-            'currentPage' => 'KelolaBarang',
+            'currentPage' => 'kelolabarang',
+            'judul'      => 'Kelola Barang',
+            'subJudul'   => 'Manajemen Data Barang',
             'admin'       => $admin,
             'keyword'    => $keyword,
             'perPage'    => $perPage,
@@ -279,7 +313,9 @@ class AdminController extends BaseController
 
         $data = [
             'title'       => 'Kelola Staff - CargoWing',
-            'currentPage' => 'KelolaStaff',
+            'currentPage' => 'kelolaStaff',
+            'judul'       => 'Kelola Staff',
+            'subJudul'    => 'Manajemen Data Staff',
             'admin'       => $admin,
             'staffList'   => $staffList,
             'keyword'     => $keyword,
@@ -378,7 +414,9 @@ class AdminController extends BaseController
 
         $data = [
             'title'       => 'Laporan Barang - CargoWing',
-            'currentPage' => 'Laporan',
+            'currentPage' => 'laporan',
+            'judul'       => 'Laporan Barang',
+            'subJudul'    => 'Riwayat Laporan Barang',
             'admin'       => $admin,
             'keyword'     => $keyword,
             'perPage'     => $perPage,
@@ -392,7 +430,7 @@ class AdminController extends BaseController
 
 
 
-    public function cetakLaporan()
+    public function cetakLaporanPDF()
     {
         $keyword = $this->request->getGet('keyword');
 
@@ -413,10 +451,33 @@ class AdminController extends BaseController
 
         $riwayatData = $builder->orderBy('l.tanggal', 'DESC')->get()->getResultArray();
 
+        // Hitung total
+        $totalMasuk = 0;
+        $totaldipakai = 0;
+        foreach ($riwayatData as $row) {
+            if (strtolower($row['jenis']) === 'masuk') {
+                $totalMasuk += $row['jumlah'];
+            } elseif (strtolower($row['jenis']) === 'dipakai') {
+                $totaldipakai += $row['jumlah'];
+            }
+        }
+
+        // Tentukan kesimpulan
+        if ($totalMasuk > $totaldipakai) {
+            $kesimpulan = 'Stok bertambah (' . ($totalMasuk - $totaldipakai) . ')';
+        } elseif ($totalMasuk < $totaldipakai) {
+            $kesimpulan = 'Stok berkurang (' . ($totaldipakai - $totalMasuk) . ')';
+        } else {
+            $kesimpulan = 'Stok seimbang';
+        }
+
         // render view pdf
         $html = view('admin/laporan_pdf', [
             'riwayatData' => $riwayatData,
-            'keyword'     => $keyword
+            'keyword'     => $keyword,
+            'totalMasuk'  => $totalMasuk,
+            'totaldipakai' => $totaldipakai,
+            'kesimpulan'  => $kesimpulan,
         ]);
 
         $options = new Options();
@@ -424,12 +485,11 @@ class AdminController extends BaseController
 
         $dompdf = new Dompdf($options);
         $dompdf->loadHtml($html);
-        $dompdf->setPaper('A4', 'portrait'); // perbaiki penulisan orientation
+        $dompdf->setPaper('A4', 'portrait');
         $dompdf->render();
 
         $fileName = 'laporan_' . date('Ymd_His') . '.pdf';
 
-        // Generate PDF binary and force download via response headers
         $pdfOutput = $dompdf->output();
 
         return $this->response
@@ -437,6 +497,97 @@ class AdminController extends BaseController
             ->setHeader('Content-Disposition', 'attachment; filename="' . $fileName . '"')
             ->setBody($pdfOutput);
     }
+
+    public function cetakLaporanExcel()
+    {
+        $keyword = $this->request->getGet('keyword');
+
+        // Ambil data riwayat
+        $riwayatData = $this->laporanModel->getRiwayatData($keyword);
+
+        // Buat Spreadsheet baru
+        $spreadsheet = new Spreadsheet();
+        $sheet = $spreadsheet->getActiveSheet();
+
+        // Judul laporan
+        $sheet->setCellValue('A1', 'LAPORAN RIWAYAT BARANG');
+        $sheet->mergeCells('A1:F1');
+        $sheet->getStyle('A1')->getFont()->setBold(true)->setSize(14);
+        $sheet->getStyle('A1')->getAlignment()->setHorizontal('center');
+
+        // Header tabel
+        $sheet->setCellValue('A3', 'No');
+        $sheet->setCellValue('B3', 'Waktu');
+        $sheet->setCellValue('C3', 'Nama Barang');
+        $sheet->setCellValue('D3', 'Jumlah');
+        $sheet->setCellValue('E3', 'Jenis');
+        $sheet->setCellValue('F3', 'Staff');
+
+        // Styling header
+        $sheet->getStyle('A3:F3')->getFont()->setBold(true);
+        $sheet->getStyle('A3:F3')->getAlignment()->setHorizontal('center');
+
+        // Lebar kolom otomatis
+        foreach (range('A', 'F') as $col) {
+            $sheet->getColumnDimension($col)->setAutoSize(true);
+        }
+
+        // Isi data
+        $row = 4;
+        $no = 1;
+        $totalMasuk = 0;
+        $totaldipakai = 0;
+
+        foreach ($riwayatData as $data) {
+            $sheet->setCellValue('A' . $row, $no++);
+            $sheet->setCellValue('B' . $row, date('d-m-Y H:i:s', strtotime($data['tanggal'])));
+            $sheet->setCellValue('C' . $row, $data['nama_barang']);
+            $sheet->setCellValue('D' . $row, $data['jumlah']);
+            $sheet->setCellValue('E' . $row, $data['jenis']);
+            $sheet->setCellValue('F' . $row, $data['nama']);
+
+            // Hitung total
+            if (strtolower($data['jenis']) === 'masuk') {
+                $totalMasuk += $data['jumlah'];
+            } elseif (strtolower($data['jenis']) === 'dipakai') {
+                $totaldipakai += $data['jumlah'];
+            }
+
+            $row++;
+        }
+
+        // Tambahkan total & kesimpulan
+        $row += 2;
+        $sheet->setCellValue('E' . $row, 'Total Barang Masuk:');
+        $sheet->setCellValue('F' . $row, $totalMasuk);
+
+        $row++;
+        $sheet->setCellValue('E' . $row, 'Total Barang dipakai:');
+        $sheet->setCellValue('F' . $row, $totaldipakai);
+
+        $row += 2;
+        $sheet->setCellValue('E' . $row, 'Kesimpulan:');
+        if ($totalMasuk > $totaldipakai) {
+            $sheet->setCellValue('F' . $row, 'Stok bertambah (' . ($totalMasuk - $totaldipakai) . ')');
+        } elseif ($totalMasuk < $totaldipakai) {
+            $sheet->setCellValue('F' . $row, 'Stok berkurang (' . ($totaldipakai - $totalMasuk) . ')');
+        } else {
+            $sheet->setCellValue('F' . $row, 'Stok seimbang');
+        }
+
+        // Output Excel
+        $fileName = 'Laporan_Riwayat_' . date('Ymd_His') . '.xlsx';
+        $writer = new Xlsx($spreadsheet);
+
+        header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        header("Content-Disposition: attachment;filename=\"{$fileName}\"");
+        header('Cache-Control: max-age=0');
+
+        $writer->save('php://output');
+        exit;
+    }
+
+
 
 
     public function gantiPassword()

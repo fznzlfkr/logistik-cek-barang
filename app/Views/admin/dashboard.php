@@ -104,54 +104,36 @@
       </div>
 
 
-      <!-- Recent Activity -->
+        <!-- Recent Activity -->
       <div class="content-card">
         <div class="card-header">
           <h3 class="card-title">Aktivitas Terbaru</h3>
-          <a href="#" class="card-action">View All</a>
+          <a href="<?= base_url('/log-aktivitas-user') ?>" class="card-action">View All</a>
         </div>
+
         <ul class="activity-list">
-          <li class="activity-item">
-            <div class="activity-avatar">JS</div>
-            <div class="activity-content">
-              <h6>John Smith placed an order</h6>
-              <p>Dell XPS Laptop - $1,299</p>
-            </div>
-            <div class="activity-time">2 min ago</div>
-          </li>
-          <li class="activity-item">
-            <div class="activity-avatar">JD</div>
-            <div class="activity-content">
-              <h6>Jane Doe updated profile</h6>
-              <p>Changed shipping address</p>
-            </div>
-            <div class="activity-time">15 min ago</div>
-          </li>
-          <li class="activity-item">
-            <div class="activity-avatar">MJ</div>
-            <div class="activity-content">
-              <h6>Mike Johnson cancelled order</h6>
-              <p>Samsung Galaxy S23 - $799</p>
-            </div>
-            <div class="activity-time">1 hour ago</div>
-          </li>
-          <li class="activity-item">
-            <div class="activity-avatar">SW</div>
-            <div class="activity-content">
-              <h6>Sarah Wilson registered</h6>
-              <p>New user account created</p>
-            </div>
-            <div class="activity-time">2 hours ago</div>
-          </li>
-          <li class="activity-item">
-            <div class="activity-avatar">RB</div>
-            <div class="activity-content">
-              <h6>Robert Brown left review</h6>
-              <p>5 stars for iPhone 14 Pro</p>
-            </div>
-            <div class="activity-time">3 hours ago</div>
-          </li>
+          <?php if (!empty($logsUser)): ?>
+            <?php foreach ($logsUser as $log): ?>
+              <li class="activity-item">
+                <div class="activity-avatar">
+                  <?= strtoupper(substr($log['nama_user'] ?? 'NA', 0, 2)); ?>
+                </div>
+                <div class="activity-content">
+                  <h6><?= $log['nama_user']; ?></h6>
+                  <p><?= $log['aktivitas']; ?></p>
+                </div>
+                <div class="activity-time"><?= $log['waktu_ago']; ?></div>
+              </li>
+            <?php endforeach; ?>
+          <?php else: ?>
+            <li class="activity-item">
+              <div class="activity-content">
+                <p class="text-muted">Belum ada aktivitas.</p>
+              </div>
+            </li>
+          <?php endif; ?>
         </ul>
+
       </div>
     </div>
   </div>

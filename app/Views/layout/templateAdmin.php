@@ -16,19 +16,11 @@
   <div class="header">
     <div class="header-content ml-72">
       <div class="header-title">
-        <h1><?= $currentPage ?></h1>
-        <p>Selamat datang kembali, <?= esc($admin['nama']) ?>! Berikut aktivitas hari ini.</p>
+        <h1><?= $judul ?></h1>
+        <p><?= $subJudul. " " . $admin['nama']?></p>
       </div>
 
       <div class="header-actions">
-        <?php if (strtolower($currentPage) === 'dashboard'): ?>
-          <!-- Searchbox hanya tampil di Dashboard -->
-          <div class="search-box">
-            <i class="fas fa-search"></i>
-            <input type="text" placeholder="Cari...">
-          </div>
-        <?php endif; ?>
-
         <?php
           $nama = trim($admin['nama']);
           $parts = explode(" ", $nama);
@@ -65,28 +57,31 @@
     <nav class="sidebar-menu">
       <div class="menu-section">Main</div>
 
-      <a href="<?= base_url('admin/dashboard') ?>" class="nav-link <?= ($currentPage === 'dashboard') ? 'active' : '' ?>">
+      <a href="<?= base_url('admin/dashboard') ?>" 
+        class="nav-link <?= (strtolower($currentPage) === 'dashboard') ? 'active' : '' ?>">
         <i class="fas fa-home"></i> Dashboard
       </a>
 
-      <a href="<?= base_url('admin/kelola-barang') ?>" class="nav-link <?= ($currentPage === 'penyewa') ? 'active' : '' ?>">
+      <a href="<?= base_url('admin/kelola-barang') ?>" 
+        class="nav-link <?= (strtolower($currentPage) === 'kelolabarang') ? 'active' : '' ?>">
         <i class="fas fa-boxes"></i> Data Barang
       </a>
 
-      <a href="<?= base_url('admin/laporan-barang') ?>" class="nav-link <?= ($currentPage === 'kamar') ? 'active' : '' ?>">
+      <a href="<?= base_url('admin/laporan-barang') ?>" 
+        class="nav-link <?= (strtolower($currentPage) === 'laporan') ? 'active' : '' ?>">
         <i class="fas fa-file-alt"></i> Laporan Barang
       </a>
 
-      <a href="<?= base_url('admin/kelola-staff') ?>" class="nav-link <?= ($currentPage === 'pembayaran') ? 'active' : '' ?>">
+      <a href="<?= base_url('admin/kelola-staff') ?>" 
+        class="nav-link <?= (strtolower($currentPage) === 'kelolastaff') ? 'active' : '' ?>">
         <i class="fas fa-user-friends"></i> Kelola Staff
       </a>
-
+      <hr>
       <div class="menu-section">System</div>
-
-      <a href="<?= base_url('admin/pengaturan-akun') ?>" class="nav-link <?= ($currentPage === 'pengaturan') ? 'active' : '' ?>">
+      <a href="<?= base_url('admin/pengaturan-akun') ?>" 
+        class="nav-link <?= (strtolower($currentPage) === 'profil') ? 'active' : '' ?>">
         <i class="fas fa-user-cog"></i> Pengaturan Akun
       </a>
-
       <a href="<?= base_url('/logout') ?>" class="nav-link" id="logoutBtn">
         <i class="fas fa-sign-out-alt"></i> Logout
       </a>

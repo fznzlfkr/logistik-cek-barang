@@ -33,12 +33,12 @@ $routes->group('admin', ['filter' => 'auth:Admin'], function ($routes) {
     $routes->post('update-barang/(:num)', 'AdminController::updateBarang/$1');
     $routes->post('hapus-barang/(:num)', 'AdminController::hapusBarang/$1');
     $routes->post('download-barcode/(:num)', 'AdminController::downloadBarcode/$1');
+    $routes->get('log-aktivitas-user', 'AdminController::logAktivitasUser');
     $routes->get('pengaturan-akun', 'AdminController::profil');
     $routes->post('profil/update', 'AdminController::updateProfil');
     $routes->post('profil/ganti-password', 'AdminController::gantiPassword');
-
-    // route baru untuk cetak laporan PDF
-    $routes->get('laporan/pdf', 'AdminController::cetakLaporan');
+    $routes->get('laporan/pdf', 'AdminController::cetakLaporanPDF');
+    $routes->get('laporan/excel', 'AdminController::cetakLaporanExcel');
 });
 
 $routes->group('user', ['filter' => 'auth:User'], function ($routes) {
