@@ -157,7 +157,7 @@ public function dashAdmin()
 
     public function kelolaBarang()
     {
-         $dataAdmin = session()->get('id_admin');
+        $dataAdmin = session()->get('id_admin');
         $admin     = $this->adminModel->find($dataAdmin);
 
         // Ambil jumlah per halaman (default 10)
@@ -203,7 +203,8 @@ public function dashAdmin()
         return view('admin/kelola_barang', $data);
     }
 
-    public function updateBarang($id){
+    public function updateBarang($id)
+    {
         $barang = $this->barangModel->find($id);
         if (!$barang) {
             return redirect()->back()->with('error', 'Data barang tidak ditemukan!');
@@ -232,7 +233,7 @@ public function dashAdmin()
 
         return redirect()->back()->with('success', 'Data barang berhasil diperbarui!');
     }
-        public function hapusBarang($id)
+    public function hapusBarang($id)
     {
         $this->barangModel->delete($id);
         return redirect()->back()->with('success', 'Barang berhasil dihapus.');
@@ -290,41 +291,40 @@ public function dashAdmin()
     }
 
     public function kelolaStaff()
-{
-    $dataAdmin = session()->get('id_admin');
-    $admin     = $this->adminModel->find($dataAdmin);
+    {
+        $dataAdmin = session()->get('id_admin');
+        $admin     = $this->adminModel->find($dataAdmin);
 
-    $keyword   = $this->request->getVar('keyword');
-    $perPage   = $this->request->getVar('per_page') ?? 10;
+        $keyword   = $this->request->getVar('keyword');
+        $perPage   = $this->request->getVar('per_page') ?? 10;
 
-    // Mulai query ke tabel users
-    $userQuery = $this->userModel;
+        // Mulai query ke tabel users
+        $userQuery = $this->userModel;
 
-    if ($keyword) {
-        $userQuery = $userQuery->like('nama', $keyword)
-                               ->orLike('email', $keyword)
-                               ->orLike('no_hp', $keyword);
+        if ($keyword) {
+            $userQuery = $userQuery->like('nama', $keyword)
+                ->orLike('email', $keyword)
+                ->orLike('no_hp', $keyword);
+        }
+
+        // Gunakan paginate untuk pagination
+        $staffList = $userQuery->orderBy('id_user', 'ASC')
+            ->paginate($perPage, 'number');
+
+        $data = [
+            'title'       => 'Kelola Staff - CargoWing',
+            'currentPage' => 'kelolaStaff',
+            'judul'       => 'Kelola Staff',
+            'subJudul'    => 'Manajemen Data Staff',
+            'admin'       => $admin,
+            'staffList'   => $staffList,
+            'keyword'     => $keyword,
+            'perPage'     => $perPage,
+            'pager'       => $userQuery->pager, // pakai pager dari query terakhir
+        ];
+
+        return view('admin/kelola_staff', $data);
     }
-
-    // Gunakan paginate untuk pagination
-    $staffList = $userQuery->orderBy('id_user', 'ASC')
-                           ->paginate($perPage, 'number');
-
-    $data = [
-        'title'       => 'Kelola Staff - CargoWing',
-        'currentPage' => 'kelolaStaff',
-        'judul'       => 'Kelola Staff',
-        'subJudul'    => 'Manajemen Data Staff',
-        'admin'       => $admin,
-        'staffList'   => $staffList,
-        'keyword'     => $keyword, 
-        'perPage'     => $perPage,
-        'pager'       => $userQuery->pager, // pakai pager dari query terakhir
-    ];
-
-    return view('admin/kelola_staff', $data);
-}
-
 
     public function tambahStaff()
     {
@@ -357,6 +357,7 @@ public function dashAdmin()
         ]);
         return redirect()->back()->with('success', 'Staff berhasil ditambahkan!');
     }
+
     public function editStaff($id)
     {
         $staff = $this->userModel->find($id);
@@ -379,12 +380,13 @@ public function dashAdmin()
         return redirect()->back()->with('success', 'Staff berhasil dihapus.');
     }
 
-    public function laporanBarang(){
+    public function laporanBarang()
+    {
         $dataAdmin = session()->get('id_admin');
         $admin     = $this->adminModel->find($dataAdmin);
         $keyword   = $this->request->getVar('keyword');
         $perPage  = $this->request->getVar('per_page') ?? 10;
-         $riwayatQuery = $this->laporanModel
+        $riwayatQuery = $this->laporanModel
             ->select('laporan.tanggal, laporan.jumlah, laporan.jenis, users.nama, barang.nama_barang, laporan.id_laporan')
             ->join('users', 'users.id_user = laporan.id_user')
             ->join('barang', 'barang.id_barang = laporan.id_barang');
@@ -421,169 +423,169 @@ public function dashAdmin()
             'riwayatData' => $riwayatData,
             'uniqueBarang' => $uniqueBarang,
             'pager'       => $this->laporanModel->pager // Pastikan pager diambil dari model
-            
+
         ];
         return view('admin/laporan', $data);
     }
 
 
 
-public function cetakLaporanPDF()
-{
-    $keyword = $this->request->getGet('keyword');
+    public function cetakLaporanPDF()
+    {
+        $keyword = $this->request->getGet('keyword');
 
-    // koneksi DB
-    $db = \Config\Database::connect();
-    $builder = $db->table('laporan l')
-        ->select('l.*, b.nama_barang as nama_barang, u.nama as nama_user')
-        ->join('barang b', 'b.id_barang = l.id_barang', 'left')
-        ->join('users u', 'u.id_user = l.id_user', 'left');
+        // koneksi DB
+        $db = \Config\Database::connect();
+        $builder = $db->table('laporan l')
+            ->select('l.*, b.nama_barang as nama_barang, u.nama as nama_user')
+            ->join('barang b', 'b.id_barang = l.id_barang', 'left')
+            ->join('users u', 'u.id_user = l.id_user', 'left');
 
-    if (!empty($keyword)) {
-        $builder->groupStart()
-            ->like('b.nama_barang', $keyword)
-            ->orLike('u.nama', $keyword)
-            ->orLike('l.jenis', $keyword)
-            ->groupEnd();
-    }
-
-    $riwayatData = $builder->orderBy('l.tanggal', 'DESC')->get()->getResultArray();
-
-    // Hitung total
-    $totalMasuk = 0;
-    $totaldipakai = 0;
-    foreach ($riwayatData as $row) {
-        if (strtolower($row['jenis']) === 'masuk') {
-            $totalMasuk += $row['jumlah'];
-        } elseif (strtolower($row['jenis']) === 'dipakai') {
-            $totaldipakai += $row['jumlah'];
+        if (!empty($keyword)) {
+            $builder->groupStart()
+                ->like('b.nama_barang', $keyword)
+                ->orLike('u.nama', $keyword)
+                ->orLike('l.jenis', $keyword)
+                ->groupEnd();
         }
-    }
 
-    // Tentukan kesimpulan
-    if ($totalMasuk > $totaldipakai) {
-        $kesimpulan = 'Stok bertambah (' . ($totalMasuk - $totaldipakai) . ')';
-    } elseif ($totalMasuk < $totaldipakai) {
-        $kesimpulan = 'Stok berkurang (' . ($totaldipakai - $totalMasuk) . ')';
-    } else {
-        $kesimpulan = 'Stok seimbang';
-    }
-
-    // render view pdf
-    $html = view('admin/laporan_pdf', [
-        'riwayatData' => $riwayatData,
-        'keyword'     => $keyword,
-        'totalMasuk'  => $totalMasuk,
-        'totaldipakai' => $totaldipakai,
-        'kesimpulan'  => $kesimpulan,
-    ]);
-
-    $options = new Options();
-    $options->set('isRemoteEnabled', true);
-
-    $dompdf = new Dompdf($options);
-    $dompdf->loadHtml($html);
-    $dompdf->setPaper('A4', 'portrait');
-    $dompdf->render();
-
-    $fileName = 'laporan_'.date('Ymd_His').'.pdf';
-
-    $pdfOutput = $dompdf->output();
-
-    return $this->response
-        ->setHeader('Content-Type', 'application/pdf')
-        ->setHeader('Content-Disposition', 'attachment; filename="' . $fileName . '"')
-        ->setBody($pdfOutput);
-}
-
-public function cetakLaporanExcel()
-{
-    $keyword = $this->request->getGet('keyword');
-
-    // Ambil data riwayat
-    $riwayatData = $this->laporanModel->getRiwayatData($keyword);
-
-    // Buat Spreadsheet baru
-    $spreadsheet = new Spreadsheet();
-    $sheet = $spreadsheet->getActiveSheet();
-
-    // Judul laporan
-    $sheet->setCellValue('A1', 'LAPORAN RIWAYAT BARANG');
-    $sheet->mergeCells('A1:F1');
-    $sheet->getStyle('A1')->getFont()->setBold(true)->setSize(14);
-    $sheet->getStyle('A1')->getAlignment()->setHorizontal('center');
-
-    // Header tabel
-    $sheet->setCellValue('A3', 'No');
-    $sheet->setCellValue('B3', 'Waktu');
-    $sheet->setCellValue('C3', 'Nama Barang');
-    $sheet->setCellValue('D3', 'Jumlah');
-    $sheet->setCellValue('E3', 'Jenis');
-    $sheet->setCellValue('F3', 'Staff');
-
-    // Styling header
-    $sheet->getStyle('A3:F3')->getFont()->setBold(true);
-    $sheet->getStyle('A3:F3')->getAlignment()->setHorizontal('center');
-
-    // Lebar kolom otomatis
-    foreach (range('A', 'F') as $col) {
-        $sheet->getColumnDimension($col)->setAutoSize(true);
-    }
-
-    // Isi data
-    $row = 4;
-    $no = 1;
-    $totalMasuk = 0;
-    $totaldipakai = 0;
-
-    foreach ($riwayatData as $data) {
-        $sheet->setCellValue('A' . $row, $no++);
-        $sheet->setCellValue('B' . $row, date('d-m-Y H:i:s', strtotime($data['tanggal'])));
-        $sheet->setCellValue('C' . $row, $data['nama_barang']);
-        $sheet->setCellValue('D' . $row, $data['jumlah']);
-        $sheet->setCellValue('E' . $row, $data['jenis']);
-        $sheet->setCellValue('F' . $row, $data['nama']);
+        $riwayatData = $builder->orderBy('l.tanggal', 'DESC')->get()->getResultArray();
 
         // Hitung total
-        if (strtolower($data['jenis']) === 'masuk') {
-            $totalMasuk += $data['jumlah'];
-        } elseif (strtolower($data['jenis']) === 'dipakai') {
-            $totaldipakai += $data['jumlah'];
+        $totalMasuk = 0;
+        $totaldipakai = 0;
+        foreach ($riwayatData as $row) {
+            if (strtolower($row['jenis']) === 'masuk') {
+                $totalMasuk += $row['jumlah'];
+            } elseif (strtolower($row['jenis']) === 'dipakai') {
+                $totaldipakai += $row['jumlah'];
+            }
         }
 
+        // Tentukan kesimpulan
+        if ($totalMasuk > $totaldipakai) {
+            $kesimpulan = 'Stok bertambah (' . ($totalMasuk - $totaldipakai) . ')';
+        } elseif ($totalMasuk < $totaldipakai) {
+            $kesimpulan = 'Stok berkurang (' . ($totaldipakai - $totalMasuk) . ')';
+        } else {
+            $kesimpulan = 'Stok seimbang';
+        }
+
+        // render view pdf
+        $html = view('admin/laporan_pdf', [
+            'riwayatData' => $riwayatData,
+            'keyword'     => $keyword,
+            'totalMasuk'  => $totalMasuk,
+            'totaldipakai' => $totaldipakai,
+            'kesimpulan'  => $kesimpulan,
+        ]);
+
+        $options = new Options();
+        $options->set('isRemoteEnabled', true);
+
+        $dompdf = new Dompdf($options);
+        $dompdf->loadHtml($html);
+        $dompdf->setPaper('A4', 'portrait');
+        $dompdf->render();
+
+        $fileName = 'laporan_' . date('Ymd_His') . '.pdf';
+
+        $pdfOutput = $dompdf->output();
+
+        return $this->response
+            ->setHeader('Content-Type', 'application/pdf')
+            ->setHeader('Content-Disposition', 'attachment; filename="' . $fileName . '"')
+            ->setBody($pdfOutput);
+    }
+
+    public function cetakLaporanExcel()
+    {
+        $keyword = $this->request->getGet('keyword');
+
+        // Ambil data riwayat
+        $riwayatData = $this->laporanModel->getRiwayatData($keyword);
+
+        // Buat Spreadsheet baru
+        $spreadsheet = new Spreadsheet();
+        $sheet = $spreadsheet->getActiveSheet();
+
+        // Judul laporan
+        $sheet->setCellValue('A1', 'LAPORAN RIWAYAT BARANG');
+        $sheet->mergeCells('A1:F1');
+        $sheet->getStyle('A1')->getFont()->setBold(true)->setSize(14);
+        $sheet->getStyle('A1')->getAlignment()->setHorizontal('center');
+
+        // Header tabel
+        $sheet->setCellValue('A3', 'No');
+        $sheet->setCellValue('B3', 'Waktu');
+        $sheet->setCellValue('C3', 'Nama Barang');
+        $sheet->setCellValue('D3', 'Jumlah');
+        $sheet->setCellValue('E3', 'Jenis');
+        $sheet->setCellValue('F3', 'Staff');
+
+        // Styling header
+        $sheet->getStyle('A3:F3')->getFont()->setBold(true);
+        $sheet->getStyle('A3:F3')->getAlignment()->setHorizontal('center');
+
+        // Lebar kolom otomatis
+        foreach (range('A', 'F') as $col) {
+            $sheet->getColumnDimension($col)->setAutoSize(true);
+        }
+
+        // Isi data
+        $row = 4;
+        $no = 1;
+        $totalMasuk = 0;
+        $totaldipakai = 0;
+
+        foreach ($riwayatData as $data) {
+            $sheet->setCellValue('A' . $row, $no++);
+            $sheet->setCellValue('B' . $row, date('d-m-Y H:i:s', strtotime($data['tanggal'])));
+            $sheet->setCellValue('C' . $row, $data['nama_barang']);
+            $sheet->setCellValue('D' . $row, $data['jumlah']);
+            $sheet->setCellValue('E' . $row, $data['jenis']);
+            $sheet->setCellValue('F' . $row, $data['nama']);
+
+            // Hitung total
+            if (strtolower($data['jenis']) === 'masuk') {
+                $totalMasuk += $data['jumlah'];
+            } elseif (strtolower($data['jenis']) === 'dipakai') {
+                $totaldipakai += $data['jumlah'];
+            }
+
+            $row++;
+        }
+
+        // Tambahkan total & kesimpulan
+        $row += 2;
+        $sheet->setCellValue('E' . $row, 'Total Barang Masuk:');
+        $sheet->setCellValue('F' . $row, $totalMasuk);
+
         $row++;
+        $sheet->setCellValue('E' . $row, 'Total Barang dipakai:');
+        $sheet->setCellValue('F' . $row, $totaldipakai);
+
+        $row += 2;
+        $sheet->setCellValue('E' . $row, 'Kesimpulan:');
+        if ($totalMasuk > $totaldipakai) {
+            $sheet->setCellValue('F' . $row, 'Stok bertambah (' . ($totalMasuk - $totaldipakai) . ')');
+        } elseif ($totalMasuk < $totaldipakai) {
+            $sheet->setCellValue('F' . $row, 'Stok berkurang (' . ($totaldipakai - $totalMasuk) . ')');
+        } else {
+            $sheet->setCellValue('F' . $row, 'Stok seimbang');
+        }
+
+        // Output Excel
+        $fileName = 'Laporan_Riwayat_' . date('Ymd_His') . '.xlsx';
+        $writer = new Xlsx($spreadsheet);
+
+        header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        header("Content-Disposition: attachment;filename=\"{$fileName}\"");
+        header('Cache-Control: max-age=0');
+
+        $writer->save('php://output');
+        exit;
     }
-
-    // Tambahkan total & kesimpulan
-    $row += 2;
-    $sheet->setCellValue('E' . $row, 'Total Barang Masuk:');
-    $sheet->setCellValue('F' . $row, $totalMasuk);
-
-    $row++;
-    $sheet->setCellValue('E' . $row, 'Total Barang dipakai:');
-    $sheet->setCellValue('F' . $row, $totaldipakai);
-
-    $row += 2;
-    $sheet->setCellValue('E' . $row, 'Kesimpulan:');
-    if ($totalMasuk > $totaldipakai) {
-        $sheet->setCellValue('F' . $row, 'Stok bertambah (' . ($totalMasuk - $totaldipakai) . ')');
-    } elseif ($totalMasuk < $totaldipakai) {
-        $sheet->setCellValue('F' . $row, 'Stok berkurang (' . ($totaldipakai - $totalMasuk) . ')');
-    } else {
-        $sheet->setCellValue('F' . $row, 'Stok seimbang');
-    }
-
-    // Output Excel
-    $fileName = 'Laporan_Riwayat_' . date('Ymd_His') . '.xlsx';
-    $writer = new Xlsx($spreadsheet);
-
-    header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-    header("Content-Disposition: attachment;filename=\"{$fileName}\"");
-    header('Cache-Control: max-age=0');
-
-    $writer->save('php://output');
-    exit;
-}
 
 
 

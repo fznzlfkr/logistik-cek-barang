@@ -15,6 +15,9 @@ $routes->get('/logout', 'AuthController::logout');
 $routes->group('superadmin', ['filter' => 'auth:Super Admin'], function ($routes) {
     $routes->get('dashboard', 'SuperAdminController::dashSuperAdmin');
     $routes->get('kelola-admin', 'SuperAdminController::kelolaAdmin');
+    $routes->post('kelola-admin/tambah', 'SuperAdminController::tambahAdmin');
+    $routes->post('kelola-admin/edit/(:num)', 'SuperAdminController::editAdmin/$1');
+    $routes->post('kelola-admin/hapus/(:num)', 'SuperAdminController::hapusAdmin/$1');
     $routes->get('log-aktivitas-admin', 'SuperAdminController::logAktivitasAdmin');
     $routes->get('pengaturan-akun', 'SuperAdminController::pengaturanAkun');
     $routes->post('profil/update', 'SuperAdminController::updateProfil');

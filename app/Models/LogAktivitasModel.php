@@ -77,18 +77,23 @@ class LogAktivitasModel extends Model
             ->findAll();
     }
 
-    /**
-     * Simpan log aktivitas (untuk admin atau user)
-     */
-    public function addLog($data)
+    public function getLogsByAdminWithFilter($keyword = null, $perPage = 10)
     {
-        return $this->insert([
-            'id_user'    => $data['id_user'] ?? null,
-            'id_admin'   => $data['id_admin'] ?? null,
-            'role'       => $data['role'],
-            'aktivitas'  => $data['aktivitas'],
-            'ip_address' => service('request')->getIPAddress(),
-            'user_agent' => service('request')->getUserAgent(),
-        ]);
+        $builder = $this->select('log_aktivitas.*, admin.nama as nama_admin')
+            ->join('admin', 'admin.id_admin = log_aktivitas.id_admin', 'left')
+            ->where('log_aktivitas.role', 'Admin');
+
+        if (!empty($keyword)) {
+            $builder->groupStart()
+                ->like('admin.nama', $keyword)
+                ->orLike('log_aktivitas.aktivitas', $keyword)
+                ->orLike('log_aktivitas.ip_address', $keyword)
+                ->orLike('log_aktivitas.created_at', $keyword)
+                ->groupEnd();
+        }
+
+        return $builder
+            ->orderBy('log_aktivitas.created_at', 'DESC')
+            ->paginate($perPage, 'number');
     }
 }

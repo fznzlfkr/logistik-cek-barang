@@ -1,6 +1,7 @@
 <?= $this->extend('layout/TemplateSuperAdmin') ?>
 
 <?= $this->section('content') ?>
+
 <!-- Main Content -->
 <div class="main-content">
   <!-- Header -->
@@ -20,7 +21,7 @@
           <a href="<?= base_url('admin/pengaturan-akun') ?>" class="a-info">
             <div class="user-info">
               <h6> <?= esc($superAdmin['nama']) ?></h6>
-              <p>Administrator</p>
+              <p><?= esc($superAdmin['role']) ?></p>
             </div>
           </a>
         </div>

@@ -39,4 +39,21 @@ class AdminModel extends Model
     protected $afterFind      = [];
     protected $beforeDelete   = [];
     protected $afterDelete    = [];
+
+    public function getAdminWithFilter($keyword = null, $perPage = 10)
+    {
+        $builder = $this->select('*')
+            ->where('role', 'Admin');
+
+        if (!empty($keyword)) {
+            $builder->groupStart()
+                ->like('nama', $keyword)
+                ->orLike('email', $keyword)
+                ->groupEnd();
+        }
+
+        return $builder
+            ->orderBy('id_admin', 'ASC')
+            ->paginate($perPage, 'number');
+    }
 }

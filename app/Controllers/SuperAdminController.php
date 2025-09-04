@@ -25,6 +25,7 @@ class SuperAdminController extends BaseController
         $this->barangModel = new BarangModel;
         $this->laporanModel = new LaporanModel;
         $this->logAktivitasModel = new LogAktivitasModel;
+        helper(['form', 'url']);
     }
 
     public function dashSuperAdmin()
@@ -62,7 +63,7 @@ class SuperAdminController extends BaseController
             'totalAdminAktif'   => $totalAdminAktif,
             'totalStaff'        => $totalStaff,
             'totalBarang'       => $totalBarang,
-            'logsAdmin'         => $logsAdmin, // parsing ke view
+            'logsAdmin'         => $logsAdmin,
         ];
 
         return view('superAdmin/dashboard', $data);
@@ -89,24 +90,108 @@ class SuperAdminController extends BaseController
 
     public function kelolaAdmin()
     {
-        // $data = [
-        //     'title'         => 'Log Aktivitas Admin',
-        //     'currentPage'   => 'log-aktivitas-admin'
-        // ];
-        // return view('superadmin/', $data);
+        $dataSuperAdmin = session()->get('id_admin');
+        $superAdmin = $this->adminModel->find($dataSuperAdmin);
+        $keyword   = $this->request->getVar('keyword');
+        $perPage  = $this->request->getVar('per_page') ?? 10;
 
-        echo "progress kelola";
+        $dataAdmin = $this->adminModel->getAdminWithFilter($keyword, $perPage);
+
+        $data = [
+            'title'         => 'Kelola Admin',
+            'currentPage'   => 'kelola-admin',
+            'keyword'       => $keyword,
+            'perPage'       => $perPage,
+            'pager'         => $this->adminModel->pager,
+            'superAdmin'    => $superAdmin,
+            'dataAdmin'     => $dataAdmin,
+        ];
+        return view('superadmin/kelola_admin', $data);
+    }
+
+    public function tambahAdmin()
+    {
+        $nama     = $this->request->getPost('nama');
+        $email    = $this->request->getPost('email');
+        $password = $this->request->getPost('password');
+
+        // validasi sederhana
+        if (empty($nama) || empty($email) || empty($password)) {
+            return redirect()->back()->with('error', 'Semua field wajib diisi!');
+        }
+
+        $data = [
+            'nama'     => $nama,
+            'email'    => $email,
+            'password' => password_hash($password, PASSWORD_DEFAULT),
+            'role'     => 'Admin',
+        ];
+
+        $this->adminModel->insert($data);
+
+        return redirect()->to(base_url('superadmin/kelola-admin'))
+            ->with('success', 'Admin baru berhasil ditambahkan.');
+    }
+
+    public function editAdmin($id_admin)
+    {
+        $admin = $this->adminModel->find($id_admin);
+        if (!$admin) {
+            return redirect()->to(base_url('superadmin/kelola-admin'))
+                ->with('error', 'Data admin tidak ditemukan.');
+        }
+
+        $nama     = $this->request->getPost('nama');
+        $email    = $this->request->getPost('email');
+        $password = $this->request->getPost('password');
+
+        $dataUpdate = [
+            'nama'  => $nama,
+            'email' => $email,
+        ];
+
+        // hanya update password kalau diisi
+        if (!empty($password)) {
+            $dataUpdate['password'] = password_hash($password, PASSWORD_DEFAULT);
+        }
+
+        $this->adminModel->update($id_admin, $dataUpdate);
+
+        return redirect()->to(base_url('superadmin/kelola-admin'))
+            ->with('success', 'Data admin berhasil diperbarui.');
+    }
+
+    public function hapusAdmin($id_admin)
+    {
+        $admin = $this->adminModel->find($id_admin);
+        if (!$admin) {
+            return redirect()->to(base_url('superadmin/kelola-admin'))
+                ->with('error', 'Data admin tidak ditemukan.');
+        }
+
+        $this->adminModel->delete($id_admin);
+
+        return redirect()->to(base_url('superadmin/kelola-admin'))
+            ->with('success', 'Admin berhasil dihapus.');
     }
 
     public function logAktivitasAdmin()
     {
         $dataSuperAdmin = session()->get('id_admin');
         $superAdmin = $this->adminModel->find($dataSuperAdmin);
+        $keyword   = $this->request->getVar('keyword');
+        $perPage  = $this->request->getVar('per_page') ?? 10;
+
+        $logsAdmin = $this->logAktivitasModel->getLogsByAdminWithFilter($keyword, $perPage);
 
         $data = [
             'title'         => 'Log Aktivitas Admin',
             'currentPage'   => 'log-aktivitas-admin',
-            'superAdmin'    => $superAdmin
+            'keyword'       => $keyword,
+            'perPage'       => $perPage,
+            'pager'         => $this->logAktivitasModel->pager,
+            'superAdmin'    => $superAdmin,
+            'logsAdmin'     => $logsAdmin,
         ];
         return view('superadmin/log_aktivitas_admin', $data);
     }

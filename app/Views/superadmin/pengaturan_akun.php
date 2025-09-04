@@ -17,7 +17,7 @@
                     <a href="<?= base_url('superadmin/pengaturan-akun') ?>" class="a-info">
                         <div class="user-info">
                             <h6><?= esc($superAdmin['nama']) ?></h6>
-                            <p>Administrator</p>
+                            <p><?= esc($superAdmin['role']) ?></p>
                         </div>
                     </a>
                 </div>
