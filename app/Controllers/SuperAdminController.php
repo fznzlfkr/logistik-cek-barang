@@ -89,13 +89,23 @@ class SuperAdminController extends BaseController
 
     public function kelolaAdmin()
     {
-        // $data = [
-        //     'title'         => 'Log Aktivitas Admin',
-        //     'currentPage'   => 'log-aktivitas-admin'
-        // ];
-        // return view('superadmin/', $data);
+        $dataSuperAdmin = session()->get('id_admin');
+        $superAdmin = $this->adminModel->find($dataSuperAdmin);
+        $keyword   = $this->request->getVar('keyword');
+        $perPage  = $this->request->getVar('per_page') ?? 10;
 
-        echo "progress kelola";
+        $dataAdmin = $this->adminModel->getAdminWithFilter($keyword, $perPage);
+
+        $data = [
+            'title'         => 'Kelola Admin',
+            'currentPage'   => 'kelola-admin',
+            'keyword'       => $keyword,
+            'perPage'       => $perPage,
+            'pager'         => $this->adminModel->pager,
+            'superAdmin'    => $superAdmin,
+            'dataAdmin'     => $dataAdmin,
+        ];
+        return view('superadmin/kelola_admin', $data);
     }
 
     public function logAktivitasAdmin()

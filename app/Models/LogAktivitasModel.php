@@ -56,8 +56,8 @@ class LogAktivitasModel extends Model
 
     public function getLogsByUser($limit = 10)
     {
-        return $this->select('log_aktivitas.*, user.nama as nama_user')
-            ->join('user', 'user.id_user = log_aktivitas.id_user', 'left')
+        return $this->select('log_aktivitas.*, users.nama as nama_user')
+            ->join('users', 'users.id_user = log_aktivitas.id_user', 'left')
             ->where('log_aktivitas.role', 'User')
             ->orderBy('log_aktivitas.created_at', 'DESC')
             ->limit($limit)
