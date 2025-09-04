@@ -24,32 +24,17 @@ class LogAktivitasModel extends Model
     protected bool $allowEmptyInserts = false;
     protected bool $updateOnlyChanged = true;
 
-    protected array $casts = [];
-    protected array $castHandlers = [];
-
     // Dates
     protected $useTimestamps = true;
     protected $dateFormat    = 'datetime';
     protected $createdField  = 'created_at';
     protected $updatedField  = 'updated_at';
-    protected $deletedField  = 'deleted_at';
 
     // Validation
     protected $validationRules      = [];
     protected $validationMessages   = [];
     protected $skipValidation       = false;
     protected $cleanValidationRules = true;
-
-    // Callbacks
-    protected $allowCallbacks = true;
-    protected $beforeInsert   = [];
-    protected $afterInsert    = [];
-    protected $beforeUpdate   = [];
-    protected $afterUpdate    = [];
-    protected $beforeFind     = [];
-    protected $afterFind      = [];
-    protected $beforeDelete   = [];
-    protected $afterDelete    = [];
 
     /**
      * Ambil log aktivitas admin
@@ -77,6 +62,9 @@ class LogAktivitasModel extends Model
             ->findAll();
     }
 
+    /**
+     * Ambil log aktivitas admin dengan filter pencarian
+     */
     public function getLogsByAdminWithFilter($keyword = null, $perPage = 10)
     {
         $builder = $this->select('log_aktivitas.*, admin.nama as nama_admin')
@@ -95,5 +83,22 @@ class LogAktivitasModel extends Model
         return $builder
             ->orderBy('log_aktivitas.created_at', 'DESC')
             ->paginate($perPage, 'number');
+    }
+
+    /**
+     * Ambil semua log (baik admin maupun user), 
+     * sekaligus gabungkan nama jadi 1 kolom `nama_user`
+     */
+    public function getAllLogs($limit = 10)
+    {
+        return $this->db->table('log_aktivitas')
+            ->select('log_aktivitas.*, 
+                      COALESCE(users.nama, admin.nama) as nama_user')
+            ->join('users', 'users.id_user = log_aktivitas.id_user', 'left')
+            ->join('admin', 'admin.id_admin = log_aktivitas.id_admin', 'left')
+            ->orderBy('log_aktivitas.created_at', 'DESC')
+            ->limit($limit)
+            ->get()
+            ->getResultArray();
     }
 }

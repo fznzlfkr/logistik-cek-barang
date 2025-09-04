@@ -12,18 +12,21 @@ use Dompdf\Dompdf;
 use Dompdf\Options;
 use Endroid\QrCode\Builder\Builder;
 use Endroid\QrCode\Writer\PngWriter;
+use App\Models\LogAktivitasModel;
 
 class UserController extends BaseController
 {
     protected $userModel,
         $barangModel,
-        $laporanModel;
+        $laporanModel,
+        $logAktivitasModel;
 
     public function __construct()
     {
         $this->userModel = new UserModel;
         $this->barangModel = new BarangModel;
         $this->laporanModel = new LaporanModel;
+        $this->logAktivitasModel = new LogAktivitasModel();
     }
 
     public function index()
@@ -344,6 +347,8 @@ class UserController extends BaseController
 
         $this->laporanModel->insert($riwayat);
 
+        // ✅ Tambahkan log aktivitas
+        logAktivitas("Menambahkan barang baru: {$data['nama_barang']} (Jumlah: {$data['jumlah']} {$data['satuan']})");
         $db->transComplete();
 
         if ($db->transStatus() === false) {
@@ -395,30 +400,40 @@ class UserController extends BaseController
             'jumlah' => $barang['jumlah'] - $jumlah
         ]);
 
+        // ✅ Tambahkan log aktivitas
+        logAktivitas("Mengeluarkan barang: {$barang['nama_barang']} (Jumlah: {$jumlah} {$barang['satuan']})");
+
         return redirect()->to('/user/riwayat')
             ->with('success', 'Barang keluar berhasil dicatat & stok terupdate!');
     }
 
     public function hapusRiwayat($idLaporan)
-    {
-        // Pastikan ID ada
-        if (!$idLaporan) {
-            return redirect()->back()->with('error', 'ID laporan tidak valid.');
-        }
-
-        // Cek apakah datanya ada
-        $laporan = $this->laporanModel->find($idLaporan);
-        if (!$laporan) {
-            return redirect()->back()->with('error', 'Data laporan tidak ditemukan.');
-        }
-
-        // Hapus data
-        if ($this->laporanModel->delete($idLaporan)) {
-            return redirect()->back()->with('success', 'Riwayat berhasil dihapus.');
-        }
-
-        return redirect()->back()->with('error', 'Gagal menghapus riwayat.');
+{
+    // Pastikan ID ada
+    if (!$idLaporan) {
+        return redirect()->back()->with('error', 'ID laporan tidak valid.');
     }
+
+    // Ambil laporan dengan join ke tabel barang
+    $laporan = $this->laporanModel
+        ->select('laporan.*, barang.nama_barang, barang.satuan')
+        ->join('barang', 'barang.id_barang = laporan.id_barang', 'left')
+        ->where('laporan.id_laporan', $idLaporan)
+        ->first();
+
+    if (!$laporan) {
+        return redirect()->back()->with('error', 'Data laporan tidak ditemukan.');
+    }
+
+    // Hapus data
+    if ($this->laporanModel->delete($idLaporan)) {
+        logAktivitas(" Menghapus riwayat laporan: {$laporan['nama_barang']} (Jumlah: {$laporan['jumlah']} {$laporan['satuan']})");
+        return redirect()->back()->with('success', 'Riwayat berhasil dihapus.');
+    }
+
+    return redirect()->back()->with('error', 'Gagal menghapus riwayat.');
+}
+
 
     public function editRiwayat($idLaporan)
     {
@@ -445,7 +460,8 @@ class UserController extends BaseController
             'jumlah'    => $this->request->getPost('jumlah'),
             'jenis'     => $this->request->getPost('jenis'),
             'id_barang' => $barang['id_barang'],
-            'id_user'   => session()->get('id_user')
+            'id_user'   => session()->get('id_user'),
+            'nama_user' => session()->get('nama'),
         ];
 
         // Cek apakah ada perubahan data
@@ -458,7 +474,7 @@ class UserController extends BaseController
         $this->laporanModel->update($idLaporan, $newData);
 
         // ✅ Tambahkan log aktivitas
-        logAktivitas("Mengedit laporan ID: {$idLaporan}, Barang: {$namaBarang}, Jumlah: {$newData['jumlah']}, Jenis: {$newData['jenis']}");
+        logAktivitas("{$newData['nama_user']} Mengedit riwayat laporan. Barang: {$namaBarang}, Jumlah: {$newData['jumlah']}, Jenis: {$newData['jenis']}");
 
         return redirect()->to(base_url('user/riwayat'))
             ->with('success', 'Data riwayat berhasil diperbarui.');
@@ -545,47 +561,38 @@ class UserController extends BaseController
         return view('user/profil', $data);
     }
 
-    public function update()
+public function update()
     {
-        $userModel = new UserModel();
         $userId = session()->get('id_user');
+        $user   = $this->userModel->find($userId);
 
-        // Ambil data dari form
-        $nama   = $this->request->getPost('nama');
-        $email  = $this->request->getPost('email');
-        $no_hp  = $this->request->getPost('no_hp');
-        $foto   = $this->request->getFile('foto');
-
-        // Validasi sederhana
-        if (empty($nama) || empty($email) || empty($no_hp)) {
-            return redirect()->back()->withInput()->with('error', 'Semua field wajib diisi.');
+        if (!$user) {
+            return redirect()->back()->with('error', 'Data user tidak ditemukan!');
         }
+
+        $nama  = $this->request->getPost('nama');
+        $email = $this->request->getPost('email');
 
         $dataUpdate = [
             'nama'  => $nama,
             'email' => $email,
-            'no_hp' => $no_hp
         ];
 
-        // Handle upload foto jika ada
-        if ($foto && $foto->isValid() && !$foto->hasMoved()) {
-            $newName = $foto->getRandomName();
-            $foto->move('uploads', $newName);
-            $dataUpdate['foto'] = $newName;
-            session()->set('foto', $newName);
+        // Cek perubahan (pakai data lama dari DB sebagai identitas pelaku)
+        $pelaku = $user['nama'];
+
+        if ($user['nama'] !== $nama && $user['email'] === $email) {
+            logAktivitas("$pelaku mengganti nama dari '{$user['nama']}' menjadi '{$nama}'");
+        } elseif ($user['nama'] === $nama && $user['email'] !== $email) {
+            logAktivitas("$pelaku mengganti email dari '{$user['email']}' menjadi '{$email}'");
+        } elseif ($user['nama'] !== $nama && $user['email'] !== $email) {
+            logAktivitas("$pelaku mengganti nama dari '{$user['nama']}' menjadi '{$nama}', dan mengganti email dari '{$user['email']}' menjadi '{$email}'");
         }
 
-        // Update ke database
-        $userModel->update($userId, $dataUpdate);
+        // Update data
+        $this->userModel->update($userId, $dataUpdate);
 
-        // Update session
-        session()->set([
-            'nama'  => $nama,
-            'email' => $email,
-            'no_hp' => $no_hp
-        ]);
-
-        return redirect()->back()->with('success', 'Profil berhasil diperbarui.');
+        return redirect()->back()->with('success', 'Profil berhasil diperbarui!');
     }
 
     public function gantiPassword()
@@ -612,6 +619,7 @@ class UserController extends BaseController
         $userModel->update($userId, [
             'password' => password_hash($passwordBaru, PASSWORD_DEFAULT)
         ]);
+        logAktivitas("{$user['nama']} mengganti password akun.");
 
         return redirect()->back()->with('successp', 'Password berhasil diubah.');
     }
