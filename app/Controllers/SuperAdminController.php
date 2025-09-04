@@ -62,7 +62,7 @@ class SuperAdminController extends BaseController
             'totalAdminAktif'   => $totalAdminAktif,
             'totalStaff'        => $totalStaff,
             'totalBarang'       => $totalBarang,
-            'logsAdmin'         => $logsAdmin, // parsing ke view
+            'logsAdmin'         => $logsAdmin,
         ];
 
         return view('superAdmin/dashboard', $data);
@@ -102,11 +102,19 @@ class SuperAdminController extends BaseController
     {
         $dataSuperAdmin = session()->get('id_admin');
         $superAdmin = $this->adminModel->find($dataSuperAdmin);
+        $keyword   = $this->request->getVar('keyword');
+        $perPage  = $this->request->getVar('per_page') ?? 10;
+
+        $logsAdmin = $this->logAktivitasModel->getLogsByAdminWithFilter($keyword, $perPage);
 
         $data = [
             'title'         => 'Log Aktivitas Admin',
             'currentPage'   => 'log-aktivitas-admin',
-            'superAdmin'    => $superAdmin
+            'keyword'       => $keyword,
+            'perPage'       => $perPage,
+            'pager'         => $this->logAktivitasModel->pager,
+            'superAdmin'    => $superAdmin,
+            'logsAdmin'     => $logsAdmin,
         ];
         return view('superadmin/log_aktivitas_admin', $data);
     }

@@ -63,4 +63,24 @@ class LogAktivitasModel extends Model
             ->limit($limit)
             ->findAll();
     }
+
+    public function getLogsByAdminWithFilter($keyword = null, $perPage = 10)
+    {
+        $builder = $this->select('log_aktivitas.*, admin.nama as nama_admin')
+            ->join('admin', 'admin.id_admin = log_aktivitas.id_admin', 'left')
+            ->where('log_aktivitas.role', 'Admin');
+
+        if (!empty($keyword)) {
+            $builder->groupStart()
+                ->like('admin.nama', $keyword)
+                ->orLike('log_aktivitas.aktivitas', $keyword)
+                ->orLike('log_aktivitas.ip_address', $keyword)
+                ->orLike('log_aktivitas.created_at', $keyword)
+                ->groupEnd();
+        }
+
+        return $builder
+            ->orderBy('log_aktivitas.created_at', 'DESC')
+            ->paginate($perPage, 'number');
+    }
 }

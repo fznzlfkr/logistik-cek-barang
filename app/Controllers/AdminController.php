@@ -125,7 +125,7 @@ class AdminController extends BaseController
 
     public function kelolaBarang()
     {
-         $dataAdmin = session()->get('id_admin');
+        $dataAdmin = session()->get('id_admin');
         $admin     = $this->adminModel->find($dataAdmin);
 
         // Ambil jumlah per halaman (default 10)
@@ -169,7 +169,8 @@ class AdminController extends BaseController
         return view('admin/kelola_barang', $data);
     }
 
-    public function updateBarang($id){
+    public function updateBarang($id)
+    {
         $barang = $this->barangModel->find($id);
         if (!$barang) {
             return redirect()->back()->with('error', 'Data barang tidak ditemukan!');
@@ -198,7 +199,7 @@ class AdminController extends BaseController
 
         return redirect()->back()->with('success', 'Data barang berhasil diperbarui!');
     }
-        public function hapusBarang($id)
+    public function hapusBarang($id)
     {
         $this->barangModel->delete($id);
         return redirect()->back()->with('success', 'Barang berhasil dihapus.');
@@ -256,38 +257,38 @@ class AdminController extends BaseController
     }
 
     public function kelolaStaff()
-{
-    $dataAdmin = session()->get('id_admin');
-    $admin     = $this->adminModel->find($dataAdmin);
+    {
+        $dataAdmin = session()->get('id_admin');
+        $admin     = $this->adminModel->find($dataAdmin);
 
-    $keyword   = $this->request->getVar('keyword');
-    $perPage   = $this->request->getVar('per_page') ?? 10;
+        $keyword   = $this->request->getVar('keyword');
+        $perPage   = $this->request->getVar('per_page') ?? 10;
 
-    // Mulai query ke tabel users
-    $userQuery = $this->userModel;
+        // Mulai query ke tabel users
+        $userQuery = $this->userModel;
 
-    if ($keyword) {
-        $userQuery = $userQuery->like('nama', $keyword)
-                               ->orLike('email', $keyword)
-                               ->orLike('no_hp', $keyword);
+        if ($keyword) {
+            $userQuery = $userQuery->like('nama', $keyword)
+                ->orLike('email', $keyword)
+                ->orLike('no_hp', $keyword);
+        }
+
+        // Gunakan paginate untuk pagination
+        $staffList = $userQuery->orderBy('id_user', 'ASC')
+            ->paginate($perPage, 'number');
+
+        $data = [
+            'title'       => 'Kelola Staff - CargoWing',
+            'currentPage' => 'KelolaStaff',
+            'admin'       => $admin,
+            'staffList'   => $staffList,
+            'keyword'     => $keyword,
+            'perPage'     => $perPage,
+            'pager'       => $userQuery->pager, // pakai pager dari query terakhir
+        ];
+
+        return view('admin/kelola_staff', $data);
     }
-
-    // Gunakan paginate untuk pagination
-    $staffList = $userQuery->orderBy('id_user', 'ASC')
-                           ->paginate($perPage, 'number');
-
-    $data = [
-        'title'       => 'Kelola Staff - CargoWing',
-        'currentPage' => 'KelolaStaff',
-        'admin'       => $admin,
-        'staffList'   => $staffList,
-        'keyword'     => $keyword, 
-        'perPage'     => $perPage,
-        'pager'       => $userQuery->pager, // pakai pager dari query terakhir
-    ];
-
-    return view('admin/kelola_staff', $data);
-}
 
 
     public function tambahStaff()
@@ -343,12 +344,13 @@ class AdminController extends BaseController
         return redirect()->back()->with('success', 'Staff berhasil dihapus.');
     }
 
-    public function laporanBarang(){
+    public function laporanBarang()
+    {
         $dataAdmin = session()->get('id_admin');
         $admin     = $this->adminModel->find($dataAdmin);
         $keyword   = $this->request->getVar('keyword');
         $perPage  = $this->request->getVar('per_page') ?? 10;
-         $riwayatQuery = $this->laporanModel
+        $riwayatQuery = $this->laporanModel
             ->select('laporan.tanggal, laporan.jumlah, laporan.jenis, users.nama, barang.nama_barang, laporan.id_laporan')
             ->join('users', 'users.id_user = laporan.id_user')
             ->join('barang', 'barang.id_barang = laporan.id_barang');
@@ -383,58 +385,58 @@ class AdminController extends BaseController
             'riwayatData' => $riwayatData,
             'uniqueBarang' => $uniqueBarang,
             'pager'       => $this->laporanModel->pager // Pastikan pager diambil dari model
-            
+
         ];
         return view('admin/laporan', $data);
     }
 
 
 
-public function cetakLaporan()
-{
-    $keyword = $this->request->getGet('keyword');
+    public function cetakLaporan()
+    {
+        $keyword = $this->request->getGet('keyword');
 
-    // koneksi DB
-    $db = \Config\Database::connect();
-    $builder = $db->table('laporan l')
-        ->select('l.*, b.nama_barang as nama_barang, u.nama as nama_user')
-        ->join('barang b', 'b.id_barang = l.id_barang', 'left')
-        ->join('users u', 'u.id_user = l.id_user', 'left');
+        // koneksi DB
+        $db = \Config\Database::connect();
+        $builder = $db->table('laporan l')
+            ->select('l.*, b.nama_barang as nama_barang, u.nama as nama_user')
+            ->join('barang b', 'b.id_barang = l.id_barang', 'left')
+            ->join('users u', 'u.id_user = l.id_user', 'left');
 
-    if (!empty($keyword)) {
-        $builder->groupStart()
-            ->like('b.nama_barang', $keyword)
-            ->orLike('u.nama', $keyword)
-            ->orLike('l.jenis', $keyword)
-            ->groupEnd();
+        if (!empty($keyword)) {
+            $builder->groupStart()
+                ->like('b.nama_barang', $keyword)
+                ->orLike('u.nama', $keyword)
+                ->orLike('l.jenis', $keyword)
+                ->groupEnd();
+        }
+
+        $riwayatData = $builder->orderBy('l.tanggal', 'DESC')->get()->getResultArray();
+
+        // render view pdf
+        $html = view('admin/laporan_pdf', [
+            'riwayatData' => $riwayatData,
+            'keyword'     => $keyword
+        ]);
+
+        $options = new Options();
+        $options->set('isRemoteEnabled', true);
+
+        $dompdf = new Dompdf($options);
+        $dompdf->loadHtml($html);
+        $dompdf->setPaper('A4', 'portrait'); // perbaiki penulisan orientation
+        $dompdf->render();
+
+        $fileName = 'laporan_' . date('Ymd_His') . '.pdf';
+
+        // Generate PDF binary and force download via response headers
+        $pdfOutput = $dompdf->output();
+
+        return $this->response
+            ->setHeader('Content-Type', 'application/pdf')
+            ->setHeader('Content-Disposition', 'attachment; filename="' . $fileName . '"')
+            ->setBody($pdfOutput);
     }
-
-    $riwayatData = $builder->orderBy('l.tanggal', 'DESC')->get()->getResultArray();
-
-    // render view pdf
-    $html = view('admin/laporan_pdf', [
-        'riwayatData' => $riwayatData,
-        'keyword'     => $keyword
-    ]);
-
-    $options = new Options();
-    $options->set('isRemoteEnabled', true);
-
-    $dompdf = new Dompdf($options);
-    $dompdf->loadHtml($html);
-    $dompdf->setPaper('A4', 'portrait'); // perbaiki penulisan orientation
-    $dompdf->render();
-
-    $fileName = 'laporan_'.date('Ymd_His').'.pdf';
-
-    // Generate PDF binary and force download via response headers
-    $pdfOutput = $dompdf->output();
-
-    return $this->response
-        ->setHeader('Content-Type', 'application/pdf')
-        ->setHeader('Content-Disposition', 'attachment; filename="' . $fileName . '"')
-        ->setBody($pdfOutput);
-}
 
 
     public function gantiPassword()
