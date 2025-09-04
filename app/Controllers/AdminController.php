@@ -49,54 +49,54 @@ class AdminController extends BaseController
         }
     }
 
-public function dashAdmin()
-{
-    $dataAdmin = session()->get('id_admin');
-    $admin = $this->adminModel->find($dataAdmin);
+    public function dashAdmin()
+    {
+        $dataAdmin = session()->get('id_admin');
+        $admin = $this->adminModel->find($dataAdmin);
 
-    // Hitung total staff
-    $totalStaff = $this->userModel->countAll();
+        // Hitung total staff
+        $totalStaff = $this->userModel->countAll();
 
-    // Hitung total barang unik
-    $totalBarang = $this->barangModel
-        ->select('COUNT(DISTINCT nama_barang) as total')
-        ->first()['total'] ?? 0;
+        // Hitung total barang unik
+        $totalBarang = $this->barangModel
+            ->select('COUNT(DISTINCT nama_barang) as total')
+            ->first()['total'] ?? 0;
 
-    // Barang hampir habis (jumlah <= minimum_stok)
-    $barangHampirHabis = $this->barangModel
-        ->where('jumlah <= minimum_stok')
-        ->countAllResults();
+        // Barang hampir habis (jumlah <= minimum_stok)
+        $barangHampirHabis = $this->barangModel
+            ->where('jumlah <= minimum_stok')
+            ->countAllResults();
 
-    // Ambil riwayat laporan dengan join
-    $laporan = $this->laporanModel
-        ->select('laporan.tanggal, barang.nama_barang, laporan.jumlah, laporan.jenis, users.nama as staff')
-        ->join('barang', 'barang.id_barang = laporan.id_barang')
-        ->join('users', 'users.id_user = laporan.id_user')
-        ->orderBy('laporan.tanggal', 'DESC')
-        ->findAll(10);
+        // Ambil riwayat laporan dengan join
+        $laporan = $this->laporanModel
+            ->select('laporan.tanggal, barang.nama_barang, laporan.jumlah, laporan.jenis, users.nama as staff')
+            ->join('barang', 'barang.id_barang = laporan.id_barang')
+            ->join('users', 'users.id_user = laporan.id_user')
+            ->orderBy('laporan.tanggal', 'DESC')
+            ->findAll(10);
 
-    // Ambil log aktivitas terbaru
-    $logsUser = $this->LogAktivitasModel->getLogsByUser(10);
+        // Ambil log aktivitas terbaru
+        $logsUser = $this->LogAktivitasModel->getLogsByUser(10);
 
-    foreach ($logsUser as &$log) {
-        $log['waktu_ago'] = $this->timeAgo($log['created_at']);
+        foreach ($logsUser as &$log) {
+            $log['waktu_ago'] = $this->timeAgo($log['created_at']);
+        }
+
+        $data = [
+            'title'             => 'Dashboard Admin - CargoWing',
+            'currentPage'       => 'dashboard',
+            'judul'             => 'Dashboard',
+            'subJudul'          => 'Selamat datang di dashboard',
+            'admin'             => $admin,
+            'totalStaff'        => $totalStaff,
+            'totalBarang'       => $totalBarang,
+            'barangHampirHabis' => $barangHampirHabis,
+            'laporan'           => $laporan,
+            'logsUser'          => $logsUser,
+        ];
+
+        return view('admin/dashboard', $data);
     }
-
-    $data = [
-        'title'             => 'Dashboard Admin - CargoWing',
-        'currentPage'       => 'dashboard',
-        'judul'             => 'Dashboard',
-        'subJudul'          => 'Selamat datang di dashboard',
-        'admin'             => $admin,
-        'totalStaff'        => $totalStaff,
-        'totalBarang'       => $totalBarang,
-        'barangHampirHabis' => $barangHampirHabis,
-        'laporan'           => $laporan,
-        'logsUser'          => $logsUser,
-    ];
-
-    return view('admin/dashboard', $data);
-}
     public function indexSuperAdmin()
     {
         $data = [
@@ -216,7 +216,7 @@ public function dashAdmin()
         $minimumStok  = $this->request->getPost('minimum_stok');
         $barcodeInput = $this->request->getPost('barcode');
 
-        // Siapkan data update tanpa mengubah barcode jika input barcode kosong
+        // Siapkan data update
         $dataUpdate = [
             'nama_barang'  => $nama,
             'jumlah'       => $jumlah,
@@ -224,20 +224,51 @@ public function dashAdmin()
             'minimum_stok' => $minimumStok,
         ];
 
-        // Hanya set barcode jika ada nilai yang valid dari form (tidak kosong)
+        // Hanya set barcode jika ada nilai baru
         if ($barcodeInput !== null && trim($barcodeInput) !== '') {
             $dataUpdate['barcode'] = $barcodeInput;
         }
 
+        // --- Logging perubahan ---
+        $perubahan = [];
+        foreach ($dataUpdate as $field => $baru) {
+            $lama = $barang[$field];
+
+            // kalau beda, catat
+            if ($lama != $baru) {
+                $label = ucfirst(str_replace('_', ' ', $field)); // biar rapi, contoh: nama_barang -> Nama barang
+                $perubahan[] = "$label dari '{$lama}' menjadi '{$baru}'";
+            }
+        }
+
+        if (!empty($perubahan)) {
+            $deskripsi = "Edit barang: " . implode(', ', $perubahan);
+            logAktivitas($deskripsi); // pastikan kamu punya helper/function logAktivitas()
+        }
+
+        // --- Update data ---
         $this->barangModel->update($id, $dataUpdate);
 
         return redirect()->back()->with('success', 'Data barang berhasil diperbarui!');
     }
+
     public function hapusBarang($id)
     {
+        $barang = $this->barangModel->find($id);
+
+        if (!$barang) {
+            return redirect()->back()->with('error', 'Data barang tidak ditemukan!');
+        }
+
+        // Hapus barang
         $this->barangModel->delete($id);
+
+        // Log aktivitas langsung
+        logAktivitas("Hapus barang: {$barang['nama_barang']}");
+
         return redirect()->back()->with('success', 'Barang berhasil dihapus.');
     }
+
     public function downloadBarcode($id)
     {
         $barang = $this->barangModel->find($id);
@@ -337,16 +368,19 @@ public function dashAdmin()
         if (empty($nama) || empty($email) || empty($noHp) || empty($password)) {
             return redirect()->back()->with('error', 'Semua field wajib diisi!');
         }
+
         // Cek email sudah terdaftar
         $existingUser = $this->userModel->where('email', $email)->first();
         if ($existingUser) {
             return redirect()->back()->with('error', 'Email sudah terdaftar!');
         }
+
         // Cek nomor HP sudah terdaftar
         $existingUser = $this->userModel->where('no_hp', $noHp)->first();
         if ($existingUser) {
             return redirect()->back()->with('error', 'Nomor HP sudah terdaftar!');
         }
+
         // Simpan data staff
         $this->userModel->insert([
             'nama'     => $nama,
@@ -355,6 +389,10 @@ public function dashAdmin()
             'password' => password_hash($password, PASSWORD_DEFAULT),
             'role'     => 'staff',
         ]);
+
+        // Log aktivitas langsung
+        logAktivitas("Tambah staff: {$nama}");
+
         return redirect()->back()->with('success', 'Staff berhasil ditambahkan!');
     }
 
@@ -364,19 +402,63 @@ public function dashAdmin()
         if (!$staff) {
             return redirect()->back()->with('error', 'Data staff tidak ditemukan!');
         }
+
+        $nama     = $this->request->getPost('nama');
+        $email    = $this->request->getPost('email');
+        $noHp     = $this->request->getPost('no_hp');
+        $password = $this->request->getPost('password');
+
         $data = [
-            'nama'  => $this->request->getPost('nama'),
-            'email' => $this->request->getPost('email'),
-            'no_hp' => $this->request->getPost('no_hp'),
-            'password' => password_hash($this->request->getPost('password'), PASSWORD_DEFAULT),
+            'nama'  => $nama,
+            'email' => $email,
+            'no_hp' => $noHp,
         ];
+
+        // Kalau password diisi, update & log
+        if ($password && trim($password) !== '') {
+            $data['password'] = password_hash($password, PASSWORD_DEFAULT);
+        }
+
+        // Cek perubahan
+        $changes = [];
+        if ($staff['nama'] !== $nama) {
+            $changes[] = "nama dari '{$staff['nama']}' menjadi '{$nama}'";
+        }
+        if ($staff['email'] !== $email) {
+            $changes[] = "email dari '{$staff['email']}' menjadi '{$email}'";
+        }
+        if ($staff['no_hp'] !== $noHp) {
+            $changes[] = "no HP dari '{$staff['no_hp']}' menjadi '{$noHp}'";
+        }
+        if ($password && trim($password) !== '') {
+            $changes[] = "password diubah";
+        }
+
+        // Update data
         $this->userModel->update($id, $data);
+
+        // Log aktivitas kalau ada perubahan
+        if (!empty($changes)) {
+            logAktivitas("Edit staff ({$staff['nama']}): " . implode(', ', $changes));
+        }
+
         return redirect()->back()->with('success', 'Data staff berhasil diperbarui!');
     }
 
     public function hapusStaff($id)
     {
+        $staff = $this->userModel->find($id);
+
+        if (!$staff) {
+            return redirect()->back()->with('error', 'Data staff tidak ditemukan!');
+        }
+
+        // Hapus staff
         $this->userModel->delete($id);
+
+        // Log aktivitas langsung
+        logAktivitas("Hapus staff: {$staff['nama']}");
+
         return redirect()->back()->with('success', 'Staff berhasil dihapus.');
     }
 
