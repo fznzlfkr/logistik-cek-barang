@@ -100,7 +100,8 @@ class UserController extends BaseController
         return view('user/kelola_barang', $data);
     }
 
-    public function simpanBarang(){
+    public function simpanBarang()
+    {
         $data = [
             'nama_barang'   => $this->request->getPost('nama_barang'),
             'jumlah'        => $this->request->getPost('jumlah'),
@@ -113,7 +114,7 @@ class UserController extends BaseController
         $this->barangModel->insert($data);
         return redirect()->back()->with('success', 'Barang berhasil disimpan!');
     }
- 
+
 
     public function updateBarang($id_barang)
     {

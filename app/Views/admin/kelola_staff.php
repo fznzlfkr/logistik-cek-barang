@@ -3,11 +3,6 @@
 
 <!-- Main Content -->
 <main class="main-content p-6 md:p-8 lg:p-10">
-    <!-- Kelola staff -->
-    <div class="flex justify-between items-center mb-4">
-        <h1 class="text-xl font-bold">Data staff</h1>
-        <button onclick="openModal('modalTambah')" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition">Tambah Staff</button>
-    </div>
 
     <!-- Flash Message -->
     <?php if (session()->getFlashdata('error')): ?>
@@ -31,6 +26,12 @@
                 <a href="<?= current_url() ?>" class="px-3 py-2 bg-gray-300 text-sm rounded hover:bg-gray-400 transition">Reset</a>
             <?php endif; ?>
         </form>
+
+        <button type="button"
+            onclick="openModal('modalTambah')"
+            class="ml-auto px-3 py-2 bg-blue-600 text-white text-sm rounded hover:bg-blue-700 transition">
+            Tambah Staff
+        </button>
     </div>
 
     <!-- Table -->

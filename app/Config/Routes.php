@@ -10,7 +10,6 @@ $routes->get('/register', 'AuthController::register');
 $routes->post('/loginProcess', 'AuthController::loginProcess');
 $routes->post('/registerProcess', 'AuthController::registerProcess');
 $routes->get('/logout', 'AuthController::logout');
-// File: app/Config/Routes.php
 
 $routes->group('superadmin', ['filter' => 'auth:Super Admin'], function ($routes) {
     $routes->get('dashboard', 'SuperAdminController::dashSuperAdmin');

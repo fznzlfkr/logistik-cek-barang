@@ -12,10 +12,6 @@
         <p>Selamat datang kembali, <?= esc($superAdmin['nama']) ?>! Berikut aktivitas hari ini.</p>
       </div>
       <div class="header-actions">
-        <div class="search-box">
-          <i class="fas fa-search"></i>
-          <input type="text" placeholder="Cari...">
-        </div>
         <div class="user-profile">
           <div class="user-avatar">JD</div>
           <a href="<?= base_url('admin/pengaturan-akun') ?>" class="a-info">
