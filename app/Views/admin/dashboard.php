@@ -62,7 +62,7 @@
       <div class="content-card">
         <div class="card-header">
           <h3 class="card-title">Laporan Terbaru</h3>
-          <a href="<?= base_url('admin/laporan') ?>" class="card-action">View All</a>
+          <a href="<?= base_url('admin/laporan-barang') ?>" class="card-action">View All</a>
         </div>
         <div class="table-container">
           <table class="modern-table">
@@ -86,7 +86,7 @@
                       <?php if ($row['jenis'] == 'Masuk'): ?>
                         <span class="status-badge status-active">Masuk</span>
                       <?php else: ?>
-                        <span class="status-badge status-pending">Dipakai</span>
+                        <span class="status-badge status-inactive">Dipakai</span>
                       <?php endif; ?>
                     </td>
                     <td><?= esc($row['staff']) ?></td>
@@ -113,20 +113,20 @@
           <?php if (!empty($logsUser)): ?>
             <?php foreach ($logsUser as $log): ?>
               <?php
-                $nama = trim($log['nama_user'] ?? 'NA');
-                $parts = explode(' ', $nama);
+              $nama = trim($log['nama_user'] ?? 'NA');
+              $parts = explode(' ', $nama);
 
-                if (count($parts) >= 2) {
-                    // Ambil huruf pertama dari 2 kata
-                    $initials = strtoupper(substr($parts[0], 0, 1) . substr($parts[1], 0, 1));
-                } else {
-                    // Ambil 2 huruf depan
-                    $initials = strtoupper(substr($nama, 0, 2));
-                }
+              if (count($parts) >= 2) {
+                // Ambil huruf pertama dari 2 kata
+                $initials = strtoupper(substr($parts[0], 0, 1) . substr($parts[1], 0, 1));
+              } else {
+                // Ambil 2 huruf depan
+                $initials = strtoupper(substr($nama, 0, 2));
+              }
 
-                // Warna avatar konsisten berdasarkan nama
-                $colors = ['#3498db','#e67e22','#2ecc71','#9b59b6','#e74c3c'];
-                $color = $colors[crc32($nama) % count($colors)];
+              // Warna avatar konsisten berdasarkan nama
+              $colors = ['#3498db', '#e67e22', '#2ecc71', '#9b59b6', '#e74c3c'];
+              $color = $colors[crc32($nama) % count($colors)];
               ?>
               <li class="activity-item">
                 <div class="activity-avatar" style="background: <?= $color ?>;">
@@ -147,64 +147,65 @@
             </li>
           <?php endif; ?>
         </ul>
+
       </div>
     </div>
   </div>
 </div>
 
 <style>
-.activity-list {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-}
+  .activity-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
 
-.activity-item {
-  display: flex;
-  align-items: center;
-  padding: 12px 0;
-  border-bottom: 1px solid #f0f0f0;
-}
+  .activity-item {
+    display: flex;
+    align-items: center;
+    padding: 12px 0;
+    border-bottom: 1px solid #f0f0f0;
+  }
 
-.activity-avatar {
-  width: 42px;
-  height: 42px;
-  border-radius: 50%;
-  color: #fff;
-  font-weight: bold;
-  font-size: 14px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-right: 12px;
-  flex-shrink: 0;
-  text-transform: uppercase;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.15);
-}
+  .activity-avatar {
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    color: #fff;
+    font-weight: bold;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 12px;
+    flex-shrink: 0;
+    text-transform: uppercase;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+  }
 
-.activity-content {
-  flex: 1;
-}
+  .activity-content {
+    flex: 1;
+  }
 
-.activity-content h6 {
-  margin: 0;
-  font-size: 14px;
-  font-weight: 600;
-  color: #333;
-}
+  .activity-content h6 {
+    margin: 0;
+    font-size: 14px;
+    font-weight: 600;
+    color: #333;
+  }
 
-.activity-content p {
-  margin: 2px 0 0;
-  font-size: 13px;
-  color: #555;
-}
+  .activity-content p {
+    margin: 2px 0 0;
+    font-size: 13px;
+    color: #555;
+  }
 
-.activity-time {
-  font-size: 12px;
-  color: #888;
-  margin-left: 12px;
-  white-space: nowrap;
-}
+  .activity-time {
+    font-size: 12px;
+    color: #888;
+    margin-left: 12px;
+    white-space: nowrap;
+  }
 </style>
 
 <?= $this->endSection() ?>

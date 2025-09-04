@@ -25,7 +25,7 @@ if (!function_exists('logAktivitas')) {
         ];
 
         // Bedakan kolom id tergantung role
-        if ($session->get('role') === 'user') {
+        if ($session->get('role') === 'User') {
             $data['id_user'] = $session->get('id_user');
         } else {
             $data['id_admin'] = $session->get('id_admin');
