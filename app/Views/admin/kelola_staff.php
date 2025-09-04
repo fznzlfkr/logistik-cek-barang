@@ -2,7 +2,7 @@
 <?= $this->section('content') ?>
 
 <!-- Main Content -->
-<main class="main-content p-6 md:p-8 lg:p-10"> 
+<main class="main-content p-6 md:p-8 lg:p-10">
     <!-- Kelola staff -->
     <div class="flex justify-between items-center mb-4">
         <h1 class="text-xl font-bold">Data staff</h1>
@@ -37,44 +37,45 @@
     <div class="table">
         <table class="min-w-full text-sm bg-white rounded shadow">
             <thead class="bg-gray-200 text-gray-700 font-semibold">
-            <tr>
-                <th class="p-3 text-left">No</th>
-                <th class="p-3 text-left">Nama staff</th>
-                <th class="p-3 text-left">Email</th>
-                <th class="p-3 text-left">No HP</th>
-                <th class="p-3 text-center">Aksi</th>
-            </tr>
+                <tr>
+                    <th class="p-3 text-left">No</th>
+                    <th class="p-3 text-left">Nama staff</th>
+                    <th class="p-3 text-left">Email</th>
+                    <th class="p-3 text-left">No HP</th>
+                    <th class="p-3 text-center">Aksi</th>
+                </tr>
             </thead>
             <tbody>
-            <?php if (!empty($staffList)): ?>
-                <?php $no = 1; foreach ($staffList as $staff): ?>
-                    <tr class="border-t hover:bg-gray-50">
-                        <td class="p-3"><?= $no++ ?></td>
-                        <td class="p-3"><?= esc($staff['nama']) ?></td>
-                        <td class="p-3"><?= esc($staff['email']) ?></td>
-                        <td class="p-3"><?= esc($staff['no_hp']) ?></td>
-                        <td class="p-3 text-center space-x-2">
-                            <!-- Edit -->
-                            <button type="button" onclick="openModalEdit(<?= htmlspecialchars(json_encode($staff), ENT_QUOTES, 'UTF-8') ?>)"
+                <?php if (!empty($staffList)): ?>
+                    <?php $no = 1;
+                    foreach ($staffList as $staff): ?>
+                        <tr class="border-t hover:bg-gray-50">
+                            <td class="p-3"><?= $no++ ?></td>
+                            <td class="p-3"><?= esc($staff['nama']) ?></td>
+                            <td class="p-3"><?= esc($staff['email']) ?></td>
+                            <td class="p-3"><?= esc($staff['no_hp']) ?></td>
+                            <td class="p-3 text-center space-x-2">
+                                <!-- Edit -->
+                                <button type="button" onclick="openModalEdit(<?= htmlspecialchars(json_encode($staff), ENT_QUOTES, 'UTF-8') ?>)"
                                     class="inline-flex items-center px-2 py-1 bg-blue-500 hover:bg-blue-600 text-white rounded transition">
-                                <i data-feather="edit" class="w-4 h-4"></i>
-                            </button>
-                            <!-- Hapus -->
-                            <form action="<?= base_url('admin/hapus-staff/' . $staff['id_user']) ?>" method="post" class="form-hapus inline">
-                                <?= csrf_field() ?>
-                                <button title="Hapus" type="submit"
-                                        class="btn-hapus inline-flex items-center px-2 py-1 bg-red-500 hover:bg-red-600 text-white rounded transition">
-                                    <i data-feather="trash" class="w-4 h-4"></i>
+                                    <i data-feather="edit" class="w-4 h-4"></i>
                                 </button>
-                            </form>
-                        </td>
+                                <!-- Hapus -->
+                                <form action="<?= base_url('admin/hapus-staff/' . $staff['id_user']) ?>" method="post" class="form-hapus inline">
+                                    <?= csrf_field() ?>
+                                    <button title="Hapus" type="submit"
+                                        class="btn-hapus inline-flex items-center px-2 py-1 bg-red-500 hover:bg-red-600 text-white rounded transition">
+                                        <i data-feather="trash" class="w-4 h-4"></i>
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                    <?php endforeach; ?>
+                <?php else: ?>
+                    <tr>
+                        <td colspan="9" class="text-center py-4">Tidak ada data user.</td>
                     </tr>
-                <?php endforeach; ?>
-            <?php else: ?>
-                <tr>
-                    <td colspan="9" class="text-center py-4">Tidak ada data user.</td>
-                </tr>
-            <?php endif; ?>
+                <?php endif; ?>
             </tbody>
         </table>
         <div class="flex justify-between items-center mt-4 text-sm">
@@ -159,36 +160,39 @@
     </div>
 </div>
 
-<!-- Feather Icons -->
-<script src="https://unpkg.com/feather-icons"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 
-<script> feather.replace(); </script>
+<script>
+    feather.replace();
+</script>
 
 <!-- Script Modal & Alert -->
 <script>
-function openModal(id) {
-    document.getElementById(id).classList.remove('hidden');
-}
-function closeModal(id) {
-    document.getElementById(id).classList.add('hidden');
-}
-function openModalEdit(data) {
-    document.getElementById('modalEdit').classList.remove('hidden');
-    document.getElementById('formEdit').action = "<?= base_url('admin/edit-staff/') ?>" + data.id_user;
-    document.getElementById('edit_id_user').value = data.id_user;
-    document.getElementById('edit_nama').value = data.nama;
-    document.getElementById('edit_email').value = data.email;
-    document.getElementById('edit_no_hp').value = data.no_hp;a
-}
+    function openModal(id) {
+        document.getElementById(id).classList.remove('hidden');
+    }
 
-// Auto hide alert
-setTimeout(() => {
-    let errorAlert = document.getElementById('errorAlert');
-    let successAlert = document.getElementById('successAlert');
-    if (errorAlert) errorAlert.style.display = 'none';
-    if (successAlert) successAlert.style.display = 'none';
-}, 3000);
+    function closeModal(id) {
+        document.getElementById(id).classList.add('hidden');
+    }
+
+    function openModalEdit(data) {
+        document.getElementById('modalEdit').classList.remove('hidden');
+        document.getElementById('formEdit').action = "<?= base_url('admin/edit-staff/') ?>" + data.id_user;
+        document.getElementById('edit_id_user').value = data.id_user;
+        document.getElementById('edit_nama').value = data.nama;
+        document.getElementById('edit_email').value = data.email;
+        document.getElementById('edit_no_hp').value = data.no_hp;
+        a
+    }
+
+    // Auto hide alert
+    setTimeout(() => {
+        let errorAlert = document.getElementById('errorAlert');
+        let successAlert = document.getElementById('successAlert');
+        if (errorAlert) errorAlert.style.display = 'none';
+        if (successAlert) successAlert.style.display = 'none';
+    }, 3000);
 </script>
 
 <?= $this->endSection() ?>

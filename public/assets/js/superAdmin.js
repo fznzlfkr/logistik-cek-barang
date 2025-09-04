@@ -12,7 +12,7 @@ document.addEventListener("DOMContentLoaded", function () {
       setTimeout(() => {
         errorDiv.style.display = "none";
       }, 500);
-    }, 3500);
+    }, 5000);
   }
 
   if (successDiv) {
@@ -24,7 +24,7 @@ document.addEventListener("DOMContentLoaded", function () {
       setTimeout(() => {
         successDiv.style.display = "none";
       }, 500);
-    }, 3500);
+    }, 5000);
   }
 });
 

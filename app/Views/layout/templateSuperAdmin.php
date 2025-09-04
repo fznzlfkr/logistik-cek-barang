@@ -51,6 +51,10 @@
     <?= $this->renderSection('content') ?>
 
     <script src="<?= base_url('/assets/js/superAdmin.js') ?>"></script>
+    <script src="https://unpkg.com/feather-icons"></script>
+    <script>
+        feather.replace();
+    </script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const logoutBtn = document.getElementById('logoutBtn');

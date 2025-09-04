@@ -326,7 +326,6 @@ class AdminController extends BaseController
         return view('admin/kelola_staff', $data);
     }
 
-
     public function tambahStaff()
     {
         $nama     = $this->request->getPost('nama');
@@ -358,6 +357,7 @@ class AdminController extends BaseController
         ]);
         return redirect()->back()->with('success', 'Staff berhasil ditambahkan!');
     }
+
     public function editStaff($id)
     {
         $staff = $this->userModel->find($id);

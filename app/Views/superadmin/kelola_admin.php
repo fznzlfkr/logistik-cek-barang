@@ -3,6 +3,7 @@
 <?= $this->section('content') ?>
 <!-- Main Content -->
 <div class="main-content">
+
     <!-- Header -->
     <div class="header">
         <div class="header-content">
@@ -52,11 +53,22 @@
             </form>
 
             <button type="button"
-                onclick="openPrintModal()"
+                onclick="openModalTambah()"
                 class="ml-auto px-3 py-2 bg-blue-600 text-white text-sm rounded hover:bg-blue-700 transition">
                 Tambah Admin
             </button>
         </div>
+
+        <?php if (session()->getFlashdata('error')): ?>
+            <div id="errorAlert" class="error-message">
+                <?= session()->getFlashdata('error'); ?>
+            </div>
+        <?php endif; ?>
+        <?php if (session()->getFlashdata('success')): ?>
+            <div id="successAlert" class="success-message">
+                <?= session()->getFlashdata('success'); ?>
+            </div>
+        <?php endif; ?>
 
         <!-- Content Grid -->
         <div class="content-grid">
@@ -93,15 +105,17 @@
                                             <?php endif; ?>
                                         </td>
                                         <td class="p-3 flex gap-2">
-                                            <a href="<?= base_url('superadmin/edit-admin/' . $admin['id_admin']) ?>"
-                                                class="px-2 py-1 bg-yellow-400 text-white rounded text-xs hover:bg-yellow-500 transition">
-                                                Edit
-                                            </a>
-                                            <a href="<?= base_url('superadmin/hapus-admin/' . $admin['id_admin']) ?>"
-                                                onclick="return confirm('Yakin ingin menghapus admin ini?')"
-                                                class="px-2 py-1 bg-red-500 text-white rounded text-xs hover:bg-red-600 transition">
-                                                Hapus
-                                            </a>
+                                            <button type="button" onclick="openModalEdit(<?= htmlspecialchars(json_encode($admin), ENT_QUOTES, 'UTF-8') ?>)"
+                                                class="inline-flex items-center px-2 py-1 bg-blue-500 hover:bg-blue-600 text-white rounded transition">
+                                                <i data-feather="edit" class="w-4 h-4"></i>
+                                            </button>
+                                            <form action="<?= base_url('superadmin/kelola-admin/hapus/' . $admin['id_admin']) ?>" method="post" class="form-hapus inline">
+                                                <?= csrf_field() ?>
+                                                <button title="Hapus" type="submit"
+                                                    class="btn-hapus inline-flex items-center px-2 py-1 bg-red-500 hover:bg-red-600 text-white rounded transition">
+                                                    <i data-feather="trash" class="w-4 h-4"></i>
+                                                </button>
+                                            </form>
                                         </td>
                                     </tr>
                                 <?php endforeach; ?>
@@ -136,9 +150,86 @@
                         <?php endif; ?>
                     </div>
                 </div>
-                <!-- </div> -->
             </div>
         </div>
     </div>
+</div>
 
-    <?= $this->endSection() ?>
+<!-- Modal Tambah Admin -->
+<div id="modalTambah" class="hidden fixed inset-0 bg-gray-800 bg-opacity-50 flex items-center justify-center z-50">
+    <div class="bg-white rounded shadow-lg p-6 w-96">
+        <h2 class="text-lg font-bold mb-4">Tambah Admin</h2>
+        <form action="<?= base_url('superadmin/kelola-admin/tambah') ?>" method="post">
+            <?= csrf_field() ?>
+            <div class="mb-4">
+                <label class="block text-sm font-medium">Nama</label>
+                <input type="text" name="nama" class="w-full px-3 py-2 border rounded" required>
+            </div>
+            <div class="mb-4">
+                <label class="block text-sm font-medium">Email</label>
+                <input type="email" name="email" class="w-full px-3 py-2 border rounded" required>
+            </div>
+            <div class="mb-4">
+                <label class="block text-sm font-medium">Password</label>
+                <input type="password" name="password" class="w-full px-3 py-2 border rounded" required>
+            </div>
+            <div class="flex justify-end gap-2">
+                <button type="button" onclick="closeModalTambah()" class="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400">Batal</button>
+                <button type="submit" class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">Simpan</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Modal Edit Admin -->
+<div id="modalEdit" class="hidden fixed inset-0 bg-gray-800 bg-opacity-50 flex items-center justify-center z-50">
+    <div class="bg-white rounded shadow-lg p-6 w-96">
+        <h2 class="text-lg font-bold mb-4">Edit Admin</h2>
+        <form id="formEditAdmin" method="post">
+            <?= csrf_field() ?>
+            <input type="hidden" name="id_admin" id="editIdAdmin">
+            <div class="mb-4">
+                <label class="block text-sm font-medium">Nama</label>
+                <input type="text" name="nama" id="editNama" class="w-full px-3 py-2 border rounded" required>
+            </div>
+            <div class="mb-4">
+                <label class="block text-sm font-medium">Email</label>
+                <input type="email" name="email" id="editEmail" class="w-full px-3 py-2 border rounded" required>
+            </div>
+            <div class="flex justify-end gap-2">
+                <button type="button" onclick="closeModalEdit()" class="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400">Batal</button>
+                <button type="submit" class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">Simpan</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    // Tambah Modal
+    function openModalTambah() {
+        document.getElementById('modalTambah').classList.remove('hidden');
+    }
+
+    function closeModalTambah() {
+        document.getElementById('modalTambah').classList.add('hidden');
+    }
+
+    // Edit Modal
+    function openModalEdit(admin) {
+        const modal = document.getElementById('modalEdit');
+        document.getElementById('editIdAdmin').value = admin.id_admin;
+        document.getElementById('editNama').value = admin.nama;
+        document.getElementById('editEmail').value = admin.email;
+
+        const form = document.getElementById('formEditAdmin');
+        form.action = "<?= base_url('superadmin/kelola-admin/edit') ?>/" + admin.id_admin;
+
+        modal.classList.remove('hidden');
+    }
+
+    function closeModalEdit() {
+        document.getElementById('modalEdit').classList.add('hidden');
+    }
+</script>
+
+<?= $this->endSection() ?>
