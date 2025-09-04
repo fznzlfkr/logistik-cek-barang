@@ -12,10 +12,6 @@
                 <p>Daftar semua Admin pada sistem.</p>
             </div>
             <div class="header-actions">
-                <div class="search-box">
-                    <i class="fas fa-search"></i>
-                    <input type="text" placeholder="Cari...">
-                </div>
                 <div class="user-profile">
                     <div class="user-avatar">SA</div>
                     <a href="<?= base_url('superadmin/pengaturan-akun') ?>" class="a-info">

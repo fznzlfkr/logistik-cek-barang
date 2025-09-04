@@ -25,7 +25,6 @@ class SuperAdminController extends BaseController
         $this->barangModel = new BarangModel;
         $this->laporanModel = new LaporanModel;
         $this->logAktivitasModel = new LogAktivitasModel;
-        helper(['form', 'url']);
     }
 
     public function dashSuperAdmin()
