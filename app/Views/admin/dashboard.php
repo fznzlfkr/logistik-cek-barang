@@ -4,7 +4,6 @@
 <!-- Main Content -->
 <div class="main-content">
 
-
   <!-- Content Area -->
   <div class="content-area">
 
@@ -59,7 +58,7 @@
 
     <!-- Content Grid -->
     <div class="content-grid">
-      <!-- Recent Orders -->
+      <!-- Laporan Terbaru -->
       <div class="content-card">
         <div class="card-header">
           <h3 class="card-title">Laporan Terbaru</h3>
@@ -103,8 +102,7 @@
         </div>
       </div>
 
-
-        <!-- Recent Activity -->
+      <!-- Aktivitas Terbaru -->
       <div class="content-card">
         <div class="card-header">
           <h3 class="card-title">Aktivitas Terbaru</h3>
@@ -114,15 +112,31 @@
         <ul class="activity-list">
           <?php if (!empty($logsUser)): ?>
             <?php foreach ($logsUser as $log): ?>
+              <?php
+                $nama = trim($log['nama_user'] ?? 'NA');
+                $parts = explode(' ', $nama);
+
+                if (count($parts) >= 2) {
+                    // Ambil huruf pertama dari 2 kata
+                    $initials = strtoupper(substr($parts[0], 0, 1) . substr($parts[1], 0, 1));
+                } else {
+                    // Ambil 2 huruf depan
+                    $initials = strtoupper(substr($nama, 0, 2));
+                }
+
+                // Warna avatar konsisten berdasarkan nama
+                $colors = ['#3498db','#e67e22','#2ecc71','#9b59b6','#e74c3c'];
+                $color = $colors[crc32($nama) % count($colors)];
+              ?>
               <li class="activity-item">
-                <div class="activity-avatar">
-                  <?= strtoupper(substr($log['nama_user'] ?? 'NA', 0, 2)); ?>
+                <div class="activity-avatar" style="background: <?= $color ?>;">
+                  <?= esc($initials) ?>
                 </div>
                 <div class="activity-content">
-                  <h6><?= $log['nama_user']; ?></h6>
-                  <p><?= $log['aktivitas']; ?></p>
+                  <h6><?= esc($nama) ?></h6>
+                  <p><?= esc($log['aktivitas']) ?></p>
                 </div>
-                <div class="activity-time"><?= $log['waktu_ago']; ?></div>
+                <div class="activity-time"><?= esc($log['waktu_ago']) ?></div>
               </li>
             <?php endforeach; ?>
           <?php else: ?>
@@ -133,9 +147,64 @@
             </li>
           <?php endif; ?>
         </ul>
-
       </div>
     </div>
   </div>
 </div>
+
+<style>
+.activity-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.activity-item {
+  display: flex;
+  align-items: center;
+  padding: 12px 0;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.activity-avatar {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  color: #fff;
+  font-weight: bold;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 12px;
+  flex-shrink: 0;
+  text-transform: uppercase;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+}
+
+.activity-content {
+  flex: 1;
+}
+
+.activity-content h6 {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: #333;
+}
+
+.activity-content p {
+  margin: 2px 0 0;
+  font-size: 13px;
+  color: #555;
+}
+
+.activity-time {
+  font-size: 12px;
+  color: #888;
+  margin-left: 12px;
+  white-space: nowrap;
+}
+</style>
+
 <?= $this->endSection() ?>
