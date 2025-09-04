@@ -12,7 +12,14 @@ class LogAktivitasModel extends Model
     protected $returnType       = 'array';
     protected $useSoftDeletes   = false;
     protected $protectFields    = true;
-    protected $allowedFields    = ['id_user', 'id_admin', 'role', 'aktivitas', 'ip_address', 'user_agent'];
+    protected $allowedFields    = [
+        'id_user',
+        'id_admin',
+        'role',
+        'aktivitas',
+        'ip_address',
+        'user_agent'
+    ];
 
     protected bool $allowEmptyInserts = false;
     protected bool $updateOnlyChanged = true;
@@ -44,6 +51,9 @@ class LogAktivitasModel extends Model
     protected $beforeDelete   = [];
     protected $afterDelete    = [];
 
+    /**
+     * Ambil log aktivitas admin
+     */
     public function getLogsByAdmin($limit = 10)
     {
         return $this->select('log_aktivitas.*, admin.nama as nama_admin')
@@ -54,13 +64,31 @@ class LogAktivitasModel extends Model
             ->findAll();
     }
 
+    /**
+     * Ambil log aktivitas user (staff gudang)
+     */
     public function getLogsByUser($limit = 10)
     {
-        return $this->select('log_aktivitas.*, user.nama as nama_user')
-            ->join('user', 'user.id_user = log_aktivitas.id_user', 'left')
+        return $this->select('log_aktivitas.*, users.nama as nama_user')
+            ->join('users', 'users.id_user = log_aktivitas.id_user', 'left')
             ->where('log_aktivitas.role', 'User')
             ->orderBy('log_aktivitas.created_at', 'DESC')
             ->limit($limit)
             ->findAll();
+    }
+
+    /**
+     * Simpan log aktivitas (untuk admin atau user)
+     */
+    public function addLog($data)
+    {
+        return $this->insert([
+            'id_user'    => $data['id_user'] ?? null,
+            'id_admin'   => $data['id_admin'] ?? null,
+            'role'       => $data['role'],
+            'aktivitas'  => $data['aktivitas'],
+            'ip_address' => service('request')->getIPAddress(),
+            'user_agent' => service('request')->getUserAgent(),
+        ]);
     }
 }
