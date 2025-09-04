@@ -13,13 +13,15 @@ use Dompdf\Dompdf;
 use Dompdf\Options;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
+use App\Models\LogAktivitasModel;
 
 class AdminController extends BaseController
 {
     protected $adminModel,
         $userModel,
         $barangModel,
-        $laporanModel;
+        $laporanModel,
+        $LogAktivitasModel;
 
     public function __construct()
     {
@@ -27,7 +29,24 @@ class AdminController extends BaseController
         $this->userModel   = new UserModel();
         $this->barangModel = new BarangModel();
         $this->laporanModel = new LaporanModel();
+        $this->LogAktivitasModel = new LogAktivitasModel();
         helper(['form', 'url']);
+    }
+
+    private function timeAgo($datetime)
+    {
+        $timestamp = strtotime($datetime);
+        $diff = time() - $timestamp;
+
+        if ($diff < 60) {
+            return $diff . ' detik yang lalu';
+        } elseif ($diff < 3600) {
+            return floor($diff / 60) . ' menit yang lalu';
+        } elseif ($diff < 86400) {
+            return floor($diff / 3600) . ' jam yang lalu';
+        } else {
+            return floor($diff / 86400) . ' hari yang lalu';
+        }
     }
 
     public function dashAdmin()
@@ -56,6 +75,12 @@ class AdminController extends BaseController
             ->orderBy('laporan.tanggal', 'DESC')
             ->findAll(10);
 
+        $logsUser = $this->LogAktivitasModel->getLogsByUser();
+
+        foreach ($logsUser as &$log) {
+            $log['waktu_ago'] = $this->timeAgo($log['created_at']);
+        }
+
         $data = [
             'title'             => 'Dashboard Admin - CargoWing',
             'currentPage'       => 'dashboard',
@@ -66,6 +91,7 @@ class AdminController extends BaseController
             'totalBarang'       => $totalBarang,
             'barangHampirHabis' => $barangHampirHabis,
             'laporan'           => $laporan,
+            'logsUser'         => $logsUser, // parsing ke view
         ];
 
         return view('admin/dashboard', $data);
@@ -558,6 +584,7 @@ public function cetakLaporanExcel()
     $writer->save('php://output');
     exit;
 }
+
 
 
 
