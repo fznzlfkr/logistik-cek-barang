@@ -47,6 +47,7 @@ class UserController extends BaseController
             ->findAll();
         $data = [
             'title' => 'Dashboard User - CargoWing',
+            'currentPage' => 'dashboard',
             'totalMasuk' => $totalMasuk,
             'totalDipakai' => $totalDipakai,
             'totalBarang' => $totalBarang,
@@ -92,6 +93,7 @@ class UserController extends BaseController
 
         $data = [
             'title'      => 'Kelola Barang User - CargoWing',
+            'currentPage'=> 'kelolabarang',
             'user'       => $user,
             'keyword'    => $keyword,
             'perPage'    => $perPage,
@@ -285,6 +287,7 @@ class UserController extends BaseController
 
         $data = [
             'title'        => 'Riwayat - CargoWing',
+            'currentPage'  => 'riwayat',
             'user'         => $user,
             'riwayatData'  => $riwayatData,
             'pager'        => $this->laporanModel->pager,
@@ -556,7 +559,8 @@ class UserController extends BaseController
 
         $data = [
             'title' => 'profil - CargoWing',
-            'user' => $user
+            'user' => $user,
+            'currentPage' => 'profil'
         ];
         return view('user/profil', $data);
     }

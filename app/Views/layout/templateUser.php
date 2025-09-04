@@ -5,51 +5,80 @@
     <meta charset="UTF-8">
     <meta name="csrf-token" content="<?= csrf_hash() ?>">
     <meta name="csrf-token-name" content="<?= csrf_token() ?>">
-    <title>Dashboard - CargoWing</title>
+    <title>User Dashboard - CargoWing</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="<?= base_url('../assets/css/user.css') ?>">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://cdn.tailwindcss.com"></script>
-
-    <!-- Custom CSS -->
-    <link rel="stylesheet" href="<?= base_url('../assets/css/user.css') ?>">
+    <script src="https://unpkg.com/feather-icons"></script>
 
     <style>
-        body {
-            font-family: 'Inter', sans-serif;
-        }
-    </style>
+    body {
+        font-family: 'Inter', sans-serif;
+        background-color: #f3f4f6;
+        padding-top: 80px;
+    }
+
+    .navbar-custom {
+        background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+        height: 80px;
+        width: 100%;
+        position: fixed;
+        top: 0;
+        left: 0;
+        z-index: 1000;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 32px;
+        box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+    }
+
+    .navbar-link {
+        font-size: 1.1rem;
+        font-weight: 500;
+        transition: all 0.3s;
+    }
+
+    /* ini buat yang aktif */
+    .navbar-link.active {
+        color: #60a5fa; /* biru muda */
+        padding-bottom: 4px;
+        font-weight: 600; /* lebih tebal */
+    }
+</style>
+
 </head>
 
 <body class="bg-gray-100 min-h-screen">
 
-    <!-- Navbar -->
-    <header class="bg-white shadow px-6 py-4 flex justify-between items-center">
-        <div class="flex items-center gap-2">
-            <img src="../assets/img/logo.jpg" alt="Logo CargoWing" class="w-8 h-8 rounded-full">
-            <span class="text-xl font-semibold">CargoWing</span>
+    <!-- Navbar Biru Besar -->
+    <header class="navbar-custom">
+        <div class="flex items-center gap-3">
+            <img src="../assets/img/logo.jpg" alt="Logo CargoWing" class="w-10 h-10 rounded-full border-2 border-white">
+            <span class="text-2xl font-semibold text-white">CargoWing</span>
         </div>
-        <nav class="space-x-6 text-sm font-medium">
-            <a href="<?= base_url('/user/dashboard') ?>" class="text-gray-700 hover:text-blue-600">Beranda</a>
-            <a href="<?= base_url('/user/kelola_barang') ?>" class="text-gray-700 hover:text-blue-600">Kelola Barang</a>
-            <a href="<?= base_url('/user/riwayat') ?>" class="text-gray-700 hover:text-blue-600">Riwayat</a>
-            <a href="<?= base_url('/user/profil') ?>" class="text-gray-700 hover:text-blue-600">Profil</a>
+        <nav class="space-x-8">
+            <a href="<?= base_url('/user/dashboard') ?>" class="navbar-link text-white hover:text-blue-300 <?= (strtolower($currentPage) === 'dashboard') ? 'active' : '' ?>" >Beranda</a>
+            <a href="<?= base_url('/user/kelola_barang') ?>" class="navbar-link text-white hover:text-blue-300 <?= (strtolower($currentPage) === 'kelolabarang') ? 'active' : '' ?>">Kelola Barang</a>
+            <a href="<?= base_url('/user/riwayat') ?>" class="navbar-link text-white hover:text-blue-300 <?= (strtolower($currentPage) === 'riwayat') ? 'active' : '' ?> ">Riwayat</a>
+            <a href="<?= base_url('/user/profil') ?>" class="navbar-link text-white hover:text-blue-300 <?= (strtolower($currentPage) === 'profil') ? 'active' : '' ?> ">Profil</a>
         </nav>
         <a href="<?= base_url('user/profil') ?>">
-            <div class="flex items-center gap-3">
-                <div class="text-right text-sm">
-                    <div class="font-semibold text-gray-800"><?= esc($user['nama']) ?></div>
-                    <div class="text-gray-500 text-xs">Staff Gudang</div>
+            <div class="flex items-center gap-4">
+                <div class="text-right text-base">
+                    <div class="font-semibold text-white"><?= esc($user['nama']) ?></div>
+                    <div class="text-blue-200 text-sm">Staff Gudang</div>
                 </div>
-                <img src="../assets/img/logo.jpg" alt="User" class="w-8 h-8 rounded-full">
+                <img src="../assets/img/logo.jpg" alt="User" class="w-10 h-10 rounded-full border-2 border-white">
             </div>
         </a>
     </header>
 
     <!-- Konten Dinamis -->
-    <?= $this->renderSection('content') ?>
-    <script src="https://unpkg.com/feather-icons"></script>
-    <script src="<?= base_url('../assets/js/user.js') ?>"></script>
+    <main class="p-6">
+        <?= $this->renderSection('content') ?>
+    </main>
+
     <script>
         feather.replace();
     </script>
