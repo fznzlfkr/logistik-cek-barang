@@ -8,6 +8,7 @@
     <title>User Dashboard - CargoWing</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/feather-icons"></script>
 
@@ -46,6 +47,7 @@
         font-weight: 600; /* lebih tebal */
     }
 </style>
+<link rel="stylesheet" href="<?= base_url('assets/css/user.css') ?>">
 
 </head>
 
@@ -64,14 +66,31 @@
             <a href="<?= base_url('/user/profil') ?>" class="navbar-link text-white hover:text-blue-300 <?= (strtolower($currentPage) === 'profil') ? 'active' : '' ?> ">Profil</a>
         </nav>
         <a href="<?= base_url('user/profil') ?>">
-            <div class="flex items-center gap-4">
-                <div class="text-right text-base">
-                    <div class="font-semibold text-white"><?= esc($user['nama']) ?></div>
-                    <div class="text-blue-200 text-sm">Staff Gudang</div>
-                </div>
-                <img src="../assets/img/logo.jpg" alt="User" class="w-10 h-10 rounded-full border-2 border-white">
-            </div>
-        </a>
+    <div class="flex items-center gap-4">
+        <div class="text-right text-base">
+            <div class="font-semibold text-white"><?= esc($user['nama']) ?></div>
+            <div class="text-blue-200 text-sm">Staff Gudang</div>
+        </div>
+
+        <?php
+        $nama = trim($user['nama']);
+        $parts = explode(' ', $nama);
+
+        if (count($parts) >= 2) {
+            // ambil huruf depan dari 2 kata
+            $initials = strtoupper(substr($parts[0], 0, 1) . substr($parts[1], 0, 1));
+        } else {
+            // ambil 2 huruf pertama dari 1 kata
+            $initials = strtoupper(substr($parts[0], 0, 2));
+        }
+        ?>
+        
+        <div class="w-10 h-10 rounded-full border-2 border-white flex items-center justify-center bg-blue-500 text-white font-bold">
+            <?= $initials ?>
+        </div>
+    </div>
+</a>
+
     </header>
 
     <!-- Konten Dinamis -->
@@ -82,6 +101,7 @@
     <script>
         feather.replace();
     </script>
+    <script src="<?= base_url('/assets/js/user.js') ?>"></script>
 </body>
 
 </html>

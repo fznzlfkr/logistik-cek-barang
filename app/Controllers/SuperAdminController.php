@@ -57,6 +57,8 @@ class SuperAdminController extends BaseController
         $data = [
             'title'             => 'Dashboard Admin - CargoWing',
             'currentPage'       => 'dashboard',
+            'judul'             => 'Dashboard',
+            'subJudul'          => 'Ringkasan informasi penting',
             'superAdmin'        => $superAdmin,
             'totalAdmin'        => $totalAdmin,
             'totalAdminAktif'   => $totalAdminAktif,
