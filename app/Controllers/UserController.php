@@ -244,7 +244,7 @@ class UserController extends BaseController
         }
 
         // Buat HTML untuk PDF
-        $html = view('barang/pdf_template', ['barang' => $barang]);
+        $html = view('pdf_template', ['barang' => $barang]);
 
         // Setup Dompdf
         $options = new Options();
@@ -259,7 +259,6 @@ class UserController extends BaseController
         $fileName = 'Detail_' . preg_replace('/[^A-Za-z0-9_\-]/', '_', $barang['nama_barang']) . '.pdf';
         $dompdf->stream($fileName, ["Attachment" => true]);
     }
-
 
     public function riwayat()
     {
