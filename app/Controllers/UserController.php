@@ -6,6 +6,7 @@ use App\Controllers\BaseController;
 use App\Models\UserModel;
 use App\Models\BarangModel;
 use App\Models\LaporanModel;
+use App\Models\NotifikasiModel;
 use CodeIgniter\HTTP\ResponseInterface;
 use Endroid\QrCode\QrCode;
 use Dompdf\Dompdf;
@@ -19,14 +20,16 @@ class UserController extends BaseController
     protected $userModel,
         $barangModel,
         $laporanModel,
-        $logAktivitasModel;
+        $logAktivitasModel,
+        $notifikasiModel;
 
     public function __construct()
     {
         $this->userModel = new UserModel;
         $this->barangModel = new BarangModel;
         $this->laporanModel = new LaporanModel;
-        $this->logAktivitasModel = new LogAktivitasModel();
+        $this->logAktivitasModel = new LogAktivitasModel;
+        $this->notifikasiModel = new NotifikasiModel;
     }
 
     public function index()
@@ -53,7 +56,8 @@ class UserController extends BaseController
             'totalBarang' => $totalBarang,
             'barangMinimum' => $barangMinimum,
             'laporanData' => $laporanData,
-            'user' => $user
+            'user' => $user,
+            'notif' => $this->notifikasiModel->getUnreadNotif(5)
         ];
 
         return view('user/dashboard', $data);
@@ -93,13 +97,14 @@ class UserController extends BaseController
 
         $data = [
             'title'      => 'Kelola Barang User - CargoWing',
-            'currentPage'=> 'kelolabarang',
+            'currentPage' => 'kelolabarang',
             'user'       => $user,
             'keyword'    => $keyword,
             'perPage'    => $perPage,
             'barangList' => $barangList,
             'uniqueBarang' => $uniqueBarang,
-            'pager'      => $this->barangModel->pager // Pastikan pager diambil dari model
+            'pager'      => $this->barangModel->pager, // Pastikan pager diambil dari model
+            'notif' => $this->notifikasiModel->getUnreadNotif(5)
         ];
 
         return view('user/kelola_barang', $data);
@@ -132,7 +137,7 @@ class UserController extends BaseController
             'minimum_stok'  => $this->request->getPost('minimum_stok'),
         ];
 
-        // Validasi sederhana (pastikan semua field terisi)
+        // Validasi sederhana
         foreach ($data as $key => $value) {
             if ($value === null || $value === '') {
                 return redirect()->back()->withInput()->with('error', 'Field ' . $key . ' wajib diisi.');
@@ -160,6 +165,14 @@ class UserController extends BaseController
 
         // Update data
         if ($this->barangModel->update($id_barang, $data)) {
+            // ✅ Tambahin notif stok minimum di sini
+            if ($data['jumlah'] <= $data['minimum_stok']) {
+                $this->notifikasiModel->save([
+                    'pesan'  => "Stok {$data['nama_barang']} tersisa {$data['jumlah']} (minimum: {$data['minimum_stok']})⚠️",
+                    'status' => 'unread'
+                ]);
+            }
+
             return redirect()->back()->with('success', 'Barang berhasil diperbarui.');
         } else {
             $error = $this->barangModel->errors();
@@ -304,7 +317,8 @@ public function scanBarcode($barcode)
             'pager'        => $this->laporanModel->pager,
             'perPage'      => $perPage,
             'keyword'      => $keyword,
-            'uniqueBarang' => $uniqueBarang // kirim ke view
+            'uniqueBarang' => $uniqueBarang,
+            'notif' => $this->notifikasiModel->getUnreadNotif(5)
         ];
 
         return view('user/riwayat', $data);
@@ -376,31 +390,35 @@ public function scanBarcode($barcode)
     {
         $dataUser = session()->get('id_user');
         $idBarang = $this->request->getPost('id_barang');
-        $jumlah   = (int) $this->request->getPost('jumlah');
+        $jumlah   = $this->request->getPost('jumlah');
         $tanggal  = $this->request->getPost('tanggal');
         $ket      = $this->request->getPost('keterangan');
+
+        // Validasi sederhana (wajib diisi)
+        if (empty($idBarang) || empty($jumlah) || empty($tanggal)) {
+            return redirect()->back()->withInput()->with('error', 'Semua field wajib diisi.');
+        }
 
         // Ambil waktu sekarang (Jakarta)
         $now = new \DateTime('now', new \DateTimeZone('Asia/Jakarta'));
         $jam = $now->format('H:i:s');
 
         // Gabungkan jadi datetime
-        $tanggalKeluar = $tanggal . ' ' . $jam; // contoh: 2025-08-21 14:32:10
+        $tanggalKeluar = $tanggal . ' ' . $jam;
 
         // Ambil stok barang dulu
         $barang = $this->barangModel->find($idBarang);
-
         if (!$barang) {
-            return redirect()->back()->with('error', 'Barang tidak ditemukan!');
+            return redirect()->back()->with('error', 'Barang tidak ditemukan.');
         }
 
         // Cek apakah stok cukup
         if ($barang['jumlah'] < $jumlah) {
-            return redirect()->back()->with('error', 'Stok tidak mencukupi!');
+            return redirect()->back()->withInput()->with('error', 'Stok tidak mencukupi!');
         }
 
         // Simpan ke tabel laporan
-        $this->laporanModel->save([
+        $simpanLaporan = $this->laporanModel->save([
             'id_barang'  => $idBarang,
             'jumlah'     => $jumlah,
             'jenis'      => 'Dipakai',
@@ -409,10 +427,28 @@ public function scanBarcode($barcode)
             'keterangan' => $ket,
         ]);
 
+        if (!$simpanLaporan) {
+            return redirect()->back()->withInput()->with('error', 'Gagal mencatat barang keluar.');
+        }
+
         // Update stok barang (dikurangi)
-        $this->barangModel->update($idBarang, [
-            'jumlah' => $barang['jumlah'] - $jumlah
+        $stokBaru = $barang['jumlah'] - $jumlah;
+        $updateBarang = $this->barangModel->update($idBarang, [
+            'jumlah' => $stokBaru
         ]);
+
+        if (!$updateBarang) {
+            $error = $this->barangModel->errors();
+            return redirect()->back()->withInput()->with('error', 'Gagal memperbarui stok barang. ' . json_encode($error));
+        }
+
+        // ✅ Tambahin notif stok minimum
+        if ($stokBaru <= $barang['minimum_stok']) {
+            $this->notifikasiModel->save([
+                'pesan'  => "Stok {$barang['nama_barang']} tersisa {$stokBaru} (minimum: {$barang['minimum_stok']})⚠️",
+                'status' => 'unread'
+            ]);
+        }
 
         // ✅ Tambahkan log aktivitas
         logAktivitas("Mengeluarkan barang: {$barang['nama_barang']} (Jumlah: {$jumlah} {$barang['satuan']})");
@@ -422,31 +458,31 @@ public function scanBarcode($barcode)
     }
 
     public function hapusRiwayat($idLaporan)
-{
-    // Pastikan ID ada
-    if (!$idLaporan) {
-        return redirect()->back()->with('error', 'ID laporan tidak valid.');
+    {
+        // Pastikan ID ada
+        if (!$idLaporan) {
+            return redirect()->back()->with('error', 'ID laporan tidak valid.');
+        }
+
+        // Ambil laporan dengan join ke tabel barang
+        $laporan = $this->laporanModel
+            ->select('laporan.*, barang.nama_barang, barang.satuan')
+            ->join('barang', 'barang.id_barang = laporan.id_barang', 'left')
+            ->where('laporan.id_laporan', $idLaporan)
+            ->first();
+
+        if (!$laporan) {
+            return redirect()->back()->with('error', 'Data laporan tidak ditemukan.');
+        }
+
+        // Hapus data
+        if ($this->laporanModel->delete($idLaporan)) {
+            logAktivitas(" Menghapus riwayat laporan: {$laporan['nama_barang']} (Jumlah: {$laporan['jumlah']} {$laporan['satuan']})");
+            return redirect()->back()->with('success', 'Riwayat berhasil dihapus.');
+        }
+
+        return redirect()->back()->with('error', 'Gagal menghapus riwayat.');
     }
-
-    // Ambil laporan dengan join ke tabel barang
-    $laporan = $this->laporanModel
-        ->select('laporan.*, barang.nama_barang, barang.satuan')
-        ->join('barang', 'barang.id_barang = laporan.id_barang', 'left')
-        ->where('laporan.id_laporan', $idLaporan)
-        ->first();
-
-    if (!$laporan) {
-        return redirect()->back()->with('error', 'Data laporan tidak ditemukan.');
-    }
-
-    // Hapus data
-    if ($this->laporanModel->delete($idLaporan)) {
-        logAktivitas(" Menghapus riwayat laporan: {$laporan['nama_barang']} (Jumlah: {$laporan['jumlah']} {$laporan['satuan']})");
-        return redirect()->back()->with('success', 'Riwayat berhasil dihapus.');
-    }
-
-    return redirect()->back()->with('error', 'Gagal menghapus riwayat.');
-}
 
 
     public function editRiwayat($idLaporan)
@@ -571,12 +607,13 @@ public function scanBarcode($barcode)
         $data = [
             'title' => 'profil - CargoWing',
             'user' => $user,
-            'currentPage' => 'profil'
+            'currentPage' => 'profil',
+            'notif' => $this->notifikasiModel->getUnreadNotif(5)
         ];
         return view('user/profil', $data);
     }
 
-public function update()
+    public function update()
     {
         $userId = session()->get('id_user');
         $user   = $this->userModel->find($userId);
@@ -637,6 +674,12 @@ public function update()
         logAktivitas("{$user['nama']} mengganti password akun.");
 
         return redirect()->back()->with('successp', 'Password berhasil diubah.');
+    }
+
+    public function readNotif($id)
+    {
+        $this->notifikasiModel->markAsRead($id);
+        return redirect()->back();
     }
 
     public function logout()
