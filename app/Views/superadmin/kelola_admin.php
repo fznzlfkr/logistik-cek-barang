@@ -90,7 +90,7 @@
                                         <td class="p-3"><?= esc($admin['nama']) ?></td>
                                         <td class="p-3"><?= esc($admin['email']) ?></td>
                                         <td class="p-3">
-                                            <?php if ($admin['aktif'] == 1): ?>
+                                            <?php if (($admin['aktif'] == 1)): ?>
                                                 <span class="px-2 py-1 bg-green-100 text-green-700 text-xs font-semibold rounded-full">
                                                     Aktif
                                                 </span>
