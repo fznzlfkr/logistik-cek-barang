@@ -173,31 +173,42 @@ class UserController extends BaseController
         return redirect()->back()->with('success', 'Barang berhasil dihapus.');
     }
 
-    public function scanBarcode($barcode)
-    {
-        // Ambil data barang berdasarkan barcode
-        $barang = $this->barangModel->where('barcode', $barcode)->first();
+public function scanBarcode($barcode)
+{
+    // Cari barang berdasarkan barcode
+    $barang = $this->barangModel->where('barcode', $barcode)->first();
 
-        if (!$barang) {
-            return redirect()->back()->with('error', 'Barang tidak ditemukan.');
-        }
-
-        // Buat HTML untuk PDF
-        $html = view('barang_pdf', ['barang' => $barang]);
-
-        // Inisialisasi Dompdf
-        $dompdf = new Dompdf();
-        $dompdf->loadHtml($html);
-        $dompdf->setPaper('A4', 'portrait');
-        $dompdf->render();
-
-        // Nama file PDF
-        $fileName = 'barang_' . preg_replace('/[^A-Za-z0-9_\-]/', '_', $barang['nama_barang']) . '.pdf';
-
-        // Outputkan PDF untuk download
-        $dompdf->stream($fileName, ["Attachment" => true]);
+    if (!$barang) {
+        return redirect()->back()->with('error', 'Barang tidak ditemukan.');
     }
 
+    // Tampilkan halaman informasi barang
+    return view('user/informasi_barang', [
+        'barang' => $barang
+    ]);
+}
+
+
+    public function informasiBarang($barcode)
+    {
+        // ambil barang berdasarkan barcode
+        $barang = $this->barangModel->where('barcode', $barcode)->first();
+        if (!$barang) {
+            return redirect()->back()->with('error', 'Barang dengan barcode tersebut tidak ditemukan.');
+        }
+
+        $dataUser = session()->get('id_user');
+        $user = $this->userModel->find($dataUser);
+
+        $data = [
+            'title' => 'Informasi Barang - CargoWing',
+            'currentPage' => 'kelolabarang',
+            'user' => $user,
+            'barang' => $barang
+        ];
+
+        return view('user/informasi_barang', $data);
+    }
     public function downloadBarcode($id)
     {
         $barang = $this->barangModel->find($id);
@@ -206,7 +217,7 @@ class UserController extends BaseController
         }
 
         // QR mengarah ke fungsi generate PDF
-        $urlPDF = base_url('barang/pdf/' . $barang['barcode']);
+        $urlPDF = base_url('barang/info/' . $barang['barcode']);
 
         $fileName = 'barcode_' . preg_replace('/[^A-Za-z0-9_\-]/', '_', $barang['nama_barang']) . '.png';
 

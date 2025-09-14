@@ -30,17 +30,6 @@
           <input type="text" name="no_hp" value="<?= $user['no_hp'] ?>" class="w-full border border-gray-300 px-4 py-3 rounded-lg text-base focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" required />
         </div>
 
-        <!-- Upload Foto -->
-        <div class="mt-6 flex items-center gap-6">
-          <div class="w-20 h-20 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden">
-            <img src="<?= session()->get('foto') ? base_url('uploads/' . session()->get('foto')) : 'https://via.placeholder.com/80' ?>" alt="Profile" class="rounded-full object-cover w-20 h-20" />
-          </div>
-          <div class="flex-1">
-            <label class="block text-base font-medium text-gray-700 mb-2">Foto Profil</label>
-            <input type="file" name="foto" accept="image/*" class="text-base border border-gray-300 px-4 py-3 rounded-lg w-full" />
-          </div>
-        </div>
-
         <!-- Button -->
         <div class="mt-8 flex gap-4">
           <button type="submit" class="bg-gray-800 text-white px-6 py-3 rounded-lg text-base font-medium hover:bg-gray-900 transition">Simpan</button>
