@@ -59,7 +59,12 @@
                         <td class="p-4"><?= esc($barang['jumlah']) ?></td>
                         <td class="p-4"><?= esc($barang['satuan']) ?></td>
                         <td class="p-4"><?= esc($barang['tanggal_masuk']) ?></td>
-                        <td class="p-4"><?= esc($barang['barcode']) ?></td>
+                        <td class="p-4">
+                            <a href="<?= base_url('user/barang/info/' . $barang['barcode']) ?>"
+                               class="text-blue-600 hover:underline">
+                                <?= esc($barang['barcode']) ?>
+                            </a>
+                        </td>
                         <td class="p-4"><?= esc($barang['minimum_stok']) ?></td>
                         <td class="p-4 text-center space-x-2">
                             <!-- Edit -->

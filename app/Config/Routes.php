@@ -62,5 +62,7 @@ $routes->group('user', ['filter' => 'auth:User'], function ($routes) {
     $routes->post('hapus-riwayat/(:num)', 'UserController::hapusRiwayat/$1');
     $routes->post('edit-riwayat/(:num)', 'UserController::editRiwayat/$1');
     $routes->post('print-riwayat/(:num)', 'UserController::printRiwayat/$1');
+    $routes->get('barang/info/(:any)', 'UserController::informasiBarang/$1');
+    $routes->get('barang/pdf_template/(:any)', 'UserController::pdf/$1');
     $routes->get('notifikasi/read/(:num)', 'UserController::readNotif/$1');
 });
