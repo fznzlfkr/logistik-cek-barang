@@ -5,10 +5,6 @@
     <!-- Header -->
     <div class="flex justify-between items-center mb-6">
         <h1 class="text-2xl font-bold">Kelola Barang</h1>
-        <div class="flex space-x-3">
-            <button type="button" onclick="openModal('modalTambah')" class="bg-gray-800 text-white px-6 py-3 rounded hover:bg-gray-700 text-base">Barang Masuk</button>
-            <button type="button" onclick="openModal('modalKeluar')" class="bg-gray-800 text-white px-6 py-3 rounded hover:bg-gray-700 text-base">Barang Dipakai</button>
-        </div>
     </div>
 
     <!-- Flash Message -->
@@ -24,78 +20,97 @@
     <?php endif; ?>
 
     <!-- Search -->
-    <div class="mb-6 flex items-center gap-3">
+    <div class="mb-6 flex items-center justify-between">
         <form method="get" class="flex items-center gap-3">
-            <input type="text" name="keyword" value="<?= esc(service('request')->getVar('keyword')) ?>" placeholder="Search..."
+            <input type="text" name="keyword" value="<?= esc(service('request')->getVar('keyword')) ?>"
+                placeholder="Search..."
                 class="px-4 py-3 border border-gray-300 rounded w-80 focus:outline-none focus:ring focus:ring-blue-200 text-base" />
             <button type="submit" class="px-4 py-3 bg-blue-500 text-white text-base rounded hover:bg-blue-600 transition">Cari</button>
             <?php if (service('request')->getVar('keyword') || service('request')->getVar('per_page')): ?>
                 <a href="<?= current_url() ?>" class="px-4 py-3 bg-gray-300 text-base rounded hover:bg-gray-400 transition">Reset</a>
             <?php endif; ?>
         </form>
+
+        <div class="flex space-x-3">
+            <!-- Barang Masuk -->
+            <button type="button" onclick="openModal('modalTambah')"
+                class="flex items-center gap-2 bg-green-600 text-white px-6 py-3 rounded hover:bg-green-700 text-base">
+                <!-- Heroicon: arrow-down-tray -->
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M7.5 10.5L12 15m0 0l4.5-4.5M12 15V3" />
+                </svg>
+                Barang Masuk
+            </button>
+
+            <!-- Barang Dipakai -->
+            <button type="button" onclick="openModal('modalKeluar')"
+                class="flex items-center gap-2 bg-red-600 text-white px-6 py-3 rounded hover:bg-red-700 text-base">
+                <!-- Heroicon: arrow-up-tray -->
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M3 7.5V5.25A2.25 2.25 0 015.25 3h13.5A2.25 2.25 0 0121 5.25V7.5M16.5 13.5L12 9m0 0L7.5 13.5M12 9v12" />
+                </svg>
+                Barang Dipakai
+            </button>
+        </div>
     </div>
 
     <!-- Table -->
     <div class="overflow-x-auto mb-6">
         <table class="min-w-full text-base bg-white rounded shadow-lg">
             <thead class="bg-gray-200 text-gray-700 font-semibold">
-            <tr>
-                <th class="p-4 text-left">No</th>
-                <th class="p-4 text-left">Nama Barang</th>
-                <th class="p-4 text-left">Jumlah</th>
-                <th class="p-4 text-left">Satuan</th>
-                <th class="p-4 text-left">Tgl Masuk</th>
-                <th class="p-4 text-left">Barcode</th>
-                <th class="p-4 text-left">Min Stok</th>
-                <th class="p-4 text-center">Aksi</th>
-            </tr>
+                <tr>
+                    <th class="p-4 text-left">No</th>
+                    <th class="p-4 text-left">Nama Barang</th>
+                    <th class="p-4 text-left">Jumlah</th>
+                    <th class="p-4 text-left">Satuan</th>
+                    <th class="p-4 text-left">Tgl Masuk</th>
+                    <th class="p-4 text-left">Barcode</th>
+                    <th class="p-4 text-left">Min Stok</th>
+                    <th class="p-4 text-center">Aksi</th>
+                </tr>
             </thead>
             <tbody>
-            <?php if (!empty($barangList)): ?>
-                <?php $no = 1; foreach ($barangList as $barang): ?>
-                    <tr class="border-t hover:bg-gray-50">
-                        <td class="p-4"><?= $no++ ?></td>
-                        <td class="p-4"><?= esc($barang['nama_barang']) ?></td>
-                        <td class="p-4"><?= esc($barang['jumlah']) ?></td>
-                        <td class="p-4"><?= esc($barang['satuan']) ?></td>
-                        <td class="p-4"><?= esc($barang['tanggal_masuk']) ?></td>
-                        <td class="p-4">
-                            <a href="<?= base_url('user/barang/info/' . $barang['barcode']) ?>"
-                               class="text-blue-600 hover:underline">
-                                <?= esc($barang['barcode']) ?>
-                            </a>
-                        </td>
-                        <td class="p-4"><?= esc($barang['minimum_stok']) ?></td>
-                        <td class="p-4 text-center space-x-2">
-                            <!-- Edit -->
-                            <button type="button" onclick="openModalEdit(<?= htmlspecialchars(json_encode($barang), ENT_QUOTES, 'UTF-8') ?>)"
+                <?php if (!empty($barangList)): ?>
+                    <?php $no = 1;
+                    foreach ($barangList as $barang): ?>
+                        <tr class="border-t hover:bg-gray-50">
+                            <td class="p-4"><?= $no++ ?></td>
+                            <td class="p-4"><?= esc($barang['nama_barang']) ?></td>
+                            <td class="p-4"><?= esc($barang['jumlah']) ?></td>
+                            <td class="p-4"><?= esc($barang['satuan']) ?></td>
+                            <td class="p-4"><?= esc($barang['tanggal_masuk']) ?></td>
+                            <td class="p-4"><?= esc($barang['barcode']) ?></td>
+                            <td class="p-4"><?= esc($barang['minimum_stok']) ?></td>
+                            <td class="p-4 text-center space-x-2">
+                                <!-- Edit -->
+                                <button type="button" onclick="openModalEdit(<?= htmlspecialchars(json_encode($barang), ENT_QUOTES, 'UTF-8') ?>)"
                                     class="inline-flex items-center px-3 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded transition">
-                                <i data-feather="edit" class="w-5 h-5"></i>
-                            </button>
-                            <!-- Download -->
-                            <form action="<?= base_url('user/download_barcode/' . $barang['id_barang']) ?>" method="post" class="inline">
-                                <?= csrf_field() ?>
-                                <button title="Download"
+                                    <i data-feather="edit" class="w-5 h-5"></i>
+                                </button>
+                                <!-- Download -->
+                                <form action="<?= base_url('user/download_barcode/' . $barang['id_barang']) ?>" method="post" class="inline">
+                                    <?= csrf_field() ?>
+                                    <button title="Download"
                                         class="inline-flex items-center px-3 py-2 bg-green-500 hover:bg-green-600 text-white rounded transition">
-                                    <i data-feather="download" class="w-5 h-5"></i>
-                                </button>
-                            </form>
-                            <!-- Hapus -->
-                            <form action="<?= base_url('user/hapus_barang/' . $barang['id_barang']) ?>" method="post" class="form-hapus inline">
-                                <?= csrf_field() ?>
-                                <button title="Hapus" type="submit"
+                                        <i data-feather="download" class="w-5 h-5"></i>
+                                    </button>
+                                </form>
+                                <!-- Hapus -->
+                                <form action="<?= base_url('user/hapus_barang/' . $barang['id_barang']) ?>" method="post" class="form-hapus inline">
+                                    <?= csrf_field() ?>
+                                    <button title="Hapus" type="submit"
                                         class="btn-hapus inline-flex items-center px-3 py-2 bg-red-500 hover:bg-red-600 text-white rounded transition">
-                                    <i data-feather="trash" class="w-5 h-5"></i>
-                                </button>
-                            </form>
-                        </td>
+                                        <i data-feather="trash" class="w-5 h-5"></i>
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                    <?php endforeach; ?>
+                <?php else: ?>
+                    <tr>
+                        <td colspan="9" class="text-center py-6">Tidak ada data barang.</td>
                     </tr>
-                <?php endforeach; ?>
-            <?php else: ?>
-                <tr>
-                    <td colspan="9" class="text-center py-6">Tidak ada data barang.</td>
-                </tr>
-            <?php endif; ?>
+                <?php endif; ?>
             </tbody>
         </table>
     </div>
@@ -264,10 +279,12 @@
         document.getElementById(id).classList.remove('hidden');
         document.body.style.overflow = 'hidden';
     }
+
     function closeModal(id) {
         document.getElementById(id).classList.add('hidden');
         document.body.style.overflow = 'auto';
     }
+
     function openModalEdit(barang) {
         document.getElementById('modalEdit').classList.remove('hidden');
         document.body.style.overflow = 'hidden';
@@ -280,8 +297,13 @@
         document.getElementById('editMinimumStok').value = barang.minimum_stok;
         document.getElementById('editBarcode').value = barang.barcode;
         document.getElementById('editQrcode').innerHTML = '';
-        new QRCode(document.getElementById('editQrcode'), { text: barang.barcode, width: 120, height: 120 });
+        new QRCode(document.getElementById('editQrcode'), {
+            text: barang.barcode,
+            width: 120,
+            height: 120
+        });
     }
+
     function generateBarcode() {
         const nama = document.getElementById('inputNamaBarang').value;
         if (!nama) {
@@ -293,32 +315,38 @@
         const barcode = `BC${prefix}${rand}`;
         document.getElementById('barcodeInput').value = barcode;
         document.getElementById('qrcode').innerHTML = '';
-        new QRCode(document.getElementById('qrcode'), { text: barcode, width: 120, height: 120 });
+        new QRCode(document.getElementById('qrcode'), {
+            text: barcode,
+            width: 120,
+            height: 120
+        });
     }
     $("#formTambahBarang").on("submit", function(e) {
-    e.preventDefault();
+        e.preventDefault();
 
-    let nama_barang = $("#inputNamaBarang").val();
-    let barcode     = $("#barcodeInput").val();
-    let form        = $(this);
-    let msgBox      = $("#msgBox");
+        let nama_barang = $("#inputNamaBarang").val();
+        let barcode = $("#barcodeInput").val();
+        let form = $(this);
+        let msgBox = $("#msgBox");
 
-    $.post("<?= base_url('user/barang_masuk/cekBarang') ?>", 
-        { nama_barang, barcode }, 
-        function(res) {
-            if (res.status === "error") {
-                msgBox
-                    .removeClass("hidden bg-green-100 text-green-700 border-green-400")
-                    .addClass("bg-red-100 text-red-700 border border-red-400")
-                    .text(res.message)
-                    .show();
-            } else {
-                msgBox.hide();
-                form.off("submit").submit(); // lanjut submit form
-            }
-        }, "json"
-    );
-});
+        $.post("<?= base_url('user/barang_masuk/cekBarang') ?>", {
+                nama_barang,
+                barcode
+            },
+            function(res) {
+                if (res.status === "error") {
+                    msgBox
+                        .removeClass("hidden bg-green-100 text-green-700 border-green-400")
+                        .addClass("bg-red-100 text-red-700 border border-red-400")
+                        .text(res.message)
+                        .show();
+                } else {
+                    msgBox.hide();
+                    form.off("submit").submit(); // lanjut submit form
+                }
+            }, "json"
+        );
+    });
 </script>
 
 <?= $this->endSection() ?>

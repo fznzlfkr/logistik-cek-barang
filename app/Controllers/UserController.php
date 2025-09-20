@@ -186,20 +186,20 @@ class UserController extends BaseController
         return redirect()->back()->with('success', 'Barang berhasil dihapus.');
     }
 
-public function scanBarcode($barcode)
-{
-    // Cari barang berdasarkan barcode
-    $barang = $this->barangModel->where('barcode', $barcode)->first();
+    public function scanBarcode($barcode)
+    {
+        // Cari barang berdasarkan barcode
+        $barang = $this->barangModel->where('barcode', $barcode)->first();
 
-    if (!$barang) {
-        return redirect()->back()->with('error', 'Barang tidak ditemukan.');
+        if (!$barang) {
+            return redirect()->back()->with('error', 'Barang tidak ditemukan.');
+        }
+
+        // Tampilkan halaman informasi barang
+        return view('user/informasi_barang', [
+            'barang' => $barang
+        ]);
     }
-
-    // Tampilkan halaman informasi barang
-    return view('user/informasi_barang', [
-        'barang' => $barang
-    ]);
-}
 
 
     public function informasiBarang($barcode)
@@ -220,7 +220,7 @@ public function scanBarcode($barcode)
             'barang' => $barang
         ];
 
-        return view('user/informasi_barang', $data);
+        return view('informasi_barang', $data);
     }
     public function downloadBarcode($id)
     {
@@ -255,7 +255,7 @@ public function scanBarcode($barcode)
         }
 
         // Buat HTML untuk PDF
-        $html = view('pdf_template', ['barang' => $barang]);
+        $html = view('barang/pdf_template', ['barang' => $barang]);
 
         // Setup Dompdf
         $options = new Options();
