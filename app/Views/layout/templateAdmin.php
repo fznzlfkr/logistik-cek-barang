@@ -17,20 +17,20 @@
     <div class="header-content ml-72">
       <div class="header-title">
         <h1><?= $judul ?></h1>
-        <p><?= $subJudul. " " . $admin['nama']?></p>
+        <p><?= $subJudul . " " . $admin['nama'] ?></p>
       </div>
 
       <div class="header-actions">
         <?php
-          $nama = trim($admin['nama']);
-          $parts = explode(" ", $nama);
-          if (count($parts) >= 2) {
-              // ambil huruf pertama kata 1 dan kata 2
-              $avatar = strtoupper(substr($parts[0], 0, 1) . substr($parts[1], 0, 1));
-          } else {
-              // kalau cuma 1 kata → ambil 2 huruf awal
-              $avatar = strtoupper(substr($nama, 0, 2));
-          }
+        $nama = trim($admin['nama']);
+        $parts = explode(" ", $nama);
+        if (count($parts) >= 2) {
+          // ambil huruf pertama kata 1 dan kata 2
+          $avatar = strtoupper(substr($parts[0], 0, 1) . substr($parts[1], 0, 1));
+        } else {
+          // kalau cuma 1 kata → ambil 2 huruf awal
+          $avatar = strtoupper(substr($nama, 0, 2));
+        }
         ?>
         <div class="user-profile">
           <div class="user-avatar">
@@ -57,31 +57,37 @@
     <nav class="sidebar-menu">
       <div class="menu-section">Main</div>
 
-      <a href="<?= base_url('admin/dashboard') ?>" 
+      <a href="<?= base_url('admin/dashboard') ?>"
         class="nav-link <?= (strtolower($currentPage) === 'dashboard') ? 'active' : '' ?>">
         <i class="fas fa-home"></i> Dashboard
       </a>
 
-      <a href="<?= base_url('admin/kelola-barang') ?>" 
+      <a href="<?= base_url('admin/kelola-barang') ?>"
         class="nav-link <?= (strtolower($currentPage) === 'kelolabarang') ? 'active' : '' ?>">
         <i class="fas fa-boxes"></i> Data Barang
       </a>
 
-      <a href="<?= base_url('admin/laporan-barang') ?>" 
+      <a href="<?= base_url('admin/laporan-barang') ?>"
         class="nav-link <?= (strtolower($currentPage) === 'laporan') ? 'active' : '' ?>">
         <i class="fas fa-file-alt"></i> Laporan Barang
       </a>
 
-      <a href="<?= base_url('admin/kelola-staff') ?>" 
+      <a href="<?= base_url('admin/kelola-staff') ?>"
         class="nav-link <?= (strtolower($currentPage) === 'kelolastaff') ? 'active' : '' ?>">
         <i class="fas fa-user-friends"></i> Kelola Staff
       </a>
-      <hr>
+
+      <a href="<?= base_url('admin/log-aktivitas-staff') ?>" class="nav-link <?= ($currentPage === 'log-aktivitas-staff') ? 'active' : '' ?>">
+        <i class="fas fa-clipboard-list"></i> Log Aktivitas Staff
+      </a>
+
       <div class="menu-section">System</div>
-      <a href="<?= base_url('admin/pengaturan-akun') ?>" 
+
+      <a href="<?= base_url('admin/pengaturan-akun') ?>"
         class="nav-link <?= (strtolower($currentPage) === 'profil') ? 'active' : '' ?>">
         <i class="fas fa-user-cog"></i> Pengaturan Akun
       </a>
+
       <a href="<?= base_url('/logout') ?>" class="nav-link" id="logoutBtn">
         <i class="fas fa-sign-out-alt"></i> Logout
       </a>

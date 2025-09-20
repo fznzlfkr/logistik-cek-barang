@@ -604,7 +604,7 @@ class UserController extends BaseController
         $user = $this->userModel->find($dataUser);
 
         $data = [
-            'title' => 'profil - CargoWing',
+            'title' => 'Profil User - CargoWing',
             'user' => $user,
             'currentPage' => 'profil',
             'notif' => $this->notifikasiModel->getUnreadNotif(5)

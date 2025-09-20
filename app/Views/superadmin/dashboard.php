@@ -14,7 +14,7 @@
       <div class="header-actions">
         <div class="user-profile">
           <div class="user-avatar">JD</div>
-          <a href="<?= base_url('admin/pengaturan-akun') ?>" class="a-info">
+          <a href="<?= base_url('superadmin/pengaturan-akun') ?>" class="a-info">
             <div class="user-info">
               <h6> <?= esc($superAdmin['nama']) ?></h6>
               <p><?= esc($superAdmin['role']) ?></p>

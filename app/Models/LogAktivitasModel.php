@@ -63,6 +63,29 @@ class LogAktivitasModel extends Model
     }
 
     /**
+     * Ambil log aktivitas user dengan filter pencarian
+     */
+    public function getLogsByUserWithFilter($keyword = null, $perPage = 10)
+    {
+        $builder = $this->select('log_aktivitas.*, users.nama as nama_user')
+            ->join('users', 'users.id_user = log_aktivitas.id_user', 'left')
+            ->where('log_aktivitas.role', 'user');
+
+        if (!empty($keyword)) {
+            $builder->groupStart()
+                ->like('users.nama', $keyword)
+                ->orLike('log_aktivitas.aktivitas', $keyword)
+                ->orLike('log_aktivitas.ip_address', $keyword)
+                ->orLike('log_aktivitas.created_at', $keyword)
+                ->groupEnd();
+        }
+
+        return $builder
+            ->orderBy('log_aktivitas.created_at', 'DESC')
+            ->paginate($perPage, 'number');
+    }
+
+    /**
      * Ambil log aktivitas admin dengan filter pencarian
      */
     public function getLogsByAdminWithFilter($keyword = null, $perPage = 10)

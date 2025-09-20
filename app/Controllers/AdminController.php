@@ -21,7 +21,7 @@ class AdminController extends BaseController
         $userModel,
         $barangModel,
         $laporanModel,
-        $LogAktivitasModel;
+        $logAktivitasModel;
 
     public function __construct()
     {
@@ -29,7 +29,7 @@ class AdminController extends BaseController
         $this->userModel   = new UserModel();
         $this->barangModel = new BarangModel();
         $this->laporanModel = new LaporanModel();
-        $this->LogAktivitasModel = new LogAktivitasModel();
+        $this->logAktivitasModel = new LogAktivitasModel();
         helper(['form', 'url']);
     }
 
@@ -76,7 +76,7 @@ class AdminController extends BaseController
             ->findAll(10);
 
         // Ambil log aktivitas terbaru
-        $logsUser = $this->LogAktivitasModel->getLogsByUser(10);
+        $logsUser = $this->logAktivitasModel->getLogsByUser(10);
 
         foreach ($logsUser as &$log) {
             $log['waktu_ago'] = $this->timeAgo($log['created_at']);
@@ -357,55 +357,55 @@ class AdminController extends BaseController
         return view('admin/kelola_staff', $data);
     }
 
-public function tambahStaff()
-{
-    $nama     = $this->request->getPost('nama');
-    $email    = $this->request->getPost('email');
-    $noHp     = $this->request->getPost('no_hp');
-    $password = $this->request->getPost('password');
-    $confirm  = $this->request->getPost('confirm_password');
+    public function tambahStaff()
+    {
+        $nama     = $this->request->getPost('nama');
+        $email    = $this->request->getPost('email');
+        $noHp     = $this->request->getPost('no_hp');
+        $password = $this->request->getPost('password');
+        $confirm  = $this->request->getPost('confirm_password');
 
-    // Validasi input kosong
-    if (empty($nama) || empty($email) || empty($noHp) || empty($password) || empty($confirm)) {
-        return redirect()->back()->with('error', 'Semua field wajib diisi!');
+        // Validasi input kosong
+        if (empty($nama) || empty($email) || empty($noHp) || empty($password) || empty($confirm)) {
+            return redirect()->back()->with('error', 'Semua field wajib diisi!');
+        }
+
+        // Validasi minimal panjang password
+        if (strlen($password) < 8) {
+            return redirect()->back()->with('error', 'Password minimal 8 karakter!');
+        }
+
+        // Validasi confirm password
+        if ($password !== $confirm) {
+            return redirect()->back()->with('error', 'Konfirmasi password tidak sesuai!');
+        }
+
+        // Cek email sudah terdaftar
+        $existingUser = $this->userModel->where('email', $email)->first();
+        if ($existingUser) {
+            return redirect()->back()->with('error', 'Email sudah terdaftar!');
+        }
+
+        // Cek nomor HP sudah terdaftar
+        $existingUser = $this->userModel->where('no_hp', $noHp)->first();
+        if ($existingUser) {
+            return redirect()->back()->with('error', 'Nomor HP sudah terdaftar!');
+        }
+
+        // Simpan data staff
+        $this->userModel->insert([
+            'nama'     => $nama,
+            'email'    => $email,
+            'no_hp'    => $noHp,
+            'password' => password_hash($password, PASSWORD_DEFAULT),
+            'role'     => 'staff',
+        ]);
+
+        // Log aktivitas langsung
+        logAktivitas("Tambah staff: {$nama}");
+
+        return redirect()->back()->with('success', 'Staff berhasil ditambahkan!');
     }
-
-    // Validasi minimal panjang password
-    if (strlen($password) < 8) {
-        return redirect()->back()->with('error', 'Password minimal 8 karakter!');
-    }
-
-    // Validasi confirm password
-    if ($password !== $confirm) {
-        return redirect()->back()->with('error', 'Konfirmasi password tidak sesuai!');
-    }
-
-    // Cek email sudah terdaftar
-    $existingUser = $this->userModel->where('email', $email)->first();
-    if ($existingUser) {
-        return redirect()->back()->with('error', 'Email sudah terdaftar!');
-    }
-
-    // Cek nomor HP sudah terdaftar
-    $existingUser = $this->userModel->where('no_hp', $noHp)->first();
-    if ($existingUser) {
-        return redirect()->back()->with('error', 'Nomor HP sudah terdaftar!');
-    }
-
-    // Simpan data staff
-    $this->userModel->insert([
-        'nama'     => $nama,
-        'email'    => $email,
-        'no_hp'    => $noHp,
-        'password' => password_hash($password, PASSWORD_DEFAULT),
-        'role'     => 'staff',
-    ]);
-
-    // Log aktivitas langsung
-    logAktivitas("Tambah staff: {$nama}");
-
-    return redirect()->back()->with('success', 'Staff berhasil ditambahkan!');
-}
 
 
     public function editStaff($id)
@@ -472,6 +472,29 @@ public function tambahStaff()
         logAktivitas("Hapus staff: {$staff['nama']}");
 
         return redirect()->back()->with('success', 'Staff berhasil dihapus.');
+    }
+
+    public function logAktivitasStaff()
+    {
+        $dataAdmin = session()->get('id_admin');
+        $admin = $this->adminModel->find($dataAdmin);
+        $keyword   = $this->request->getVar('keyword');
+        $perPage  = $this->request->getVar('per_page') ?? 10;
+
+        $logsStaff = $this->logAktivitasModel->getLogsByUserWithFilter($keyword, $perPage);
+
+        $data = [
+            'title'         => 'Log Aktivitas Staff',
+            'currentPage'   => 'log-aktivitas-staff',
+            'judul'         => 'Log Aktivitas Staff',
+            'subJudul'      => 'Riwayat aktivitas semua Staff pada sistem.',
+            'keyword'       => $keyword,
+            'perPage'       => $perPage,
+            'pager'         => $this->logAktivitasModel->pager,
+            'admin'         => $admin,
+            'logsStaff'     => $logsStaff,
+        ];
+        return view('admin/log_aktivitas_user', $data);
     }
 
     public function laporanBarang()

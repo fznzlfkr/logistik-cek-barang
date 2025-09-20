@@ -1,28 +1,8 @@
-<?= $this->extend('layout/TemplateSuperAdmin') ?>
+<?= $this->extend('layout/TemplateAdmin') ?>
 
 <?= $this->section('content') ?>
 <!-- Main Content -->
 <div class="main-content">
-    <!-- Header -->
-    <div class="header">
-        <div class="header-content">
-            <div class="header-title">
-                <h1>Log Aktivitas Admin</h1>
-                <p>Riwayat aktivitas semua Admin pada sistem.</p>
-            </div>
-            <div class="header-actions">
-                <div class="user-profile">
-                    <div class="user-avatar">JD</div>
-                    <a href="<?= base_url('superadmin/pengaturan-akun') ?>" class="a-info">
-                        <div class="user-info">
-                            <h6> <?= esc($superAdmin['nama']) ?></h6>
-                            <p><?= esc($superAdmin['role']) ?></p>
-                        </div>
-                    </a>
-                </div>
-            </div>
-        </div>
-    </div>
 
     <!-- Content Area -->
     <div class="content-area">
@@ -50,7 +30,7 @@
         <!-- Content Grid -->
         <div class="content-grid">
 
-            <!-- Log Aktivitas Admin -->
+            <!-- Log Aktivitas Staff -->
             <div class="content-card">
                 <!-- Table -->
                 <div class="overflow-x-auto">
@@ -58,18 +38,18 @@
                         <thead class="bg-gray-200 text-gray-700 font-semibold">
                             <tr>
                                 <th class="p-3 text-left">No</th>
-                                <th class="p-3 text-left">Nama Admin</th>
+                                <th class="p-3 text-left">Nama Staff</th>
                                 <th class="p-3 text-left">Aktivitas</th>
                                 <th class="p-3 text-left">IP Address</th>
                                 <th class="p-3 text-left">Waktu</th>
                             </tr>
                         </thead>
                         <tbody>
-                            <?php if (!empty($logsAdmin)): ?>
-                                <?php foreach ($logsAdmin as $index => $log): ?>
+                            <?php if (!empty($logsStaff)): ?>
+                                <?php foreach ($logsStaff as $index => $log): ?>
                                     <tr class="border-t hover:bg-gray-50">
                                         <td class="p-3"><?= $index + 1 ?></td>
-                                        <td class="p-3"><?= esc($log['nama_admin']) ?></td>
+                                        <td class="p-3"><?= esc($log['nama_user']) ?></td>
                                         <td class="p-3"><?= esc($log['aktivitas']) ?></td>
                                         <td class="p-3"><?= esc($log['ip_address']) ?></td>
                                         <td class="p-3">

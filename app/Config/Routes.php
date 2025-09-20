@@ -30,6 +30,7 @@ $routes->group('admin', ['filter' => 'auth:Admin'], function ($routes) {
     $routes->post('tambah_barang', 'AdminController::tambahBarang');
     $routes->get('laporan-barang', 'AdminController::laporanBarang');
     $routes->get('kelola-staff', 'AdminController::kelolaStaff');
+    $routes->get('log-aktivitas-staff', 'AdminController::logAktivitasStaff');
     $routes->post('tambah-staff', 'AdminController::tambahStaff');
     $routes->post('edit-staff/(:num)', 'AdminController::editStaff/$1');
     $routes->post('hapus-staff/(:num)', 'AdminController::hapusStaff/$1');
