@@ -32,10 +32,9 @@
         </form>
 
         <div class="flex space-x-3">
-            <!-- Barang Masuk -->
-            <button type="button" onclick="openModal('modalTambah')"
+            <!-- Barang Masuk - Buka Modal Pilihan -->
+            <button type="button" onclick="openModal('modalPilihJenis')"
                 class="flex items-center gap-2 bg-green-600 text-white px-6 py-3 rounded hover:bg-green-700 text-base">
-                <!-- Heroicon: arrow-down-tray -->
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M7.5 10.5L12 15m0 0l4.5-4.5M12 15V3" />
                 </svg>
@@ -45,7 +44,6 @@
             <!-- Barang Dipakai -->
             <button type="button" onclick="openModal('modalKeluar')"
                 class="flex items-center gap-2 bg-red-600 text-white px-6 py-3 rounded hover:bg-red-700 text-base">
-                <!-- Heroicon: arrow-up-tray -->
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M3 7.5V5.25A2.25 2.25 0 015.25 3h13.5A2.25 2.25 0 0121 5.25V7.5M16.5 13.5L12 9m0 0L7.5 13.5M12 9v12" />
                 </svg>
@@ -82,12 +80,10 @@
                             <td class="p-4"><?= esc($barang['barcode']) ?></td>
                             <td class="p-4"><?= esc($barang['minimum_stok']) ?></td>
                             <td class="p-4 text-center space-x-2">
-                                <!-- Edit -->
                                 <button type="button" onclick="openModalEdit(<?= htmlspecialchars(json_encode($barang), ENT_QUOTES, 'UTF-8') ?>)"
                                     class="inline-flex items-center px-3 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded transition">
                                     <i data-feather="edit" class="w-5 h-5"></i>
                                 </button>
-                                <!-- Download -->
                                 <form action="<?= base_url('user/download_barcode/' . $barang['id_barang']) ?>" method="post" class="inline">
                                     <?= csrf_field() ?>
                                     <button title="Download"
@@ -95,7 +91,6 @@
                                         <i data-feather="download" class="w-5 h-5"></i>
                                     </button>
                                 </form>
-                                <!-- Hapus -->
                                 <form action="<?= base_url('user/hapus_barang/' . $barang['id_barang']) ?>" method="post" class="form-hapus inline">
                                     <?= csrf_field() ?>
                                     <button title="Hapus" type="submit"
@@ -138,11 +133,94 @@
     </div>
 </main>
 
-<!-- Modal Tambah (Barang Masuk) -->
+<!-- Modal Pilih Jenis Barang -->
+<div id="modalPilihJenis" class="hidden fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
+    <div class="bg-white rounded-lg shadow-lg w-full max-w-2xl p-8 relative">
+        <button type="button" onclick="closeModal('modalPilihJenis')" class="absolute top-4 right-4 text-gray-500 hover:text-gray-700 text-2xl">&times;</button>
+        <h2 class="text-2xl font-bold mb-8 text-center">Pilih Jenis</h2>
+
+        <div class="grid grid-cols-2 gap-6">
+            <!-- Barang yang sudah ada -->
+            <button type="button" onclick="closeModal('modalPilihJenis'); openModal('modalBarangLama')"
+                class="flex flex-col items-center justify-center p-8 border-2 border-gray-300 rounded-lg hover:border-green-500 hover:bg-green-50 transition group">
+                <div class="w-32 h-32 mb-4 bg-gray-200 rounded-lg flex items-center justify-center group-hover:bg-green-100 transition">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-16 h-16 text-gray-400 group-hover:text-green-600">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5M10 11.25h4M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125z" />
+                    </svg>
+                </div>
+                <h3 class="text-lg font-semibold text-gray-700 group-hover:text-green-600">Barang yang sudah ada</h3>
+            </button>
+
+            <!-- Barang baru -->
+            <button type="button" onclick="closeModal('modalPilihJenis'); openModal('modalTambah')"
+                class="flex flex-col items-center justify-center p-8 border-2 border-gray-300 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition group">
+                <div class="w-32 h-32 mb-4 bg-gray-200 rounded-lg flex items-center justify-center group-hover:bg-blue-100 transition">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-16 h-16 text-gray-400 group-hover:text-blue-600">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v6m3-3H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                </div>
+                <h3 class="text-lg font-semibold text-gray-700 group-hover:text-blue-600">Barang baru</h3>
+            </button>
+        </div>
+
+        <div class="mt-8 text-center">
+            <button type="button" onclick="closeModal('modalPilihJenis')" class="px-8 py-3 bg-gray-300 text-gray-700 rounded hover:bg-gray-400 transition text-base">
+                Cancel
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Barang Lama (Yang Sudah Ada) -->
+<div id="modalBarangLama" class="hidden fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
+    <div class="bg-white rounded-lg shadow-lg w-4/5 max-w-3xl p-8 relative">
+        <button type="button" onclick="closeModal('modalBarangLama')" class="absolute top-4 right-4 text-gray-500 hover:text-gray-700 text-2xl">&times;</button>
+        <h2 class="text-xl font-semibold mb-6">Tambah Stok Barang yang Sudah Ada</h2>
+
+        <form action="<?= base_url('user/barang_masuk/save-existing') ?>" method="post" class="space-y-6">
+            <?= csrf_field() ?>
+
+            <!-- Pilih Nama Barang -->
+            <div>
+                <label for="id_barang_lama" class="block text-base font-medium mb-2">Nama Barang</label>
+                <select name="id_barang" id="id_barang_lama" class="w-full border border-gray-300 rounded px-4 py-3 text-base focus:outline-none focus:ring focus:ring-green-200" required>
+                    <option value="">-- Pilih Barang --</option>
+                    <?php foreach ($uniqueBarang as $barang): ?>
+                        <option value="<?= $barang['id_barang'] ?>">
+                            <?= esc($barang['nama_barang']) ?> (Stok Saat Ini: <?= esc($barang['jumlah']) ?> <?= esc($barang['satuan']) ?>)
+                        </option>
+                    <?php endforeach; ?>
+                </select>
+            </div>
+
+            <!-- Jumlah Tambahan -->
+            <div>
+                <label for="jumlah_lama" class="block text-base font-medium mb-2">Jumlah Tambahan</label>
+                <input type="number" name="jumlah" id="jumlah_lama" placeholder="Masukkan jumlah yang akan ditambahkan"
+                    class="w-full border border-gray-300 rounded px-4 py-3 text-base focus:outline-none focus:ring focus:ring-green-200" min="1" required>
+            </div>
+
+            <!-- Tanggal Masuk -->
+            <div>
+                <label for="tanggal_masuk_lama" class="block text-base font-medium mb-2">Tanggal Masuk</label>
+                <input type="date" name="tanggal_masuk" id="tanggal_masuk_lama"
+                    class="w-full border border-gray-300 rounded px-4 py-3 text-base focus:outline-none focus:ring focus:ring-green-200" required>
+            </div>
+
+            <!-- Tombol -->
+            <div class="flex justify-end gap-3 mt-6">
+                <button type="submit" class="bg-green-600 text-white px-6 py-3 rounded hover:bg-green-700 text-base">Simpan</button>
+                <button type="button" onclick="closeModal('modalBarangLama')" class="bg-gray-300 text-black px-6 py-3 rounded hover:bg-gray-400 text-base">Batal</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Modal Tambah Barang Baru -->
 <div id="modalTambah" class="hidden fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
     <div class="bg-white rounded-lg shadow-lg w-4/5 max-w-6xl p-8 relative">
         <button type="button" onclick="closeModal('modalTambah')" class="absolute top-4 right-4 text-gray-500 hover:text-gray-700 text-2xl">&times;</button>
-        <h2 class="text-xl font-semibold mb-6">Barang Masuk</h2>
+        <h2 class="text-xl font-semibold mb-6">Barang Baru</h2>
 
         <!-- Box Pesan -->
         <div id="msgBox" class="hidden mb-6 p-4 rounded text-base"></div>
@@ -195,7 +273,6 @@
         <h2 class="text-xl font-semibold mb-6">Barang Dipakai</h2>
         <form id="formBarangKeluar" action="<?= base_url('user/barang_keluar/save') ?>" method="post" class="grid grid-cols-2 gap-8">
             <?= csrf_field() ?>
-            <!-- Pilih Barang -->
             <div>
                 <label for="id_barang" class="block text-base font-medium mb-2">Pilih Barang</label>
                 <select name="id_barang" id="id_barang" class="w-full border rounded px-4 py-3 text-base" required>
@@ -207,17 +284,14 @@
                     <?php endforeach; ?>
                 </select>
             </div>
-            <!-- Jumlah Keluar -->
             <div>
                 <label for="jumlah" class="block text-base font-medium mb-2">Jumlah Dipakai</label>
                 <input type="number" name="jumlah" id="jumlah" placeholder="Masukkan jumlah Dipakai" class="w-full border rounded px-4 py-3 text-base" min="1" required>
             </div>
-            <!-- Tanggal Keluar -->
             <div>
                 <label for="tanggal" class="block text-base font-medium mb-2">Tanggal Dipakai</label>
                 <input type="date" name="tanggal" id="tanggal" class="w-full border rounded px-4 py-3 text-base" required>
             </div>
-            <!-- Tombol -->
             <div class="col-span-2 flex justify-end gap-3 mt-6">
                 <button type="submit" class="bg-gray-800 text-white px-6 py-3 rounded hover:bg-gray-900 text-base">Simpan</button>
                 <button type="button" onclick="closeModal('modalKeluar')" class="bg-gray-300 text-black px-6 py-3 rounded hover:bg-gray-400 text-base">Batal</button>
@@ -234,7 +308,6 @@
         <form id="formEditBarang" action="" method="post" enctype="multipart/form-data" class="grid grid-cols-3 gap-8">
             <?= csrf_field() ?>
             <input type="hidden" name="id_barang" id="editIdBarang">
-            <!-- Form Kiri -->
             <div class="col-span-2 grid grid-cols-2 gap-6">
                 <div>
                     <label class="block text-base mb-2">Nama Barang</label>
@@ -257,13 +330,11 @@
                     <input type="number" name="minimum_stok" id="editMinimumStok" class="w-full border rounded px-4 py-3 text-base" required>
                 </div>
             </div>
-            <!-- Form Barcode -->
             <div class="col-span-1 flex flex-col items-center justify-center border rounded p-6">
                 <label class="block text-base mb-3">Barcode (QR Code)</label>
                 <div id="editQrcode" class="w-40 h-40 flex items-center justify-center bg-gray-100 border mb-4"></div>
                 <input type="text" name="barcode" id="editBarcode" class="w-full border rounded px-4 py-3 text-center text-base" readonly required>
             </div>
-            <!-- Tombol -->
             <div class="col-span-3 flex justify-end gap-3 mt-6">
                 <button type="submit" class="bg-blue-600 text-white px-6 py-3 rounded text-base">Update</button>
                 <button type="button" onclick="closeModal('modalEdit')" class="bg-gray-300 text-black px-6 py-3 rounded text-base">Batal</button>
@@ -321,6 +392,7 @@
             height: 120
         });
     }
+
     $("#formTambahBarang").on("submit", function(e) {
         e.preventDefault();
 
@@ -342,7 +414,7 @@
                         .show();
                 } else {
                     msgBox.hide();
-                    form.off("submit").submit(); // lanjut submit form
+                    form.off("submit").submit();
                 }
             }, "json"
         );

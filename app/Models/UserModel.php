@@ -11,4 +11,6 @@ class UserModel extends Model
 
     protected $allowedFields = ['nama', 'email', 'password', 'no_hp'];
     protected $useTimestamps = false; // karena tabel kamu tidak ada created_at / updated_at
+
+
 }

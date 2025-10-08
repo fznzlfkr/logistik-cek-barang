@@ -1,3 +1,4 @@
+
 <?php
 
 use CodeIgniter\Router\RouteCollection;
@@ -55,6 +56,7 @@ $routes->group('user', ['filter' => 'auth:User'], function ($routes) {
     $routes->get('barang/pdf/(:any)', 'UserController::pdf/$1');
     $routes->get('riwayat', 'UserController::riwayat');
     $routes->post('barang_masuk/save', 'UserController::simpanBarangMasuk');
+    $routes->post('barang_masuk/save-existing', 'UserController::simpanBarangMasukExisting');
     $routes->post('barang_keluar/save', 'UserController::saveBarangKeluar');
     $routes->get('profil', 'UserController::profil');
     $routes->post('profil/update', 'UserController::update');

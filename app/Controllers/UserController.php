@@ -91,7 +91,7 @@ class UserController extends BaseController
             ->paginate($perPage, 'number');
 
         $uniqueBarang = $this->barangModel
-            ->select('id_barang, nama_barang, jumlah')
+            ->select('id_barang, nama_barang, jumlah, satuan')
             ->orderBy('nama_barang', 'ASC')
             ->findAll();
 
@@ -383,6 +383,64 @@ class UserController extends BaseController
         }
 
         return redirect()->to('user/kelola_barang')->with('success', 'Barang berhasil disimpan dan dicatat di riwayat');
+    }
+
+    public function simpanBarangMasukExisting()
+    {
+        $db = \Config\Database::connect();
+
+        $idBarang = $this->request->getPost('id_barang');
+        $jumlahMasuk = $this->request->getPost('jumlah');
+        $tanggalMasuk = $this->request->getPost('tanggal_masuk');
+
+        // Validasi input
+        if (empty($idBarang) || empty($jumlahMasuk) || empty($tanggalMasuk)) {
+            return redirect()->back()->with('error', 'Data tidak lengkap');
+        }
+
+        // Ambil data barang yang sudah ada
+        $barang = $this->barangModel->find($idBarang);
+        if (!$barang) {
+            return redirect()->back()->with('error', 'Barang tidak ditemukan');
+        }
+
+        // Mulai transaksi
+        $db->transStart();
+
+        // Update stok barang (tambahkan jumlah masuk ke stok yang ada)
+        $stokBaru = $barang['jumlah'] + $jumlahMasuk;
+        $updateData = [
+            'jumlah' => $stokBaru,
+            'tanggal_masuk' => $tanggalMasuk
+        ];
+
+        $this->barangModel->update($idBarang, $updateData);
+
+        // Catat di riwayat (laporan)
+        $nowTime = date('H:i:s');
+        $tanggalFull = $tanggalMasuk . ' ' . $nowTime;
+
+        $riwayat = [
+            'id_barang'  => $idBarang,
+            'jumlah'     => $jumlahMasuk,
+            'jenis'      => 'Masuk',
+            'tanggal'    => $tanggalFull,
+            'id_user'    => session()->get('id_user') ?? null,
+            'keterangan' => 'Penambahan stok barang'
+        ];
+
+        $this->laporanModel->insert($riwayat);
+
+        // Log aktivitas
+        logAktivitas("Menambahkan stok barang: {$barang['nama_barang']} (Jumlah: +{$jumlahMasuk} {$barang['satuan']}, Stok sekarang: {$stokBaru})");
+
+        $db->transComplete();
+
+        if ($db->transStatus() === false) {
+            return redirect()->back()->with('error', 'Gagal menyimpan transaksi. Coba lagi.');
+        }
+
+        return redirect()->to('user/kelola_barang')->with('success', 'Stok barang berhasil ditambahkan');
     }
 
     public function saveBarangKeluar()

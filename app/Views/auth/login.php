@@ -28,10 +28,6 @@
         </span>
     </div>
     <small id="loginPasswordError" class="error-text"></small>
-
-    <div class="form-checkbox">
-        <label><input type="checkbox" name="remember" /> Remember me</label>
-    </div>
     <button class="btn" type="submit">Masuk</button>
 </form>
 
