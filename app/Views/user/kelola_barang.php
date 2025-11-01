@@ -177,7 +177,7 @@
         <button type="button" onclick="closeModal('modalBarangLama')" class="absolute top-4 right-4 text-gray-500 hover:text-gray-700 text-2xl">&times;</button>
         <h2 class="text-xl font-semibold mb-6">Tambah Stok Barang yang Sudah Ada</h2>
 
-        <form action="<?= base_url('user/barang_masuk/save-existing') ?>" method="post" class="space-y-6">
+        <form action="<?= base_url('user/barang_masuk/save-existing') ?>" method="post" enctype="multipart/form-data" class="space-y-6">
             <?= csrf_field() ?>
 
             <!-- Pilih Nama Barang -->
@@ -205,6 +205,19 @@
                 <label for="tanggal_masuk_lama" class="block text-base font-medium mb-2">Tanggal Masuk</label>
                 <input type="date" name="tanggal_masuk" id="tanggal_masuk_lama"
                     class="w-full border border-gray-300 rounded px-4 py-3 text-base focus:outline-none focus:ring focus:ring-green-200" required>
+            </div>
+
+            <!-- File inputs berdampingan -->
+            <div class="grid grid-cols-2 gap-6">
+                <div>
+                    <label class="block text-base mb-2">Surat Jalan</label>
+                    <input type="file" name="surat_jalan" id="inputSuratJalan" placeholder="Surat jalan" class="w-full border rounded px-4 py-3 text-base" required>
+                </div>
+
+                <div>
+                    <label class="block text-base mb-2">Gambar Barang</label>
+                    <input type="file" name="gambar_barang" id="inputGambarBarang" placeholder="Gambar barang" class="w-full border rounded px-4 py-3 text-base" required>
+                </div>
             </div>
 
             <!-- Tombol -->
@@ -248,6 +261,14 @@
                 <div>
                     <label class="block text-base mb-2">Minimum Stok</label>
                     <input type="number" name="minimum_stok" id="inputMinimumStok" placeholder="Minimum stok" class="w-full border rounded px-4 py-3 text-base" required>
+                </div>
+                <div>
+                    <label class="block text-base mb-2">Surat Jalan</label>
+                    <input type="file" name="surat_jalan" id="inputSuratJalan" placeholder="Surat jalan" class="w-full border rounded px-4 py-3 text-base" required>
+                </div>
+                <div>
+                    <label class="block text-base mb-2">Gambar Barang</label>
+                    <input type="file" name="gambar_barang" id="inputGambarBarang" placeholder="Gambar barang" class="w-full border rounded px-4 py-3 text-base" required>
                 </div>
             </div>
             <!-- Form Barcode -->

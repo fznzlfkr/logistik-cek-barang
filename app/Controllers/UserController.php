@@ -344,10 +344,29 @@ class UserController extends BaseController
             }
         }
 
-        // Cek duplikasi nama_barang (atau barcode jika diperlukan)
-        $cekBarang = $this->barangModel->where('nama_barang', $data['nama_barang'])->first();
-        if ($cekBarang) {
-            return redirect()->back()->with('error', 'Barang sudah terdaftar');
+        // Ambil dan proses file upload (surat jalan & gambar barang) - referensi dari simpanBarangMasukExisting
+        $suratJalanFile   = $this->request->getFile('surat_jalan');
+        $gambarBarangFile = $this->request->getFile('gambar_barang');
+
+        $suratJalanName = null;
+        $gambarBarangName = null;
+
+        if ($suratJalanFile && $suratJalanFile->isValid() && !$suratJalanFile->hasMoved()) {
+            $suratJalanName = $suratJalanFile->getRandomName();
+            $suratJalanFile->move(FCPATH . 'uploads/surat_jalan', $suratJalanName);
+        }
+
+        if ($gambarBarangFile && $gambarBarangFile->isValid() && !$gambarBarangFile->hasMoved()) {
+            $gambarBarangName = $gambarBarangFile->getRandomName();
+            $gambarBarangFile->move(FCPATH . 'uploads/gambar_barang', $gambarBarangName);
+        }
+
+        // Tambahkan nama file ke data jika ada
+        if ($suratJalanName) {
+            $data['surat_jalan'] = $suratJalanName;
+        }
+        if ($gambarBarangName) {
+            $data['gambar'] = $gambarBarangName;
         }
 
         // Simpan barang + catat riwayat dalam transaction
@@ -392,8 +411,23 @@ class UserController extends BaseController
         $idBarang = $this->request->getPost('id_barang');
         $jumlahMasuk = $this->request->getPost('jumlah');
         $tanggalMasuk = $this->request->getPost('tanggal_masuk');
+        $suratJalanFile = $this->request->getFile('surat_jalan');
+        $gambarBarangFile = $this->request->getFile('gambar_barang');
 
-        // Validasi input
+        $suratJalanName = null;
+        $gambarBarangName = null;
+
+        if ($suratJalanFile && $suratJalanFile->isValid() && !$suratJalanFile->hasMoved()) {
+            $suratJalanName = $suratJalanFile->getRandomName();
+            $suratJalanFile->move(FCPATH . 'uploads/surat_jalan', $suratJalanName);
+        }
+
+        if ($gambarBarangFile && $gambarBarangFile->isValid() && !$gambarBarangFile->hasMoved()) {
+            $gambarBarangName = $gambarBarangFile->getRandomName();
+            $gambarBarangFile->move(FCPATH . 'uploads/gambar_barang', $gambarBarangName);
+        }
+
+        // validasi input
         if (empty($idBarang) || empty($jumlahMasuk) || empty($tanggalMasuk)) {
             return redirect()->back()->with('error', 'Data tidak lengkap');
         }
@@ -413,6 +447,9 @@ class UserController extends BaseController
             'jumlah' => $stokBaru,
             'tanggal_masuk' => $tanggalMasuk
         ];
+
+        if ($suratJalanName) $updateData['surat_jalan'] = $suratJalanName;
+        if ($gambarBarangName) $updateData['gambar'] = $gambarBarangName;
 
         $this->barangModel->update($idBarang, $updateData);
 

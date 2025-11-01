@@ -18,7 +18,9 @@ class BarangModel extends Model
         'satuan',
         'tanggal_masuk',
         'barcode',
-        'minimum_stok'
+        'minimum_stok',
+        'gambar',
+        'surat_jalan'
     ];
 
     // Jika tidak menggunakan timestamps, bisa di-nonaktifkan
