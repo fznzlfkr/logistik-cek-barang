@@ -54,6 +54,10 @@
 
     <!-- Table -->
     <div class="overflow-x-auto mb-6">
+        <div class="flex items-center gap-2 mb-2 text-sm text-gray-600">
+            <span class="inline-block w-3 h-3 rounded bg-red-400"></span>
+            <span>Menandakan stok berada pada atau di bawah minimum.</span>
+        </div>
         <table class="min-w-full text-base bg-white rounded shadow-lg">
             <thead class="bg-gray-200 text-gray-700 font-semibold">
                 <tr>
@@ -71,10 +75,16 @@
                 <?php if (!empty($barangList)): ?>
                     <?php $no = 1;
                     foreach ($barangList as $barang): ?>
-                        <tr class="border-t hover:bg-gray-50">
+                        <?php $lowStock = ((int)($barang['jumlah'] ?? 0)) <= ((int)($barang['minimum_stok'] ?? 0)); ?>
+                        <tr class="border-t <?= $lowStock ? 'bg-red-50' : '' ?>">
                             <td class="p-4"><?= $no++ ?></td>
                             <td class="p-4"><?= esc($barang['nama_barang']) ?></td>
-                            <td class="p-4"><?= esc($barang['jumlah']) ?></td>
+                            <td class="p-4 <?= $lowStock ? 'text-red-600 font-semibold' : '' ?>">
+                                <?= esc($barang['jumlah']) ?>
+                                <?php if ($lowStock): ?>
+                                    <span class="ml-2 inline-block align-middle px-2 py-0.5 rounded text-xs bg-red-100 text-red-700">Minimum</span>
+                                <?php endif; ?>
+                            </td>
                             <td class="p-4"><?= esc($barang['satuan']) ?></td>
                             <td class="p-4"><?= esc($barang['tanggal_masuk']) ?></td>
                             <td class="p-4"><?= esc($barang['barcode']) ?></td>
@@ -84,13 +94,10 @@
                                     class="inline-flex items-center px-3 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded transition">
                                     <i data-feather="edit" class="w-5 h-5"></i>
                                 </button>
-                                <form action="<?= base_url('user/download_barcode/' . $barang['id_barang']) ?>" method="post" class="inline">
-                                    <?= csrf_field() ?>
-                                    <button title="Download"
-                                        class="inline-flex items-center px-3 py-2 bg-green-500 hover:bg-green-600 text-white rounded transition">
-                                        <i data-feather="download" class="w-5 h-5"></i>
-                                    </button>
-                                </form>
+                                <button type="button" title="Detail" onclick="openDetailModal(<?= htmlspecialchars(json_encode($barang), ENT_QUOTES, 'UTF-8') ?>)"
+                                    class="inline-flex items-center px-3 py-2 bg-green-500 hover:bg-green-600 text-white rounded transition">
+                                    <i data-feather="eye" class="w-5 h-5"></i>
+                                </button>
                                 <form action="<?= base_url('user/hapus_barang/' . $barang['id_barang']) ?>" method="post" class="form-hapus inline">
                                     <?= csrf_field() ?>
                                     <button title="Hapus" type="submit"
@@ -442,4 +449,155 @@
     });
 </script>
 
+<!-- Modal Detail Barang -->
+<div id="modalDetail" class="hidden fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
+    <div class="bg-white rounded-lg shadow-lg w-11/12 max-w-6xl p-6 relative">
+        <button type="button" onclick="closeModal('modalDetail')" class="absolute top-4 right-4 text-gray-500 hover:text-gray-700 text-2xl">&times;</button>
+        <h2 class="text-xl font-semibold mb-4">Detail Barang</h2>
+
+        <div class="grid md:grid-cols-3 grid-cols-1 gap-6">
+            <!-- Gambar Barang -->
+            <div class="border rounded p-4">
+                <h3 class="font-semibold mb-3">Gambar Barang</h3>
+                <img id="detailGambarImg" src="" alt="Gambar Barang" class="w-full h-56 object-contain rounded border hidden" />
+                <div id="detailGambarFallback" class="text-gray-500 text-sm">Tidak ada gambar barang.</div>
+                <a id="downloadGambarLink" href="#" download class="mt-3 inline-flex items-center px-3 py-2 bg-gray-800 text-white rounded hover:bg-gray-900 transition hidden">Download Gambar</a>
+            </div>
+
+            <!-- Surat Jalan -->
+            <div class="border rounded p-4">
+                <h3 class="font-semibold mb-3">Surat Jalan</h3>
+                <img id="detailSJImg" src="" alt="Surat Jalan" class="w-full h-56 object-contain rounded border hidden" />
+                <iframe id="detailSJFrame" src="" class="w-full h-56 rounded border hidden"></iframe>
+                <div id="detailSJFallback" class="text-gray-500 text-sm">Tidak ada file surat jalan.</div>
+                <div class="mt-3 flex gap-2">
+                    <a id="openSJNewTab" href="#" target="_blank" rel="noopener" class="inline-flex items-center px-3 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition hidden">Buka di Tab Baru</a>
+                    <a id="downloadSJLink" href="#" download class="inline-flex items-center px-3 py-2 bg-gray-800 text-white rounded hover:bg-gray-900 transition hidden">Download Surat Jalan</a>
+                </div>
+            </div>
+
+            <!-- Barcode / QR -->
+            <div class="border rounded p-4 flex flex-col items-center justify-start">
+                <h3 class="font-semibold mb-3 self-start">Barcode</h3>
+                <div id="detailQrcode" class="w-40 h-40 flex items-center justify-center bg-gray-100 border rounded"></div>
+                <div class="text-sm text-gray-600 mt-2">Kode: <span id="detailBarcodeText" class="font-mono"></span></div>
+                <form id="downloadBarcodeForm" action="<?= base_url('user/download_barcode/0') ?>" method="post" class="mt-4">
+                    <?= csrf_field() ?>
+                    <button type="submit" class="inline-flex items-center px-3 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition">Download Barcode</button>
+                </form>
+            </div>
+        </div>
+
+        <div class="mt-6 flex justify-end">
+            <button type="button" onclick="closeModal('modalDetail')" class="px-5 py-2 bg-gray-300 rounded hover:bg-gray-400">Tutup</button>
+        </div>
+    </div>
+
+</div>
+
+<script>
+    function openDetailModal(barang) {
+        // Base URL for building file paths
+        const base = "<?= base_url() ?>";
+
+        // Elements
+        const modalId = 'modalDetail';
+        const imgBarang = document.getElementById('detailGambarImg');
+        const imgBarangFallback = document.getElementById('detailGambarFallback');
+        const linkDownloadGambar = document.getElementById('downloadGambarLink');
+
+        const imgSJ = document.getElementById('detailSJImg');
+        const frameSJ = document.getElementById('detailSJFrame');
+        const sjFallback = document.getElementById('detailSJFallback');
+        const linkDownloadSJ = document.getElementById('downloadSJLink');
+        const linkOpenSJNewTab = document.getElementById('openSJNewTab');
+
+        const qrWrap = document.getElementById('detailQrcode');
+        const barcodeText = document.getElementById('detailBarcodeText');
+        const formDownloadBarcode = document.getElementById('downloadBarcodeForm');
+
+        // Build URLs from record
+        const gambarUrl = barang?.gambar ? `${base}/uploads/gambar_barang/${barang.gambar}` : null;
+        const sjUrl = barang?.surat_jalan ? `${base}/uploads/surat_jalan/${barang.surat_jalan}` : null;
+        // Use controller endpoint for PDF preview to force inline rendering
+        const sjPreviewUrl = barang?.surat_jalan ? `${base}/user/surat-jalan/preview/${barang.id_barang}` : null;
+
+        // Setup Gambar Barang
+        if (gambarUrl) {
+            imgBarang.src = gambarUrl;
+            imgBarang.classList.remove('hidden');
+            imgBarangFallback.classList.add('hidden');
+            linkDownloadGambar.href = gambarUrl;
+            linkDownloadGambar.classList.remove('hidden');
+        } else {
+            imgBarang.src = '';
+            imgBarang.classList.add('hidden');
+            imgBarangFallback.classList.remove('hidden');
+            linkDownloadGambar.href = '#';
+            linkDownloadGambar.classList.add('hidden');
+        }
+
+        // Setup Surat Jalan: image or pdf
+        if (sjUrl) {
+            const isPdf = /\.pdf$/i.test(sjUrl);
+            linkDownloadSJ.href = sjUrl;
+            linkDownloadSJ.classList.remove('hidden');
+            sjFallback.classList.add('hidden');
+
+            if (isPdf) {
+                frameSJ.src = sjPreviewUrl || sjUrl;
+                frameSJ.classList.remove('hidden');
+                imgSJ.src = '';
+                imgSJ.classList.add('hidden');
+                // Show open in new tab for PDF preview route
+                linkOpenSJNewTab.href = sjPreviewUrl || sjUrl;
+                linkOpenSJNewTab.classList.remove('hidden');
+            } else {
+                imgSJ.src = sjUrl;
+                imgSJ.classList.remove('hidden');
+                frameSJ.src = '';
+                frameSJ.classList.add('hidden');
+                linkOpenSJNewTab.href = '#';
+                linkOpenSJNewTab.classList.add('hidden');
+            }
+        } else {
+            // No file
+            imgSJ.src = '';
+            imgSJ.classList.add('hidden');
+            frameSJ.src = '';
+            frameSJ.classList.add('hidden');
+            linkDownloadSJ.href = '#';
+            linkDownloadSJ.classList.add('hidden');
+            linkOpenSJNewTab.href = '#';
+            linkOpenSJNewTab.classList.add('hidden');
+            sjFallback.classList.remove('hidden');
+        }
+
+        // Setup Barcode preview and download
+        barcodeText.textContent = barang?.barcode || '-';
+        qrWrap.innerHTML = '';
+        if (barang?.barcode) {
+            new QRCode(qrWrap, {
+                text: barang.barcode,
+                width: 140,
+                height: 140
+            });
+        }
+        formDownloadBarcode.action = "<?= base_url('user/download_barcode') ?>/" + barang.id_barang;
+
+        openModal(modalId);
+
+        // Handle image errors to show fallback
+        imgBarang.onerror = () => {
+            imgBarang.classList.add('hidden');
+            imgBarangFallback.classList.remove('hidden');
+            linkDownloadGambar.classList.add('hidden');
+        };
+        imgSJ.onerror = () => {
+            imgSJ.classList.add('hidden');
+            sjFallback.classList.remove('hidden');
+            linkDownloadSJ.classList.add('hidden');
+        };
+    }
+</script>
 <?= $this->endSection() ?>

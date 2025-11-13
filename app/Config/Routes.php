@@ -53,6 +53,7 @@ $routes->group('user', ['filter' => 'auth:User'], function ($routes) {
     $routes->post('update_barang/(:num)', 'UserController::updateBarang/$1');
     $routes->post('hapus_barang/(:num)', 'UserController::hapusBarang/$1');
     $routes->post('download_barcode/(:num)', 'UserController::downloadBarcode/$1');
+    $routes->get('surat-jalan/preview/(:num)', 'UserController::previewSuratJalan/$1');
     $routes->get('barang/pdf/(:any)', 'UserController::pdf/$1');
     $routes->get('riwayat', 'UserController::riwayat');
     $routes->post('barang_masuk/save', 'UserController::simpanBarangMasuk');

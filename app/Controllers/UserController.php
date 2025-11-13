@@ -222,6 +222,7 @@ class UserController extends BaseController
 
         return view('informasi_barang', $data);
     }
+
     public function downloadBarcode($id)
     {
         $barang = $this->barangModel->find($id);
@@ -229,9 +230,8 @@ class UserController extends BaseController
             return redirect()->back()->with('error', 'Barang tidak ditemukan.');
         }
 
-        // QR mengarah ke fungsi generate PDF
+        // Data untuk QR mengarah ke fungsi generate PDF
         $urlPDF = base_url('barang/info/' . $barang['barcode']);
-
         $fileName = 'barcode_' . preg_replace('/[^A-Za-z0-9_\-]/', '_', $barang['nama_barang']) . '.png';
 
         $result = Builder::create()
@@ -241,10 +241,70 @@ class UserController extends BaseController
             ->margin(10)
             ->build();
 
+        // Ambil isi biner dari QR
+        $imageData = $result->getString();
+
+        // Simpan sementara ke file tmp
+        $tempFile = WRITEPATH . 'uploads/' . $fileName;
+        file_put_contents($tempFile, $imageData);
+
+        // Kembalikan file untuk diunduh
+        return $this->response->download($tempFile, null)->setFileName($fileName);
+    }
+
+    public function previewSuratJalan($id)
+    {
+        $barang = $this->barangModel->find($id);
+
+        if (!$barang || empty($barang['surat_jalan'])) {
+            throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound('Surat jalan tidak ditemukan');
+        }
+
+        $filePath = FCPATH . 'uploads/surat_jalan/' . $barang['surat_jalan'];
+
+        if (!is_file($filePath)) {
+            throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound('File surat jalan tidak ditemukan');
+        }
+
+        $ext = strtolower(pathinfo($filePath, PATHINFO_EXTENSION));
+
+        // Determine MIME type
+        $mime = 'application/octet-stream';
+        switch ($ext) {
+            case 'pdf':
+                $mime = 'application/pdf';
+                break;
+            case 'jpg':
+            case 'jpeg':
+                $mime = 'image/jpeg';
+                break;
+            case 'png':
+                $mime = 'image/png';
+                break;
+            case 'gif':
+                $mime = 'image/gif';
+                break;
+            case 'webp':
+                $mime = 'image/webp';
+                break;
+            default:
+                if (function_exists('mime_content_type')) {
+                    $detected = @mime_content_type($filePath);
+                    if ($detected) {
+                        $mime = $detected;
+                    }
+                }
+                break;
+        }
+
+        $contents = file_get_contents($filePath);
+
         return $this->response
-            ->setHeader('Content-Type', 'image/png')
-            ->setHeader('Content-Disposition', 'attachment; filename="' . $fileName . '"')
-            ->setBody($result->getString());
+            ->setHeader('Content-Type', $mime)
+            ->setHeader('Content-Disposition', 'inline; filename="' . basename($filePath) . '"')
+            ->setHeader('X-Content-Type-Options', 'nosniff')
+            ->setHeader('Cache-Control', 'private, max-age=3600')
+            ->setBody($contents);
     }
 
     public function pdf($barcode)
