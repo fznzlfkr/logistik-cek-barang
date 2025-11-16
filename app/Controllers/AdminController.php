@@ -276,9 +276,8 @@ class AdminController extends BaseController
             return redirect()->back()->with('error', 'Barang tidak ditemukan.');
         }
 
-        // QR mengarah ke fungsi generate PDF
-        $urlPDF = base_url('barang/pdf/' . $barang['barcode']);
-
+        // Data untuk QR mengarah ke fungsi generate PDF
+        $urlPDF = base_url('barang/info/' . $barang['barcode']);
         $fileName = 'barcode_' . preg_replace('/[^A-Za-z0-9_\-]/', '_', $barang['nama_barang']) . '.png';
 
         $result = Builder::create()
@@ -288,10 +287,15 @@ class AdminController extends BaseController
             ->margin(10)
             ->build();
 
-        return $this->response
-            ->setHeader('Content-Type', 'image/png')
-            ->setHeader('Content-Disposition', 'attachment; filename="' . $fileName . '"')
-            ->setBody($result->getString());
+        // Ambil isi biner dari QR
+        $imageData = $result->getString();
+
+        // Simpan sementara ke file tmp
+        $tempFile = WRITEPATH . 'uploads/' . $fileName;
+        file_put_contents($tempFile, $imageData);
+
+        // Kembalikan file untuk diunduh
+        return $this->response->download($tempFile, null)->setFileName($fileName);
     }
 
     public function tambahBarang()
@@ -502,6 +506,12 @@ class AdminController extends BaseController
         $dataAdmin = session()->get('id_admin');
         $admin     = $this->adminModel->find($dataAdmin);
         $keyword   = $this->request->getVar('keyword');
+        $filterMode = $this->request->getVar('filter_mode');
+        $date       = $this->request->getVar('date');
+        $weekStart  = $this->request->getVar('week_start');
+        $month      = $this->request->getVar('month');
+        $startDate  = $this->request->getVar('start_date');
+        $endDate    = $this->request->getVar('end_date');
         $perPage  = $this->request->getVar('per_page') ?? 10;
         $riwayatQuery = $this->laporanModel
             ->select('laporan.tanggal, laporan.jumlah, laporan.jenis, users.nama, barang.nama_barang, laporan.id_laporan')
@@ -515,6 +525,20 @@ class AdminController extends BaseController
                 ->orLike('users.nama', $keyword)
                 ->orLike('laporan.jenis', $keyword)
                 ->groupEnd();
+        }
+
+        // Filter tanggal sesuai mode
+        if ($filterMode === 'harian' && !empty($date)) {
+            $riwayatQuery->where('DATE(laporan.tanggal)', $date);
+        } elseif ($filterMode === 'mingguan' && !empty($weekStart)) {
+            $weekEnd = date('Y-m-d', strtotime($weekStart . ' +6 days'));
+            $riwayatQuery->where('DATE(laporan.tanggal) >=', $weekStart)
+                ->where('DATE(laporan.tanggal) <=', $weekEnd);
+        } elseif ($filterMode === 'bulanan' && !empty($month)) {
+            $riwayatQuery->where('DATE_FORMAT(laporan.tanggal, "%Y-%m")', $month);
+        } elseif ($filterMode === 'range' && !empty($startDate) && !empty($endDate)) {
+            $riwayatQuery->where('DATE(laporan.tanggal) >=', $startDate)
+                ->where('DATE(laporan.tanggal) <=', $endDate);
         }
 
         // Ambil data riwayat dengan pagination
@@ -539,6 +563,7 @@ class AdminController extends BaseController
             'perPage'     => $perPage,
             'riwayatData' => $riwayatData,
             'uniqueBarang' => $uniqueBarang,
+            'filterMode'  => $filterMode,
             'pager'       => $this->laporanModel->pager // Pastikan pager diambil dari model
 
         ];
@@ -550,6 +575,12 @@ class AdminController extends BaseController
     public function cetakLaporanPDF()
     {
         $keyword = $this->request->getGet('keyword');
+        $filterMode = $this->request->getGet('filter_mode');
+        $date       = $this->request->getGet('date');
+        $weekStart  = $this->request->getGet('week_start');
+        $month      = $this->request->getGet('month');
+        $startDate  = $this->request->getGet('start_date');
+        $endDate    = $this->request->getGet('end_date');
 
         // koneksi DB
         $db = \Config\Database::connect();
@@ -564,6 +595,20 @@ class AdminController extends BaseController
                 ->orLike('u.nama', $keyword)
                 ->orLike('l.jenis', $keyword)
                 ->groupEnd();
+        }
+
+        // Filter tanggal
+        if ($filterMode === 'harian' && !empty($date)) {
+            $builder->where('DATE(l.tanggal)', $date);
+        } elseif ($filterMode === 'mingguan' && !empty($weekStart)) {
+            $weekEnd = date('Y-m-d', strtotime($weekStart . ' +6 days'));
+            $builder->where('DATE(l.tanggal) >=', $weekStart)
+                ->where('DATE(l.tanggal) <=', $weekEnd);
+        } elseif ($filterMode === 'bulanan' && !empty($month)) {
+            $builder->where('DATE_FORMAT(l.tanggal, "%Y-%m")', $month);
+        } elseif ($filterMode === 'range' && !empty($startDate) && !empty($endDate)) {
+            $builder->where('DATE(l.tanggal) >=', $startDate)
+                ->where('DATE(l.tanggal) <=', $endDate);
         }
 
         $riwayatData = $builder->orderBy('l.tanggal', 'DESC')->get()->getResultArray();
@@ -588,6 +633,22 @@ class AdminController extends BaseController
             $kesimpulan = 'Stok seimbang';
         }
 
+        // Judul periode
+        $judulPeriode = '';
+        if ($filterMode === 'harian' && !empty($date)) {
+            $judulPeriode = 'Harian: ' . namaHariIndo($date) . ', ' . formatTanggalIndoTanpaJam($date);
+        } elseif ($filterMode === 'mingguan' && !empty($weekStart)) {
+            $weekEnd = date('Y-m-d', strtotime($weekStart . ' +6 days'));
+            $judulPeriode = 'Mingguan: ' . namaHariIndo($weekStart) . ', ' . formatTanggalIndoTanpaJam($weekStart)
+                . ' - ' . namaHariIndo($weekEnd) . ', ' . formatTanggalIndoTanpaJam($weekEnd);
+        } elseif ($filterMode === 'bulanan' && !empty($month)) {
+            $judulPeriode = 'Bulanan: ' . formatBulanTahunIndo($month);
+        } elseif ($filterMode === 'range' && !empty($startDate) && !empty($endDate)) {
+            $judulPeriode = 'Periode: ' . formatTanggalIndoTanpaJam($startDate) . ' - ' . formatTanggalIndoTanpaJam($endDate);
+        } else {
+            $judulPeriode = 'Semua Data';
+        }
+
         // render view pdf
         $html = view('admin/laporan_pdf', [
             'riwayatData' => $riwayatData,
@@ -595,6 +656,7 @@ class AdminController extends BaseController
             'totalMasuk'  => $totalMasuk,
             'totaldipakai' => $totaldipakai,
             'kesimpulan'  => $kesimpulan,
+            'judulPeriode' => $judulPeriode,
         ]);
 
         $options = new Options();
@@ -617,10 +679,42 @@ class AdminController extends BaseController
 
     public function cetakLaporanExcel()
     {
-        $keyword = $this->request->getGet('keyword');
+        $keyword    = $this->request->getGet('keyword');
+        $filterMode = $this->request->getGet('filter_mode');
+        $date       = $this->request->getGet('date');
+        $weekStart  = $this->request->getGet('week_start');
+        $month      = $this->request->getGet('month');
+        $startDate  = $this->request->getGet('start_date');
+        $endDate    = $this->request->getGet('end_date');
 
-        // Ambil data riwayat
-        $riwayatData = $this->laporanModel->getRiwayatData($keyword);
+        $db = \Config\Database::connect();
+        $builder = $db->table('laporan l')
+            ->select('l.tanggal, l.jumlah, l.jenis, b.nama_barang, u.nama')
+            ->join('barang b', 'b.id_barang = l.id_barang', 'left')
+            ->join('users u', 'u.id_user = l.id_user', 'left');
+
+        if (!empty($keyword)) {
+            $builder->groupStart()
+                ->like('b.nama_barang', $keyword)
+                ->orLike('u.nama', $keyword)
+                ->orLike('l.jenis', $keyword)
+                ->groupEnd();
+        }
+
+        if ($filterMode === 'harian' && !empty($date)) {
+            $builder->where('DATE(l.tanggal)', $date);
+        } elseif ($filterMode === 'mingguan' && !empty($weekStart)) {
+            $weekEnd = date('Y-m-d', strtotime($weekStart . ' +6 days'));
+            $builder->where('DATE(l.tanggal) >=', $weekStart)
+                ->where('DATE(l.tanggal) <=', $weekEnd);
+        } elseif ($filterMode === 'bulanan' && !empty($month)) {
+            $builder->where('DATE_FORMAT(l.tanggal, "%Y-%m")', $month);
+        } elseif ($filterMode === 'range' && !empty($startDate) && !empty($endDate)) {
+            $builder->where('DATE(l.tanggal) >=', $startDate)
+                ->where('DATE(l.tanggal) <=', $endDate);
+        }
+
+        $riwayatData = $builder->orderBy('l.tanggal', 'DESC')->get()->getResultArray();
 
         // Buat Spreadsheet baru
         $spreadsheet = new Spreadsheet();
@@ -631,6 +725,28 @@ class AdminController extends BaseController
         $sheet->mergeCells('A1:F1');
         $sheet->getStyle('A1')->getFont()->setBold(true)->setSize(14);
         $sheet->getStyle('A1')->getAlignment()->setHorizontal('center');
+
+        // Judul periode
+        $judulPeriode = '';
+        if ($filterMode === 'harian' && !empty($date)) {
+            $judulPeriode = 'Harian: ' . namaHariIndo($date) . ', ' . formatTanggalIndoTanpaJam($date);
+        } elseif ($filterMode === 'mingguan' && !empty($weekStart)) {
+            $weekEnd = date('Y-m-d', strtotime($weekStart . ' +6 days'));
+            $judulPeriode = 'Mingguan: ' . namaHariIndo($weekStart) . ', ' . formatTanggalIndoTanpaJam($weekStart)
+                . ' - ' . namaHariIndo($weekEnd) . ', ' . formatTanggalIndoTanpaJam($weekEnd);
+        } elseif ($filterMode === 'bulanan' && !empty($month)) {
+            $judulPeriode = 'Bulanan: ' . formatBulanTahunIndo($month);
+        } elseif ($filterMode === 'range' && !empty($startDate) && !empty($endDate)) {
+            $judulPeriode = 'Periode: ' . formatTanggalIndoTanpaJam($startDate) . ' - ' . formatTanggalIndoTanpaJam($endDate);
+        } else {
+            $judulPeriode = 'Semua Data';
+        }
+        if (!empty($judulPeriode)) {
+            $sheet->setCellValue('A2', 'Periode: ' . $judulPeriode);
+            $sheet->mergeCells('A2:F2');
+            $sheet->getStyle('A2')->getAlignment()->setHorizontal('center');
+            $sheet->getStyle('A2')->getFont()->setItalic(true);
+        }
 
         // Header tabel
         $sheet->setCellValue('A3', 'No');
@@ -692,16 +808,16 @@ class AdminController extends BaseController
             $sheet->setCellValue('F' . $row, 'Stok seimbang');
         }
 
-        // Output Excel
+        // Output Excel via Response to avoid buffer/header issues
         $fileName = 'Laporan_Riwayat_' . date('Ymd_His') . '.xlsx';
+        $tempPath = WRITEPATH . 'uploads/' . $fileName;
         $writer = new Xlsx($spreadsheet);
+        $writer->save($tempPath);
 
-        header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-        header("Content-Disposition: attachment;filename=\"{$fileName}\"");
-        header('Cache-Control: max-age=0');
-
-        $writer->save('php://output');
-        exit;
+        return $this->response
+            ->download($tempPath, null)
+            ->setFileName($fileName)
+            ->setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
     }
 
 

@@ -106,7 +106,7 @@
       <div class="content-card">
         <div class="card-header">
           <h3 class="card-title">Aktivitas Terbaru</h3>
-          <a href="<?= base_url('/log-aktivitas-user') ?>" class="card-action">View All</a>
+          <a href="<?= base_url('admin/log-aktivitas-staff') ?>" class="card-action">View All</a>
         </div>
 
         <ul class="activity-list">

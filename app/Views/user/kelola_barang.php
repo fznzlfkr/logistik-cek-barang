@@ -461,7 +461,7 @@
                 <h3 class="font-semibold mb-3">Gambar Barang</h3>
                 <img id="detailGambarImg" src="" alt="Gambar Barang" class="w-full h-56 object-contain rounded border hidden" />
                 <div id="detailGambarFallback" class="text-gray-500 text-sm">Tidak ada gambar barang.</div>
-                <a id="downloadGambarLink" href="#" download class="mt-3 inline-flex items-center px-3 py-2 bg-gray-800 text-white rounded hover:bg-gray-900 transition hidden">Download Gambar</a>
+                <a id="downloadGambarLink" href="#" download class="mt-3 inline-flex items-center px-3 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition hidden">Download Gambar</a>
             </div>
 
             <!-- Surat Jalan -->
@@ -472,7 +472,7 @@
                 <div id="detailSJFallback" class="text-gray-500 text-sm">Tidak ada file surat jalan.</div>
                 <div class="mt-3 flex gap-2">
                     <a id="openSJNewTab" href="#" target="_blank" rel="noopener" class="inline-flex items-center px-3 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition hidden">Buka di Tab Baru</a>
-                    <a id="downloadSJLink" href="#" download class="inline-flex items-center px-3 py-2 bg-gray-800 text-white rounded hover:bg-gray-900 transition hidden">Download Surat Jalan</a>
+                    <a id="downloadSJLink" href="#" download class="inline-flex items-center px-3 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition hidden">Download Surat Jalan</a>
                 </div>
             </div>
 

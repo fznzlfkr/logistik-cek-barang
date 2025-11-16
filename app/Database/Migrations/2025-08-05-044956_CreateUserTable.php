@@ -35,15 +35,6 @@ class CreateUserTable extends Migration
                 'constraint' => 20,
                 'null'       => false,
             ],
-            'status' => [
-                'type'       => 'ENUM',
-                'constraint' => ['aktif', 'keluar'],
-                'null'       => false,
-            ],
-            'tanggal_masuk' => [
-                'type' => 'DATE',
-                'null' => true,
-            ],
         ]);
 
         $this->forge->addKey('id_user', true); // primary key

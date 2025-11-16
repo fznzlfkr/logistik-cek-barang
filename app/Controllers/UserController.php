@@ -122,6 +122,13 @@ class UserController extends BaseController
         ];
 
         $this->barangModel->insert($data);
+        // Notifikasi jika stok awal berada di bawah/== minimum
+        if ((int)$data['jumlah'] <= (int)$data['minimum_stok']) {
+            $this->notifikasiModel->save([
+                'pesan'  => "Stok {$data['nama_barang']} tersisa {$data['jumlah']} (minimum: {$data['minimum_stok']})⚠️",
+                'status' => 'unread'
+            ]);
+        }
         return redirect()->back()->with('success', 'Barang berhasil disimpan!');
     }
 
@@ -340,6 +347,11 @@ class UserController extends BaseController
         $perPage  = $this->request->getVar('per_page') ?? 10;
         // Ambil keyword pencarian
         $keyword  = $this->request->getVar('keyword');
+        // Jenis laporan & filter
+        $type     = strtolower($this->request->getVar('type') ?? 'semua');
+        $day      = $this->request->getVar('day');       // YYYY-MM-DD
+        $week     = $this->request->getVar('week');      // YYYY-Www
+        $monthVal = $this->request->getVar('month');     // YYYY-MM
 
         // Query dasar untuk riwayat
         $riwayatQuery = $this->laporanModel
@@ -354,6 +366,51 @@ class UserController extends BaseController
                 ->orLike('users.nama', $keyword)
                 ->orLike('laporan.jenis', $keyword)
                 ->groupEnd();
+        }
+
+        // Filter berdasarkan jenis (harian/mingguan/bulanan)
+        switch ($type) {
+            case 'harian':
+                if (!empty($day)) {
+                    $riwayatQuery->where('DATE(laporan.tanggal)', $day);
+                }
+                break;
+            case 'mingguan':
+                if (!empty($week)) {
+                    // Expect format YYYY-Www
+                    try {
+                        [$y, $w] = explode('-W', $week);
+                        $y = (int)$y;
+                        $w = (int)$w;
+                        $start = new \DateTime();
+                        $start->setISODate($y, $w); // Monday of that ISO week
+                        $startStr = $start->format('Y-m-d 00:00:00');
+                        $end = clone $start;
+                        $end->modify('+6 days');
+                        $endStr = $end->format('Y-m-d 23:59:59');
+                        $riwayatQuery->where('laporan.tanggal >=', $startStr)
+                            ->where('laporan.tanggal <=', $endStr);
+                    } catch (\Throwable $e) {
+                        // Ignore invalid week format
+                    }
+                }
+                break;
+            case 'bulanan':
+                if (!empty($monthVal)) {
+                    // format YYYY-MM
+                    $parts = explode('-', $monthVal);
+                    if (count($parts) === 2) {
+                        $yr = (int)$parts[0];
+                        $mo = (int)$parts[1];
+                        $riwayatQuery->where('YEAR(laporan.tanggal)', $yr)
+                            ->where('MONTH(laporan.tanggal)', $mo);
+                    }
+                }
+                break;
+            case 'semua':
+            default:
+                // no date filter
+                break;
         }
 
         // Ambil data riwayat dengan pagination
@@ -376,6 +433,11 @@ class UserController extends BaseController
             'pager'        => $this->laporanModel->pager,
             'perPage'      => $perPage,
             'keyword'      => $keyword,
+            // kirim kembali filter agar UI bisa persist
+            'type'         => $type,
+            'day'          => $day,
+            'week'         => $week,
+            'month'        => $monthVal,
             'uniqueBarang' => $uniqueBarang,
             'notif' => $this->notifikasiModel->getUnreadNotif(5)
         ];
@@ -461,6 +523,14 @@ class UserController extends BaseController
             return redirect()->back()->with('error', 'Gagal menyimpan transaksi. Coba lagi.');
         }
 
+        // Notifikasi jika stok awal berada di bawah/== minimum
+        if ((int)$data['jumlah'] <= (int)$data['minimum_stok']) {
+            $this->notifikasiModel->save([
+                'pesan'  => "Stok {$data['nama_barang']} tersisa {$data['jumlah']} (minimum: {$data['minimum_stok']})⚠️",
+                'status' => 'unread'
+            ]);
+        }
+
         return redirect()->to('user/kelola_barang')->with('success', 'Barang berhasil disimpan dan dicatat di riwayat');
     }
 
@@ -535,6 +605,14 @@ class UserController extends BaseController
 
         if ($db->transStatus() === false) {
             return redirect()->back()->with('error', 'Gagal menyimpan transaksi. Coba lagi.');
+        }
+
+        // Notifikasi jika stok setelah penambahan masih <= minimum
+        if ((int)$stokBaru <= (int)$barang['minimum_stok']) {
+            $this->notifikasiModel->save([
+                'pesan'  => "Stok {$barang['nama_barang']} tersisa {$stokBaru} (minimum: {$barang['minimum_stok']})⚠️",
+                'status' => 'unread'
+            ]);
         }
 
         return redirect()->to('user/kelola_barang')->with('success', 'Stok barang berhasil ditambahkan');
@@ -706,7 +784,19 @@ class UserController extends BaseController
 
         // Print Excel
         if ($format === 'excel') {
-            // Load PhpSpreadsheet
+            // Ambil ulang data dengan join lengkap agar kolom tersedia
+            $row = $this->laporanModel
+                ->select('laporan.id_laporan, laporan.tanggal, laporan.jumlah, laporan.jenis, users.nama, barang.nama_barang')
+                ->join('users', 'users.id_user = laporan.id_user')
+                ->join('barang', 'barang.id_barang = laporan.id_barang')
+                ->where('laporan.id_laporan', $id_laporan)
+                ->first();
+
+            if (!$row) {
+                return redirect()->back()->with('error', 'Data laporan tidak ditemukan.');
+            }
+
+            // Build spreadsheet
             $spreadsheet = new \PhpOffice\PhpSpreadsheet\Spreadsheet();
             $sheet = $spreadsheet->getActiveSheet();
 
@@ -719,22 +809,23 @@ class UserController extends BaseController
             $sheet->setCellValue('F1', 'Staff');
 
             // Data
-            $sheet->setCellValue('A2', $riwayatQuery['id_laporan']);
-            $sheet->setCellValue('B2', date('d-m-Y H:i:s', strtotime($riwayatQuery['tanggal'] . ' +7 hours')));
-            $sheet->setCellValue('C2', $riwayatQuery['nama_barang']);
-            $sheet->setCellValue('D2', $riwayatQuery['jumlah']);
-            $sheet->setCellValue('E2', $riwayatQuery['jenis']);
-            $sheet->setCellValue('F2', $riwayatQuery['nama']);
+            $sheet->setCellValue('A2', $row['id_laporan']);
+            $sheet->setCellValue('B2', date('d-m-Y H:i:s', strtotime($row['tanggal'] . ' +7 hours')));
+            $sheet->setCellValue('C2', $row['nama_barang']);
+            $sheet->setCellValue('D2', $row['jumlah']);
+            $sheet->setCellValue('E2', $row['jenis']);
+            $sheet->setCellValue('F2', $row['nama']);
 
-            // Output file
+            // Tulis ke file sementara dan kirim via Response CI
+            $fileName = 'laporan_' . $row['id_laporan'] . '.xlsx';
+            $tempPath = WRITEPATH . 'uploads/' . $fileName;
             $writer = new \PhpOffice\PhpSpreadsheet\Writer\Xlsx($spreadsheet);
-            $filename = 'laporan_' . $riwayatQuery['id_laporan'] . '.xlsx';
+            $writer->save($tempPath);
 
-            header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-            header("Content-Disposition: attachment; filename=\"{$filename}\"");
-            header('Cache-Control: max-age=0');
-            $writer->save('php://output');
-            exit;
+            return $this->response
+                ->download($tempPath, null)
+                ->setFileName($fileName)
+                ->setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
         }
 
         // Print PDF
@@ -751,6 +842,282 @@ class UserController extends BaseController
         }
 
         return redirect()->back()->with('error', 'Format tidak valid.');
+    }
+
+    public function cetakRiwayatPDF()
+    {
+        $keyword = $this->request->getGet('keyword');
+        $type    = strtolower($this->request->getGet('type') ?? 'semua');
+        $day     = $this->request->getGet('day');     // YYYY-MM-DD
+        $week    = $this->request->getGet('week');    // YYYY-Www
+        $month   = $this->request->getGet('month');   // YYYY-MM
+
+        $db = \Config\Database::connect();
+        $builder = $db->table('laporan l')
+            ->select('l.*, b.nama_barang as nama_barang, u.nama as nama_user')
+            ->join('barang b', 'b.id_barang = l.id_barang', 'left')
+            ->join('users u', 'u.id_user = l.id_user', 'left');
+
+        if (!empty($keyword)) {
+            $builder->groupStart()
+                ->like('b.nama_barang', $keyword)
+                ->orLike('u.nama', $keyword)
+                ->orLike('l.jenis', $keyword)
+                ->groupEnd();
+        }
+
+        switch ($type) {
+            case 'harian':
+                if (!empty($day)) {
+                    $builder->where('DATE(l.tanggal)', $day);
+                }
+                break;
+            case 'mingguan':
+                if (!empty($week) && strpos($week, '-W') !== false) {
+                    try {
+                        [$y, $w] = explode('-W', $week);
+                        $y = (int)$y;
+                        $w = (int)$w;
+                        $start = new \DateTime();
+                        $start->setISODate($y, $w);
+                        $startDate = $start->format('Y-m-d');
+                        $end = clone $start;
+                        $end->modify('+6 days');
+                        $endDate = $end->format('Y-m-d');
+                        $builder->where('DATE(l.tanggal) >=', $startDate)
+                            ->where('DATE(l.tanggal) <=', $endDate);
+                    } catch (\Throwable $e) { /* ignore */
+                    }
+                }
+                break;
+            case 'bulanan':
+                if (!empty($month) && strpos($month, '-') !== false) {
+                    $builder->where('DATE_FORMAT(l.tanggal, "%Y-%m")', $month);
+                }
+                break;
+            case 'semua':
+            default:
+                // no date filter
+                break;
+        }
+
+        $riwayatData = $builder->orderBy('l.tanggal', 'DESC')->get()->getResultArray();
+
+        $judulPeriode = '';
+        if ($type === 'harian' && !empty($day)) {
+            $judulPeriode = 'Harian: ' . namaHariIndo($day) . ', ' . formatTanggalIndoTanpaJam($day);
+        } elseif ($type === 'mingguan' && !empty($week) && strpos($week, '-W') !== false) {
+            try {
+                [$y, $w] = explode('-W', $week);
+                $start = new \DateTime();
+                $start->setISODate((int)$y, (int)$w);
+                $end = clone $start;
+                $end->modify('+6 days');
+                $startDate = $start->format('Y-m-d');
+                $endDate = $end->format('Y-m-d');
+                $judulPeriode = 'Mingguan: ' . namaHariIndo($startDate) . ', ' . formatTanggalIndoTanpaJam($startDate)
+                    . ' - ' . namaHariIndo($endDate) . ', ' . formatTanggalIndoTanpaJam($endDate);
+            } catch (\Throwable $e) { /* ignore */
+            }
+        } elseif ($type === 'bulanan' && !empty($month)) {
+            $judulPeriode = 'Bulanan: ' . formatBulanTahunIndo($month);
+        } else {
+            $judulPeriode = 'Semua Data';
+        }
+
+        $totalMasuk = 0;
+        $totaldipakai = 0;
+        foreach ($riwayatData as $row) {
+            if (strtolower($row['jenis']) === 'masuk') {
+                $totalMasuk += (int)$row['jumlah'];
+            } elseif (strtolower($row['jenis']) === 'dipakai') {
+                $totaldipakai += (int)$row['jumlah'];
+            }
+        }
+        if ($totalMasuk > $totaldipakai) {
+            $kesimpulan = 'Stok bertambah (' . ($totalMasuk - $totaldipakai) . ')';
+        } elseif ($totalMasuk < $totaldipakai) {
+            $kesimpulan = 'Stok berkurang (' . ($totaldipakai - $totalMasuk) . ')';
+        } else {
+            $kesimpulan = 'Stok seimbang';
+        }
+
+        $html = view('user/riwayat_pdf', [
+            'riwayatData'  => $riwayatData,
+            'keyword'      => $keyword,
+            'totalMasuk'   => $totalMasuk,
+            'totaldipakai' => $totaldipakai,
+            'kesimpulan'   => $kesimpulan,
+            'judulPeriode' => $judulPeriode,
+        ]);
+
+        $options = new Options();
+        $options->set('isRemoteEnabled', true);
+        $dompdf = new Dompdf($options);
+        $dompdf->loadHtml($html);
+        $dompdf->setPaper('A4', 'portrait');
+        $dompdf->render();
+
+        $fileName = 'laporan_' . date('Ymd_His') . '.pdf';
+        $pdfOutput = $dompdf->output();
+
+        return $this->response
+            ->setHeader('Content-Type', 'application/pdf')
+            ->setHeader('Content-Disposition', 'attachment; filename="' . $fileName . '"')
+            ->setBody($pdfOutput);
+    }
+
+    public function cetakRiwayatExcel()
+    {
+        $keyword = $this->request->getGet('keyword');
+        $type    = strtolower($this->request->getGet('type') ?? 'semua');
+        $day     = $this->request->getGet('day');
+        $week    = $this->request->getGet('week');
+        $month   = $this->request->getGet('month');
+
+        $db = \Config\Database::connect();
+        $builder = $db->table('laporan l')
+            ->select('l.tanggal, l.jumlah, l.jenis, b.nama_barang, u.nama as nama_user')
+            ->join('barang b', 'b.id_barang = l.id_barang', 'left')
+            ->join('users u', 'u.id_user = l.id_user', 'left');
+
+        if (!empty($keyword)) {
+            $builder->groupStart()
+                ->like('b.nama_barang', $keyword)
+                ->orLike('u.nama', $keyword)
+                ->orLike('l.jenis', $keyword)
+                ->groupEnd();
+        }
+
+        switch ($type) {
+            case 'harian':
+                if (!empty($day)) {
+                    $builder->where('DATE(l.tanggal)', $day);
+                }
+                break;
+            case 'mingguan':
+                if (!empty($week) && strpos($week, '-W') !== false) {
+                    try {
+                        [$y, $w] = explode('-W', $week);
+                        $y = (int)$y;
+                        $w = (int)$w;
+                        $start = new \DateTime();
+                        $start->setISODate($y, $w);
+                        $startDate = $start->format('Y-m-d');
+                        $end = clone $start;
+                        $end->modify('+6 days');
+                        $endDate = $end->format('Y-m-d');
+                        $builder->where('DATE(l.tanggal) >=', $startDate)
+                            ->where('DATE(l.tanggal) <=', $endDate);
+                    } catch (\Throwable $e) { /* ignore */
+                    }
+                }
+                break;
+            case 'bulanan':
+                if (!empty($month) && strpos($month, '-') !== false) {
+                    $builder->where('DATE_FORMAT(l.tanggal, "%Y-%m")', $month);
+                }
+                break;
+            case 'semua':
+            default:
+                break;
+        }
+
+        $riwayatData = $builder->orderBy('l.tanggal', 'DESC')->get()->getResultArray();
+
+        $judulPeriode = '';
+        if ($type === 'harian' && !empty($day)) {
+            $judulPeriode = 'Harian: ' . namaHariIndo($day) . ', ' . formatTanggalIndoTanpaJam($day);
+        } elseif ($type === 'mingguan' && !empty($week) && strpos($week, '-W') !== false) {
+            try {
+                [$y, $w] = explode('-W', $week);
+                $start = new \DateTime();
+                $start->setISODate((int)$y, (int)$w);
+                $end = clone $start;
+                $end->modify('+6 days');
+                $startDate = $start->format('Y-m-d');
+                $endDate = $end->format('Y-m-d');
+                $judulPeriode = 'Mingguan: ' . namaHariIndo($startDate) . ', ' . formatTanggalIndoTanpaJam($startDate)
+                    . ' - ' . namaHariIndo($endDate) . ', ' . formatTanggalIndoTanpaJam($endDate);
+            } catch (\Throwable $e) { /* ignore */
+            }
+        } elseif ($type === 'bulanan' && !empty($month)) {
+            $judulPeriode = 'Bulanan: ' . formatBulanTahunIndo($month);
+        } else {
+            $judulPeriode = 'Semua Data';
+        }
+
+        $spreadsheet = new \PhpOffice\PhpSpreadsheet\Spreadsheet();
+        $sheet = $spreadsheet->getActiveSheet();
+
+        $sheet->setCellValue('A1', 'LAPORAN RIWAYAT BARANG');
+        $sheet->mergeCells('A1:F1');
+        $sheet->getStyle('A1')->getFont()->setBold(true)->setSize(14);
+        $sheet->getStyle('A1')->getAlignment()->setHorizontal('center');
+
+        if (!empty($judulPeriode)) {
+            $sheet->setCellValue('A2', 'Periode: ' . $judulPeriode);
+            $sheet->mergeCells('A2:F2');
+            $sheet->getStyle('A2')->getAlignment()->setHorizontal('center');
+            $sheet->getStyle('A2')->getFont()->setItalic(true);
+        }
+
+        $sheet->setCellValue('A3', 'No');
+        $sheet->setCellValue('B3', 'Waktu');
+        $sheet->setCellValue('C3', 'Nama Barang');
+        $sheet->setCellValue('D3', 'Jumlah');
+        $sheet->setCellValue('E3', 'Jenis');
+        $sheet->setCellValue('F3', 'Staff');
+
+        foreach (range('A', 'F') as $col) {
+            $sheet->getColumnDimension($col)->setAutoSize(true);
+        }
+
+        $row = 4;
+        $no = 1;
+        $totalMasuk = 0;
+        $totaldipakai = 0;
+        foreach ($riwayatData as $data) {
+            $sheet->setCellValue('A' . $row, $no++);
+            $sheet->setCellValue('B' . $row, date('d-m-Y H:i:s', strtotime($data['tanggal'])));
+            $sheet->setCellValue('C' . $row, $data['nama_barang']);
+            $sheet->setCellValue('D' . $row, $data['jumlah']);
+            $sheet->setCellValue('E' . $row, $data['jenis']);
+            $sheet->setCellValue('F' . $row, $data['nama_user']);
+
+            if (strtolower($data['jenis']) === 'masuk') {
+                $totalMasuk += (int)$data['jumlah'];
+            } elseif (strtolower($data['jenis']) === 'dipakai') {
+                $totaldipakai += (int)$data['jumlah'];
+            }
+            $row++;
+        }
+
+        $row += 2;
+        $sheet->setCellValue('E' . $row, 'Total Barang Masuk:');
+        $sheet->setCellValue('F' . $row, $totalMasuk);
+        $row++;
+        $sheet->setCellValue('E' . $row, 'Total Barang dipakai:');
+        $sheet->setCellValue('F' . $row, $totaldipakai);
+        $row += 2;
+        $sheet->setCellValue('E' . $row, 'Kesimpulan:');
+        if ($totalMasuk > $totaldipakai) {
+            $sheet->setCellValue('F' . $row, 'Stok bertambah (' . ($totalMasuk - $totaldipakai) . ')');
+        } elseif ($totalMasuk < $totaldipakai) {
+            $sheet->setCellValue('F' . $row, 'Stok berkurang (' . ($totaldipakai - $totalMasuk) . ')');
+        } else {
+            $sheet->setCellValue('F' . $row, 'Stok seimbang');
+        }
+
+        $fileName = 'Laporan_Riwayat_' . date('Ymd_His') . '.xlsx';
+        $tempPath = WRITEPATH . 'uploads/' . $fileName;
+        $writer = new \PhpOffice\PhpSpreadsheet\Writer\Xlsx($spreadsheet);
+        $writer->save($tempPath);
+
+        return $this->response
+            ->download($tempPath, null)
+            ->setFileName($fileName)
+            ->setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
     }
 
     public function profil()

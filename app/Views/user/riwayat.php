@@ -2,7 +2,7 @@
 <?= $this->section('content') ?>
 
 <main class="px-8 py-10 max-w-full mx-auto">
-  <h1 class="text-2xl font-bold mb-6">Riwayat</h1>
+  <h1 class="text-2xl font-bold mb-6">Laporan Barang</h1>
   <?php if (session()->getFlashdata('error')): ?>
     <div id="errorAlert" class="error-message mb-6">
       <?= session()->getFlashdata('error'); ?>
@@ -14,23 +14,46 @@
     </div>
   <?php endif; ?>
 
-  <!-- Search -->
-  <div class="mb-6 flex items-center gap-3">
-    <form method="get" class="flex items-center gap-3">
-      <input type="text" name="keyword" value="<?= esc(service('request')->getVar('keyword')) ?>"
-        placeholder="Search..."
-        class="px-4 py-3 border border-gray-300 rounded w-80 focus:outline-none focus:ring focus:ring-blue-200 text-base" />
+  <!-- Filter & Search -->
+  <div class="mb-6">
+    <form method="get" class="flex flex-wrap items-end gap-3">
+      <div>
+        <label class="block text-sm text-gray-600 mb-1">Jenis Laporan</label>
+        <select name="type" id="filterType" class="px-3 py-2 border border-gray-300 rounded text-base">
+          <option value="semua" <?= (isset($type) && $type === 'semua') ? 'selected' : '' ?>>Semua</option>
+          <option value="harian" <?= (isset($type) && $type === 'harian') ? 'selected' : '' ?>>Harian</option>
+          <option value="mingguan" <?= (isset($type) && $type === 'mingguan') ? 'selected' : '' ?>>Mingguan</option>
+          <option value="bulanan" <?= (isset($type) && $type === 'bulanan') ? 'selected' : '' ?>>Bulanan</option>
+        </select>
+      </div>
 
-      <button type="submit"
-        class="px-4 py-3 bg-blue-500 text-white text-base rounded hover:bg-blue-600 transition">
-        Cari
-      </button>
+      <div id="fieldHarian" class="hidden">
+        <label class="block text-sm text-gray-600 mb-1">Pilih Tanggal</label>
+        <input type="date" name="day" value="<?= esc($day ?? '') ?>" class="px-3 py-2 border border-gray-300 rounded text-base" />
+      </div>
 
-      <?php if (service('request')->getVar('keyword') || service('request')->getVar('per_page')): ?>
-        <a href="<?= current_url() ?>"
-          class="px-4 py-3 bg-gray-300 text-base rounded hover:bg-gray-400 transition">
-          Reset
-        </a>
+      <div id="fieldMingguan" class="hidden">
+        <label class="block text-sm text-gray-600 mb-1">Pilih Minggu</label>
+        <input type="week" name="week" value="<?= esc($week ?? '') ?>" class="px-3 py-2 border border-gray-300 rounded text-base" />
+      </div>
+
+      <div id="fieldBulanan" class="hidden">
+        <label class="block text-sm text-gray-600 mb-1">Pilih Bulan</label>
+        <input type="month" name="month" value="<?= esc($month ?? '') ?>" class="px-3 py-2 border border-gray-300 rounded text-base" />
+      </div>
+
+      <div class="ml-auto flex items-end gap-3">
+        <div>
+          <label class="block text-sm text-gray-600 mb-1">Pencarian</label>
+          <input type="text" name="keyword" value="<?= esc($keyword ?? service('request')->getVar('keyword')) ?>" placeholder="Search..." class="px-4 py-2.5 border border-gray-300 rounded w-64 focus:outline-none focus:ring focus:ring-blue-200 text-base" />
+        </div>
+        <button type="submit" class="px-4 py-3 bg-blue-500 text-white text-base rounded hover:bg-blue-600 transition">Filter</button>
+        <a href="<?= base_url('/user/riwayat') ?>" class="px-4 py-3 bg-gray-300 text-base rounded hover:bg-gray-400 transition">Reset</a>
+        <button type="button" id="openPrintAll" class="px-4 py-3 bg-green-600 text-white text-base rounded hover:bg-green-700 transition">Cetak Laporan</button>
+      </div>
+
+      <?php if (!empty($perPage)): ?>
+        <input type="hidden" name="per_page" value="<?= esc($perPage) ?>" />
       <?php endif; ?>
     </form>
   </div>
@@ -97,6 +120,10 @@
       <span>Rows per page</span>
       <form method="get">
         <input type="hidden" name="keyword" value="<?= esc($keyword) ?>" />
+        <input type="hidden" name="type" value="<?= esc($type ?? 'semua') ?>" />
+        <input type="hidden" name="day" value="<?= esc($day ?? '') ?>" />
+        <input type="hidden" name="week" value="<?= esc($week ?? '') ?>" />
+        <input type="hidden" name="month" value="<?= esc($month ?? '') ?>" />
         <select name="per_page" onchange="this.form.submit()" class="border border-gray-300 px-3 py-2 rounded">
           <option value="5" <?= ($perPage == 5) ? 'selected' : '' ?>>5</option>
           <option value="10" <?= ($perPage == 10) ? 'selected' : '' ?>>10</option>
@@ -186,6 +213,43 @@
   </div>
 </div>
 
+<!-- Modal for Print All (Filtered) -->
+<div id="printAllModal" class="hidden fixed inset-0 bg-gray-800 bg-opacity-50 flex items-center justify-center z-50">
+  <div class="bg-white rounded-lg shadow-lg p-8 w-full max-w-lg mx-4">
+    <h2 class="text-xl font-bold mb-6">Pilih Format Cetak</h2>
+    <form id="printAllForm" method="get" action="" class="space-y-6">
+      <!-- Persist current filters as hidden inputs -->
+      <input type="hidden" name="keyword" value="<?= esc($keyword ?? '') ?>">
+      <input type="hidden" name="type" value="<?= esc($type ?? 'semua') ?>">
+      <input type="hidden" name="day" value="<?= esc($day ?? '') ?>">
+      <input type="hidden" name="week" value="<?= esc($week ?? '') ?>">
+      <input type="hidden" name="month" value="<?= esc($month ?? '') ?>">
+
+      <div>
+        <label class="block text-base font-medium mb-3">Pilih format</label>
+        <div class="grid grid-cols-2 gap-4">
+          <label class="format-card-all cursor-pointer border rounded-lg p-6 flex flex-col items-center justify-center transition hover:border-green-500">
+            <input type="radio" name="formatAll" value="excel" class="hidden formatOptionAll">
+            <img src="../assets/img/excel.png" alt="Excel" class="mb-3 opacity-70 w-12 h-12">
+            <span class="text-base font-medium">Excel</span>
+          </label>
+          <label class="format-card-all cursor-pointer border rounded-lg p-6 flex flex-col items-center justify-center transition hover:border-green-500">
+            <input type="radio" name="formatAll" value="pdf" class="hidden formatOptionAll">
+            <img src="../assets/img/pdf.png" alt="PDF" class="mb-3 opacity-70 w-12 h-12">
+            <span class="text-base font-medium">PDF</span>
+          </label>
+        </div>
+      </div>
+
+      <div class="flex justify-end gap-3 pt-3">
+        <button type="button" id="closePrintAllModal" class="px-6 py-3 bg-gray-300 rounded-lg hover:bg-gray-400 text-base">Batal</button>
+        <button type="submit" id="btnPrintAll" disabled class="px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed text-base">Print</button>
+      </div>
+    </form>
+  </div>
+
+</div>
+
 <style>
   /* Efek highlight saat dipilih */
   .format-card input:checked+img,
@@ -201,10 +265,30 @@
     border-color: #22c55e;
     background-color: #f0fdf4;
   }
+
+  .format-card-all:has(input:checked) {
+    border-color: #22c55e;
+    background-color: #f0fdf4;
+  }
 </style>
 
 <script>
   document.addEventListener('DOMContentLoaded', () => {
+    // Toggle filter fields
+    const typeSelect = document.getElementById('filterType');
+    const fieldHarian = document.getElementById('fieldHarian');
+    const fieldMingguan = document.getElementById('fieldMingguan');
+    const fieldBulanan = document.getElementById('fieldBulanan');
+
+    function refreshFilterFields() {
+      const v = typeSelect.value;
+      fieldHarian.classList.toggle('hidden', v !== 'harian');
+      fieldMingguan.classList.toggle('hidden', v !== 'mingguan');
+      fieldBulanan.classList.toggle('hidden', v !== 'bulanan');
+    }
+    refreshFilterFields();
+    typeSelect.addEventListener('change', refreshFilterFields);
+
     // Edit Modal
     const editButtons = document.querySelectorAll('button[title="Edit"]');
     const editModal = document.getElementById('editModal');
@@ -267,6 +351,44 @@
     closePrintModal.addEventListener('click', () => {
       printModal.classList.add('hidden');
     });
+
+    // Print All (Filtered)
+    const openPrintAllBtn = document.getElementById('openPrintAll');
+    const printAllModal = document.getElementById('printAllModal');
+    const closePrintAllModal = document.getElementById('closePrintAllModal');
+    const printAllForm = document.getElementById('printAllForm');
+    const formatOptionAll = document.querySelectorAll('.formatOptionAll');
+    const btnPrintAll = document.getElementById('btnPrintAll');
+
+    if (openPrintAllBtn) {
+      openPrintAllBtn.addEventListener('click', () => {
+        // reset state
+        btnPrintAll.disabled = true;
+        formatOptionAll.forEach(opt => opt.checked = false);
+        printAllForm.action = '';
+        printAllModal.classList.remove('hidden');
+      });
+    }
+
+    formatOptionAll.forEach(opt => {
+      opt.addEventListener('change', () => {
+        if (opt.checked) {
+          // Set endpoint by selected format
+          if (opt.value === 'excel') {
+            printAllForm.action = `<?= base_url('user/riwayat/excel') ?>`;
+          } else if (opt.value === 'pdf') {
+            printAllForm.action = `<?= base_url('user/riwayat/pdf') ?>`;
+          }
+          btnPrintAll.disabled = false;
+        }
+      });
+    });
+
+    if (closePrintAllModal) {
+      closePrintAllModal.addEventListener('click', () => {
+        printAllModal.classList.add('hidden');
+      });
+    }
   });
 </script>
 

@@ -64,7 +64,7 @@
 
       <a href="<?= base_url('admin/kelola-barang') ?>"
         class="nav-link <?= (strtolower($currentPage) === 'kelolabarang') ? 'active' : '' ?>">
-        <i class="fas fa-boxes"></i> Data Barang
+        <i class="fas fa-boxes"></i> Kelola Barang
       </a>
 
       <a href="<?= base_url('admin/laporan-barang') ?>"

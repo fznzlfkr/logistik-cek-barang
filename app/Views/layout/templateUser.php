@@ -64,7 +64,20 @@
         <nav class="space-x-8">
             <a href="<?= base_url('/user/dashboard') ?>" class="navbar-link text-white hover:text-blue-300 <?= (strtolower($currentPage) === 'dashboard') ? 'active' : '' ?>">Beranda</a>
             <a href="<?= base_url('/user/kelola_barang') ?>" class="navbar-link text-white hover:text-blue-300 <?= (strtolower($currentPage) === 'kelolabarang') ? 'active' : '' ?>">Kelola Barang</a>
-            <a href="<?= base_url('/user/riwayat') ?>" class="navbar-link text-white hover:text-blue-300 <?= (strtolower($currentPage) === 'riwayat') ? 'active' : '' ?> ">Riwayat</a>
+            <div class="relative inline-block text-left">
+                <button id="laporanMenuBtn" type="button" class="navbar-link text-white hover:text-blue-300 <?= (strtolower($currentPage) === 'riwayat') ? 'active' : '' ?> flex items-center gap-1">
+                    Laporan Barang
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                    </svg>
+                </button>
+                <div id="laporanMenuDropdown" class="hidden absolute right-0 mt-2 w-52 bg-white rounded-lg shadow-lg overflow-hidden z-50">
+                    <a href="<?= base_url('/user/riwayat?type=harian') ?>" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Laporan Harian</a>
+                    <a href="<?= base_url('/user/riwayat?type=mingguan') ?>" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Laporan Mingguan</a>
+                    <a href="<?= base_url('/user/riwayat?type=bulanan') ?>" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Laporan Bulanan</a>
+                    <a href="<?= base_url('/user/riwayat?type=semua') ?>" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Semua</a>
+                </div>
+            </div>
             <a href="<?= base_url('/user/profil') ?>" class="navbar-link text-white hover:text-blue-300 <?= (strtolower($currentPage) === 'profil') ? 'active' : '' ?> ">Profil</a>
         </nav>
         <!-- Bagian kanan (Notifikasi + Profil) -->
@@ -92,7 +105,9 @@
                                     <a href="notifikasi/read/<?= $n['id_notif'] ?>"
                                         class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
                                         <?= esc($n['pesan']) ?>
-                                        <div class="text-xs text-gray-400"><?= date('d M Y H:i', strtotime($n['created_at'])) ?></div>
+                                        <div class="text-xs text-gray-400">
+                                            <?= esc(formatTanggalIndo($n['created_at'])) ?>
+                                        </div>
                                     </a>
                                 </li>
                             <?php endforeach; ?>
@@ -155,6 +170,21 @@
             notifDropdown.classList.add("hidden");
         }
     });
+
+    // Dropdown Laporan Barang
+    const laporanBtn = document.getElementById('laporanMenuBtn');
+    const laporanDropdown = document.getElementById('laporanMenuDropdown');
+    if (laporanBtn && laporanDropdown) {
+        laporanBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            laporanDropdown.classList.toggle('hidden');
+        });
+        document.addEventListener('click', (e) => {
+            if (!laporanBtn.contains(e.target) && !laporanDropdown.contains(e.target)) {
+                laporanDropdown.classList.add('hidden');
+            }
+        });
+    }
 </script>
 
 </html>
