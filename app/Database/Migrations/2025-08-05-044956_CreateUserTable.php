@@ -17,7 +17,7 @@ class CreateUserTable extends Migration
             ],
             'nama' => [
                 'type'       => 'VARCHAR',
-                'constraint' => 20,
+                'constraint' => 60,
                 'null'       => false,
             ],
             'email' => [
@@ -32,7 +32,7 @@ class CreateUserTable extends Migration
             ],
             'no_hp' => [
                 'type'       => 'CHAR',
-                'constraint' => 20,
+                'constraint' => 15,
                 'null'       => false,
             ],
         ]);

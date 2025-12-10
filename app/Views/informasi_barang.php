@@ -90,21 +90,6 @@
           </tr>
         </table>
 
-        <div class="mt-6 flex gap-3 flex-wrap">
-          <a href="<?= base_url('user/barang/pdf/' . $barang['barcode']) ?>"
-            class="px-4 py-2 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition shadow-md"
-            target="_blank">
-            Cetak PDF
-          </a>
-
-          <form action="<?= base_url('user/download_barcode/' . $barang['id_barang']) ?>" method="post" class="inline">
-            <?= csrf_field() ?>
-            <button type="submit"
-              class="px-4 py-2 bg-green-600 text-white rounded-xl hover:bg-green-700 transition shadow-md">
-              Download QR
-            </button>
-          </form>
-        </div>
       </div>
 
       <!-- QRCode -->

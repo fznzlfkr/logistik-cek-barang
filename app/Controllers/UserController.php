@@ -180,6 +180,16 @@ class UserController extends BaseController
                 ]);
             }
 
+            // ✅ Log aktivitas perubahan data barang dengan rincian field yang berubah
+            $changes = [];
+            foreach ($data as $key => $value) {
+                if (isset($barangLama[$key]) && $barangLama[$key] != $value) {
+                    $changes[] = "$key: '{$barangLama[$key]}' -> '{$value}'";
+                }
+            }
+            $detailPerubahan = empty($changes) ? 'Tidak ada field yang berubah.' : implode(', ', $changes);
+            logAktivitas("Memperbarui barang: {$barangLama['nama_barang']} (ID: {$id_barang}) Perubahan: $detailPerubahan");
+
             return redirect()->back()->with('success', 'Barang berhasil diperbarui.');
         } else {
             $error = $this->barangModel->errors();
@@ -189,7 +199,17 @@ class UserController extends BaseController
 
     public function hapusBarang($id)
     {
+        // Ambil data barang sebelum dihapus untuk log
+        $barang = $this->barangModel->find($id);
+        if (!$barang) {
+            return redirect()->back()->with('error', 'Barang tidak ditemukan.');
+        }
+
         $this->barangModel->delete($id);
+
+        // ✅ Log aktivitas penghapusan
+        logAktivitas("Menghapus barang: {$barang['nama_barang']} (ID: {$id}, Jumlah: {$barang['jumlah']} {$barang['satuan']})");
+
         return redirect()->back()->with('success', 'Barang berhasil dihapus.');
     }
 

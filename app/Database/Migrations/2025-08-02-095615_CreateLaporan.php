@@ -13,32 +13,32 @@ class CreateLaporan extends Migration
                 'type'           => 'INT',
                 'constraint'     => 11,
                 'unsigned'       => true,
-                'auto_increment' => true,
+                'auto_increment' => true
             ],
             'id_barang' => [
                 'type'       => 'INT',
-                'constraint' => 11,
                 'unsigned'   => true,
             ],
             'jumlah' => [
                 'type'       => 'INT',
-                'constraint' => 11,
                 'unsigned'   => true,
             ],
             'jenis' => [
                 'type'       => 'ENUM',
-                'constraint' => ['Masuk', 'Dipakai'],
+                'constraint' => ['Masuk', 'Dipakai']
             ],
             'tanggal' => [
-                'type' => 'DATETIME',
+                'type' => 'DATETIME'
             ],
             'id_user' => [
                 'type'       => 'INT',
-                'constraint' => 11,
                 'unsigned'   => true,
             ],
         ]);
+
         $this->forge->addKey('id_laporan', true);
+        $this->forge->addForeignKey('id_barang', 'barang', 'id_barang', 'CASCADE', 'CASCADE');
+        $this->forge->addForeignKey('id_user', 'user', 'id_user', 'CASCADE', 'CASCADE');
         $this->forge->createTable('laporan');
     }
 

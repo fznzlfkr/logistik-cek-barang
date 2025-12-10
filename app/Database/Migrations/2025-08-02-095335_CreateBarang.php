@@ -13,35 +13,45 @@ class CreateBarang extends Migration
                 'type'           => 'INT',
                 'constraint'     => 11,
                 'unsigned'       => true,
-                'auto_increment' => true,
+                'auto_increment' => true
             ],
             'nama_barang' => [
                 'type'       => 'VARCHAR',
-                'constraint' => 100,
+                'constraint' => '100'
             ],
             'jumlah' => [
                 'type'       => 'INT',
-                'constraint' => 11,
                 'unsigned'   => true,
             ],
             'satuan' => [
                 'type'       => 'VARCHAR',
-                'constraint' => 20,
-                'null'       => true,
+                'constraint' => '20',
+                'null'       => true
             ],
             'tanggal_masuk' => [
-                'type' => 'DATE',
+                'type' => 'DATE'
             ],
             'barcode' => [
                 'type'       => 'VARCHAR',
-                'constraint' => 50,
-                'null'       => true,
+                'constraint' => '50',
+                'null'       => true
             ],
             'minimum_stok' => [
                 'type'       => 'INT',
-                'constraint' => 11,
+                'constraint' => 11
+            ],
+            'gambar' => [
+                'type'       => 'VARCHAR',
+                'constraint' => '100',
+                'null'       => true
+            ],
+            'surat_jalan' => [
+                'type'       => 'VARCHAR',
+                'constraint' => '100',
+                'null'       => true
             ],
         ]);
+
         $this->forge->addKey('id_barang', true);
         $this->forge->createTable('barang');
     }
