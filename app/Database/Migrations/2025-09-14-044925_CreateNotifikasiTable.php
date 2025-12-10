@@ -23,7 +23,7 @@ class CreateNotifikasiTable extends Migration
             ],
             'pesan' => [
                 'type'       => 'VARCHAR',
-                'constraint' => '255',
+                'constraint' => 255,
             ],
             'status' => [
                 'type'       => 'ENUM',
@@ -35,6 +35,10 @@ class CreateNotifikasiTable extends Migration
                 'null' => true,
             ],
             'updated_at' => [
+                'type' => 'DATETIME',
+                'null' => true,
+            ],
+            'deleted_at' => [
                 'type' => 'DATETIME',
                 'null' => true,
             ],
