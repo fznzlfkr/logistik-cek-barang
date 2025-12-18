@@ -1,7 +1,7 @@
 <?= $this->extend('layout/templateAuth'); ?>
 <?= $this->section('content') ?>
 
-<h2><?= esc($title) ?> ke CargoWing</h2>
+<h2><?= esc($title) ?> ke CargoWing Tes</h2>
 <?php if (session()->getFlashdata('error')): ?>
     <div id="errorAlert" class="error-message">
         <?= session()->getFlashdata('error'); ?>
