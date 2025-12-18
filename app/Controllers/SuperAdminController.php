@@ -67,7 +67,7 @@ class SuperAdminController extends BaseController
             'logsAdmin'         => $logsAdmin,
         ];
 
-        return view('superAdmin/dashboard', $data);
+        return view('superadmin/dashboard', $data);
     }
 
     /**
