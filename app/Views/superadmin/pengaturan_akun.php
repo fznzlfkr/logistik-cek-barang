@@ -1,4 +1,4 @@
-<?= $this->extend('layout/TemplateSuperAdmin') ?>
+<?= $this->extend('layout/templateSuperAdmin') ?>
 
 <?= $this->section('content') ?>
 
