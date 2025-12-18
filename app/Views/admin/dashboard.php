@@ -1,4 +1,4 @@
-<?= $this->extend('layout/TemplateAdmin') ?>
+<?= $this->extend('layout/templateAdmin') ?>
 
 <?= $this->section('content') ?>
 <!-- Main Content -->
